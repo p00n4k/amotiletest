@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>คำนวณราคากระเบื้อง</title>
+<style>
+  * { box-sizing: border-box; }
+  :root {
+    --paper:#f4f6f8; --card:#fff; --ink:#16202b; --muted:#5c6a78; --line:#dde3e9;
+    --accent:#0e7c86; --accent-d:#0b636b; --good:#0e7c86; --warn:#b5761f; --shade:#eef4f5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --paper:#0e141a; --card:#161f28; --ink:#eaf0f4; --muted:#93a1af; --line:#26313c;
+      --accent:#37b3bd; --accent-d:#2b98a1; --good:#37b3bd; --warn:#d69a48; --shade:#182530; }
+  }
+  body {
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Segoe UI","Sarabun",system-ui,sans-serif; line-height:1.5;
+  }
+  header { background:var(--accent); color:#fff; padding:20px 24px; }
+  header h1 { margin:0; font-size:20px; }
+  header p { margin:4px 0 0; opacity:.9; font-size:13px; }
+
+  .wrap { max-width:940px; margin:0 auto; padding:24px; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  @media (max-width:720px){ .grid { grid-template-columns:1fr; } }
+
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px;
+    box-shadow:0 1px 3px rgba(0,0,0,.06); overflow:hidden; }
+  .card h2 { margin:0; font-size:14px; padding:14px 18px; background:var(--shade);
+    border-bottom:1px solid var(--line); color:var(--accent-d); }
+  .card-body { padding:16px 18px; }
+
+  label { display:block; font-size:13px; color:var(--muted); margin:12px 0 5px; }
+  label:first-child { margin-top:0; }
+  input, select, textarea {
+    width:100%; padding:9px 11px; font-size:14px; color:var(--ink);
+    border:1px solid var(--line); border-radius:8px; background:var(--card);
+    font-family:inherit; resize:vertical;
+  }
+  input:focus, select:focus, textarea:focus { outline:2px solid var(--accent); border-color:var(--accent); }
+  .row { display:flex; gap:10px; }
+  .row > div { flex:1; }
+  .hidden { display:none; }
+  .dim { display:flex; align-items:center; gap:8px; }
+  .dim input { text-align:center; }
+  .dim span { color:var(--muted); font-size:14px; }
+  #imgPreview { display:none; max-width:100%; max-height:200px; border-radius:8px;
+    margin-top:10px; border:1px solid var(--line); object-fit:contain; }
+  .link-btn { width:auto; margin-top:8px; padding:4px 10px; font-size:12px; background:transparent;
+    color:#c0392b; border:1px solid var(--line); border-radius:7px; cursor:pointer; }
+
+  .btn {
+    width:100%; margin-top:20px; padding:13px; font-size:16px; font-weight:600;
+    color:#fff; background:var(--accent); border:none; border-radius:9px; cursor:pointer;
+  }
+  .btn:hover { background:var(--accent-d); }
+  .btn.sample { margin-top:0; background:transparent; color:var(--accent); border:1px solid var(--line);
+    font-size:13px; font-weight:500; padding:8px; }
+
+  /* result */
+  .result { margin-top:20px; }
+  .result .card h2 { background:var(--accent); color:#fff; border:none; }
+  table.res { width:100%; border-collapse:collapse; font-size:14px; }
+  table.res td { padding:9px 18px; border-bottom:1px solid var(--line); }
+  table.res td:last-child { text-align:right; font-variant-numeric:tabular-nums; font-weight:600; }
+  table.res tr.total td { font-size:18px; color:var(--accent-d); border-bottom:none; padding-top:14px; }
+  table.res tr.total td:first-child { font-weight:700; }
+  table.res td { vertical-align:top; }
+  .src { font-size:12px; color:var(--muted); font-weight:400 !important; margin-top:3px; font-variant-numeric:tabular-nums; }
+  .prod-info { font-size:13px; color:var(--muted); padding:12px 18px; border-bottom:1px solid var(--line); }
+  .err { color:#c0392b; font-size:14px; padding:14px 18px; }
+
+  /* ===== รายงานสรุป ===== */
+  .rep-head { background:var(--accent); color:#fff; padding:18px 22px;
+    display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:10px; }
+  .rep-head .t { font-size:18px; font-weight:700; }
+  .rep-head .date { font-size:12px; opacity:.9; }
+  .rep-head .print { background:rgba(255,255,255,.18); color:#fff; border:1px solid rgba(255,255,255,.4);
+    border-radius:7px; padding:6px 12px; font-size:13px; cursor:pointer; }
+  .rep-head .print:hover { background:rgba(255,255,255,.3); }
+
+  .rep-sec { padding:16px 22px; border-bottom:1px solid var(--line); }
+  .rep-sec h3 { margin:0 0 12px; font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--accent-d); }
+  .rep-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px 22px; }
+  @media (max-width:600px){ .rep-grid { grid-template-columns:repeat(2,1fr); } }
+  .rep-item .lbl { font-size:11px; color:var(--muted); }
+  .rep-item .val { font-size:14px; font-weight:600; margin-top:1px; }
+  .rep-img { max-width:180px; max-height:180px; border-radius:8px; border:1px solid var(--line);
+    margin-bottom:14px; object-fit:contain; }
+  .remark { font-size:14px; color:var(--ink); background:var(--shade); border-radius:8px; padding:10px 12px; }
+
+  .stats { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+  @media (max-width:600px){ .stats { grid-template-columns:repeat(2,1fr); } }
+  .stat { background:var(--shade); border-radius:10px; padding:14px 8px; text-align:center; }
+  .stat .n { font-size:20px; font-weight:700; color:var(--accent-d); font-variant-numeric:tabular-nums; }
+  .stat .u { font-size:11px; color:var(--muted); margin-top:3px; }
+
+  .rep-total { padding:18px 22px; display:flex; justify-content:space-between; align-items:center;
+    background:var(--shade); gap:12px; }
+  .rep-total .lbl { font-size:16px; font-weight:600; }
+  .rep-total .amt { font-size:28px; font-weight:800; color:var(--accent-d); font-variant-numeric:tabular-nums; }
+
+  /* ===== ตารางใบเสนอราคา ===== */
+  .quote-wrap { overflow-x:auto; }
+  table.quote { border-collapse:collapse; width:100%; min-width:820px; font-size:12px; }
+  table.quote th, table.quote td { border:1px solid var(--line); padding:7px 9px; vertical-align:top; }
+  table.quote th { background:var(--shade); text-align:center; font-size:11px; color:var(--accent-d); line-height:1.3; }
+  table.quote td.center { text-align:center; vertical-align:middle; }
+  table.quote td.right { text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  table.quote td.desc { line-height:1.65; min-width:280px; }
+  table.quote .hl { color:var(--accent-d); }
+  table.quote img.q-img { max-width:120px; max-height:150px; object-fit:contain; display:block; margin:auto; border-radius:4px; }
+
+  /* ===== ใบยืนยันการสั่งซื้อ (Order Confirmation) ===== */
+  table.oc { border-collapse:collapse; width:100%; min-width:820px; font-size:12px; }
+  table.oc th, table.oc td { border:1px solid var(--line); padding:8px 9px; vertical-align:top; }
+  table.oc thead th { background:var(--accent); color:#fff; text-align:center; font-size:11px;
+    letter-spacing:.02em; line-height:1.3; }
+  table.oc th.right { text-align:right; }
+  table.oc td.center { text-align:center; vertical-align:middle; }
+  table.oc td.right { text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  table.oc td.desc { line-height:1.75; min-width:300px; }
+  table.oc td.desc .d-block + .d-block { border-top:1px solid var(--line); margin-top:7px; padding-top:7px; }
+  table.oc .hl { color:var(--accent-d); font-weight:700; }
+  table.oc img.oc-img { max-width:110px; max-height:130px; object-fit:contain; display:block; margin:auto; border-radius:4px; }
+  table.oc tfoot td { background:var(--shade); font-weight:700; }
+  table.oc tfoot td.lbl { font-weight:500; color:var(--muted); }
+  table.oc tfoot tr.grand td { background:var(--accent); color:#fff; font-size:14px; font-weight:800; }
+  table.oc td.oc-note { text-align:left; font-weight:400; color:var(--ink); background:var(--card); line-height:1.6; }
+  .oc-badge { display:inline-block; font-size:10px; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; }
+  .oc-badge.stock { background:color-mix(in srgb, var(--good) 16%, transparent); color:var(--good); }
+  .oc-badge.indent { background:color-mix(in srgb, var(--warn) 18%, transparent); color:var(--warn); }
+
+  details.calc { padding:14px 22px; }
+  details.calc summary { cursor:pointer; font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
+  details.calc table.res { margin-top:12px; }
+
+  @media print {
+    header, .grid, .wrap > .btn { display:none !important; }
+    body { background:#fff; }
+    .wrap { padding:0; }
+    .card { box-shadow:none; border:none; }
+    .rep-head .print { display:none; }
+    details.calc { display:none; }
+  }
+  .muted-row td { color:var(--muted); font-weight:400 !important; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>ระบบคำนวณราคากระเบื้อง</h1>
+  <p>กรอกข้อมูลสินค้าและการขาย แล้วกดคำนวณ</p>
+</header>
+
+<div class="wrap">
+  <div class="grid">
+
+    <!-- ================= สินค้า ================= -->
+    <div class="card">
+      <h2>1. ข้อมูลสินค้า</h2>
+      <div class="card-body">
+        <label>โหลดตัวอย่างสินค้า</label>
+        <select id="sampleSelect" aria-label="เลือกตัวอย่างสินค้า" onchange="loadSample(this.value)"></select>
+
+        <label>SKU</label>
+        <input id="sku" type="text" placeholder="เช่น TILE-6060-GRY">
+
+        <div class="row">
+          <div><label>แบรนด์</label><input id="brand" type="text" placeholder="เช่น Cotto"></div>
+          <div><label>คอลเลกชัน</label><input id="collection" type="text" placeholder="เช่น Stone"></div>
+        </div>
+
+        <div class="row">
+          <div><label>หมวดหมู่ (Category)</label><input id="category" type="text" placeholder="เช่น Tile"></div>
+          <div><label>หมวดหมู่ย่อย (Sub Category)</label><input id="subcategory" type="text" placeholder="เช่น Floor Tile"></div>
+        </div>
+
+        <label>ลุค (Look)</label>
+        <input id="look" type="text" placeholder="เช่น Stone / Wood / Marble">
+
+        <label>รูปสินค้า</label>
+        <input id="productImage" type="file" accept="image/*" aria-label="อัปโหลดรูปสินค้า" onchange="previewImage(event)">
+        <img id="imgPreview" alt="รูปสินค้า">
+        <button type="button" id="clearImg" class="link-btn hidden" onclick="clearImage()">ลบรูป</button>
+
+        <label>ขนาดขาย (Sale Size) — กว้าง × ยาว × สูง (ซม.)</label>
+        <div class="dim">
+          <input id="saleW" type="number" min="0" step="any" placeholder="W" aria-label="ขนาดขาย กว้าง">
+          <span>×</span>
+          <input id="saleL" type="number" min="0" step="any" placeholder="L" aria-label="ขนาดขาย ยาว">
+          <span>×</span>
+          <input id="saleH" type="number" min="0" step="any" placeholder="H" aria-label="ขนาดขาย สูง">
+        </div>
+
+        <label>ขนาดจริง (Working Size) — กว้าง × ยาว × สูง (ซม.)</label>
+        <div class="dim">
+          <input id="workW" type="number" min="0" step="any" placeholder="W" aria-label="ขนาดจริง กว้าง">
+          <span>×</span>
+          <input id="workL" type="number" min="0" step="any" placeholder="L" aria-label="ขนาดจริง ยาว">
+          <span>×</span>
+          <input id="workH" type="number" min="0" step="any" placeholder="H" aria-label="ขนาดจริง สูง">
+        </div>
+
+        <label>หน่วยราคาสินค้า (U.M.)</label>
+        <select id="priceUnit" aria-label="หน่วยราคาสินค้า" onchange="rebuildCustomerUnit(); rebuildSellingMethod()">
+          <option value="ตารางเมตร">ตารางเมตร</option>
+          <option value="เมตร">เมตร (คิดจากความยาว)</option>
+          <option value="ชิ้น">ชิ้น</option>
+          <option value="เซ็ต">เซ็ต (คิดแบบชิ้น)</option>
+          <option value="กล่อง">กล่อง</option>
+        </select>
+
+        <label>ราคาต่อหน่วย (บาท)</label>
+        <input id="pricePerUnit" type="number" min="0" step="any" placeholder="เช่น 450">
+
+        <div class="row">
+          <div><label>ตร.ม./กล่อง</label><input id="sqmPerBox" type="number" min="0" step="any" placeholder="เช่น 1.44"></div>
+          <div><label>ชิ้น/กล่อง</label><input id="piecesPerBox" type="number" min="0" step="any" placeholder="เช่น 4"></div>
+          <div><label>กก./กล่อง</label><input id="kgPerBox" type="number" min="0" step="any" placeholder="เช่น 24"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= การขาย ================= -->
+    <div class="card">
+      <h2>2. ข้อมูลการขาย</h2>
+      <div class="card-body">
+        <label>ลูกค้าแจ้งจำนวนเป็นหน่วยใด</label>
+        <select id="customerUnit" aria-label="หน่วยที่ลูกค้าแจ้ง">
+          <option value="ตารางเมตร">ตารางเมตร</option>
+          <option value="เมตร">เมตร (คิดแบบตารางเมตร)</option>
+          <option value="ชิ้น">ชิ้น</option>
+          <option value="เซ็ต">เซ็ต (คิดแบบชิ้น)</option>
+          <option value="กล่อง">กล่อง</option>
+        </select>
+
+        <label>จำนวนที่ลูกค้าต้องการ</label>
+        <input id="customerQty" type="number" min="0" step="any" placeholder="เช่น 25">
+
+        <label>วิธีเผื่อสินค้า</label>
+        <select id="allowanceType" aria-label="วิธีเผื่อสินค้า" onchange="toggle('allowanceType','allowanceValueWrap','ไม่มี')">
+          <option value="ไม่มี">ไม่มี</option>
+          <option value="เปอร์เซ็นต์">เปอร์เซ็นต์ (%)</option>
+          <option value="ชิ้น">ชิ้น</option>
+          <option value="กล่อง">กล่อง</option>
+        </select>
+        <div id="allowanceValueWrap" class="hidden">
+          <label>จำนวนเผื่อ</label>
+          <input id="allowanceValue" type="number" min="0" step="any" placeholder="เช่น 10">
+        </div>
+
+        <label>วิธีขาย</label>
+        <select id="sellingMethod" aria-label="วิธีขาย">
+          <option value="กล่อง">ขายเป็นกล่อง (ปัดขึ้นเต็มกล่อง)</option>
+          <option value="ชิ้น">ขายเป็นชิ้น</option>
+        </select>
+
+        <label>ประเภทส่วนลด</label>
+        <select id="discountType" aria-label="ประเภทส่วนลด" onchange="toggle('discountType','discountValueWrap','ไม่มี')">
+          <option value="ไม่มี">ไม่มี</option>
+          <option value="เปอร์เซ็นต์">เปอร์เซ็นต์ (%)</option>
+          <option value="บาท">บาท</option>
+        </select>
+        <div id="discountValueWrap" class="hidden">
+          <label>จำนวนส่วนลด</label>
+          <input id="discountValue" type="number" min="0" step="any" placeholder="เช่น 5">
+        </div>
+
+        <label>ประเภทสินค้า (Stock / Indent)</label>
+        <select id="orderType" aria-label="ประเภทสินค้า Stock หรือ Indent">
+          <option value="Stock">Stock — มีของพร้อมส่ง</option>
+          <option value="Indent">Indent — สั่งผลิต/รอสินค้า</option>
+        </select>
+
+        <label>หมายเหตุ</label>
+        <textarea id="remark" rows="2" placeholder="เช่น รอของ 30-45 วัน / นัดส่งวันเสาร์"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <button type="button" class="btn" onclick="calculate()">คำนวณราคา</button>
+
+  <!-- ================= ผลลัพธ์ ================= -->
+  <div id="result" class="result"></div>
+</div>
+
+<script>
+  /* ---------- helpers ---------- */
+  const $ = id => document.getElementById(id);
+  const num = id => parseFloat($(id).value);
+  const fmt = (v, d=2) => {
+    // ตัดเลข 0 ท้ายทศนิยมออก เหมือน format_number() ใน data.py
+    let s = v.toLocaleString("en-US", { minimumFractionDigits:d, maximumFractionDigits:d });
+    if (s.includes(".")) s = s.replace(/0+$/,"").replace(/\.$/,"");
+    return s;
+  };
+
+  // ซ่อน/แสดงช่องกรอกค่า เมื่อเลือก "ไม่มี"
+  function toggle(selectId, wrapId, hideValue) {
+    $(wrapId).classList.toggle("hidden", $(selectId).value === hideValue);
+  }
+
+  // ---------- รูปสินค้า ----------
+  let productImage = "";  // เก็บรูปเป็น data URL
+
+  function previewImage(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      productImage = ev.target.result;
+      const img = $("imgPreview");
+      img.src = productImage;
+      img.style.display = "block";
+      $("clearImg").classList.remove("hidden");
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function clearImage() {
+    productImage = "";
+    $("productImage").value = "";
+    $("imgPreview").style.display = "none";
+    $("imgPreview").src = "";
+    $("clearImg").classList.add("hidden");
+  }
+
+  // หน่วยที่ลูกค้าแจ้งได้ทั้งหมด
+  const customerUnitOptions = [
+    ["ตารางเมตร", "ตารางเมตร"],
+    ["เมตร", "เมตร"],
+    ["ชิ้น", "ชิ้น"],
+    ["เซ็ต", "เซ็ต"],
+    ["กล่อง", "กล่อง"],
+  ];
+  // จำกัดหน่วยที่ลูกค้าแจ้งได้ ตามหน่วยราคาสินค้า (U.M.)
+  const allowedCustomerUnits = {
+    "เมตร": ["เมตร", "ชิ้น"],          // U.M. เมตร → แจ้งได้แค่ เมตร/ชิ้น
+    "เซ็ต": ["ตารางเมตร", "เซ็ต"],     // U.M. เซ็ต → แจ้งได้ ตร.ม./เซ็ต
+  };
+
+  // สร้าง dropdown "หน่วยที่ลูกค้าแจ้ง" ใหม่ตาม U.M. ที่เลือก
+  function rebuildCustomerUnit() {
+    const pu = $("priceUnit").value;
+    const allow = allowedCustomerUnits[pu] || customerUnitOptions.map(o => o[0]);
+    const sel = $("customerUnit");
+    const prev = sel.value;
+    sel.innerHTML = "";
+    customerUnitOptions.filter(o => allow.includes(o[0])).forEach(([v, label]) => {
+      const opt = document.createElement("option");
+      opt.value = v; opt.textContent = label;
+      sel.appendChild(opt);
+    });
+    sel.value = allow.includes(prev) ? prev : allow[0]; // คงค่าเดิมถ้ายังเลือกได้
+  }
+
+  // วิธีขายทั้งหมด
+  const sellingMethodOptions = [
+    ["กล่อง", "ขายเป็นกล่อง (ปัดขึ้นเต็มกล่อง)"],
+    ["ชิ้น", "ขายเป็นชิ้น"],
+    ["เซ็ต", "ขายเป็นเซ็ต (ปัดลงเต็มเซ็ต)"],
+  ];
+  // จำกัดวิธีขายตามหน่วยราคาสินค้า (U.M.)
+  const allowedSellingMethods = {
+    "เซ็ต": ["เซ็ต"],   // U.M. เซ็ต → ขายได้แค่เป็นเซ็ต
+  };
+
+  // สร้าง dropdown "วิธีขาย" ใหม่ตาม U.M. ที่เลือก
+  function rebuildSellingMethod() {
+    const pu = $("priceUnit").value;
+    const allow = allowedSellingMethods[pu] || ["กล่อง", "ชิ้น"];
+    const sel = $("sellingMethod");
+    const prev = sel.value;
+    sel.innerHTML = "";
+    sellingMethodOptions.filter(o => allow.includes(o[0])).forEach(([v, label]) => {
+      const opt = document.createElement("option");
+      opt.value = v; opt.textContent = label;
+      sel.appendChild(opt);
+    });
+    sel.value = allow.includes(prev) ? prev : allow[0];
+  }
+
+  // รวมค่า W × L × H เป็นข้อความ (เว้นช่องที่ไม่กรอก)
+  function dimStr(w, l, h) {
+    const v = [w, l, h].map(id => $(id).value).filter(x => x !== "");
+    return v.length ? v.join(" × ") + " ซม." : "";
+  }
+
+  // แถบรายละเอียดสินค้า (แสดงเฉพาะช่องที่กรอก)
+  function prodInfo() {
+    const cat = $("category").value, sub = $("subcategory").value;
+    const bits = [];
+    if (cat || sub) bits.push([cat, sub].filter(Boolean).join(" › "));
+    if ($("look").value) bits.push("Look: " + $("look").value);
+    const sale = dimStr("saleW", "saleL", "saleH");
+    const work = dimStr("workW", "workL", "workH");
+    if (sale) bits.push("ขนาดขาย: " + sale);
+    if (work) bits.push("ขนาดจริง: " + work);
+    return bits.length ? `<div class="prod-info">${bits.join(" &nbsp;·&nbsp; ")}</div>` : "";
+  }
+
+  /* ---------- ข้อมูลจำลองสินค้าหลายแบบ ---------- */
+  const samples = {
+    floor6060: {
+      label: "กระเบื้องพื้น 60×60 (ขาย ตร.ม.)",
+      sku:"TILE-6060-GRY", brand:"Cotto", collection:"Stone", category:"Tile", subcategory:"Floor Tile", look:"Stone",
+      saleW:60, saleL:60, saleH:0.9, workW:59.5, workL:59.5, workH:0.9,
+      priceUnit:"ตารางเมตร", pricePerUnit:2100, sqmPerBox:1.08, piecesPerBox:3, kgPerBox:21.23,
+      customerUnit:"ตารางเมตร", customerQty:25, allowanceType:"เปอร์เซ็นต์", allowanceValue:10,
+      sellingMethod:"กล่อง", discountType:"ไม่มี", discountValue:0, orderType:"Stock", remark:"",
+    },
+    wall3060: {
+      label: "กระเบื้องผนัง 30×60 (ขาย ตร.ม.)",
+      sku:"TILE-3060-WHT", brand:"Duragres", collection:"Pure", category:"Tile", subcategory:"Wall Tile", look:"Plain",
+      saleW:30, saleL:60, saleH:0.85, workW:29.7, workL:59.7, workH:0.85,
+      priceUnit:"ตารางเมตร", pricePerUnit:850, sqmPerBox:1.44, piecesPerBox:8, kgPerBox:19.5,
+      customerUnit:"ตารางเมตร", customerQty:18.5, allowanceType:"เปอร์เซ็นต์", allowanceValue:5,
+      sellingMethod:"กล่อง", discountType:"เปอร์เซ็นต์", discountValue:3, orderType:"Stock", remark:"",
+    },
+    granite8080: {
+      label: "แกรนิตโต้ขัดเงา 80×80 (ขาย ตร.ม.)",
+      sku:"GRA-8080-BLK", brand:"Cotto", collection:"Luxe", category:"Tile", subcategory:"Floor Tile", look:"Marble",
+      saleW:80, saleL:80, saleH:1.05, workW:79.6, workL:79.6, workH:1.05,
+      priceUnit:"ตารางเมตร", pricePerUnit:3600, sqmPerBox:1.28, piecesPerBox:2, kgPerBox:33,
+      customerUnit:"ตารางเมตร", customerQty:42, allowanceType:"เปอร์เซ็นต์", allowanceValue:7,
+      sellingMethod:"กล่อง", discountType:"บาท", discountValue:5000, orderType:"Indent", remark:"รอสินค้า 30–45 วัน",
+    },
+    trimMeter: {
+      label: "กระเบื้องบัว/คิ้ว (ขายเป็นเมตร)",
+      sku:"TRIM-60-GRY", brand:"Sosuco", collection:"Line", category:"Tile", subcategory:"Trim", look:"Stone",
+      saleW:6, saleL:60, saleH:0.9, workW:6, workL:60, workH:0.9,
+      priceUnit:"เมตร", pricePerUnit:180, sqmPerBox:0.36, piecesPerBox:10, kgPerBox:8,
+      customerUnit:"เมตร", customerQty:24, allowanceType:"ไม่มี", allowanceValue:0,
+      sellingMethod:"ชิ้น", discountType:"ไม่มี", discountValue:0, orderType:"Stock", remark:"",
+    },
+    mosaicSet: {
+      label: "โมเสก (ขายเป็นเซ็ต — ไม่มีขนาด)",
+      sku:"MOS-SET-BLU", brand:"The Mosaic", collection:"Aqua", category:"Tile", subcategory:"Mosaic", look:"Glass",
+      saleW:null, saleL:null, saleH:null, workW:null, workL:null, workH:null,
+      priceUnit:"เซ็ต", pricePerUnit:450, sqmPerBox:1.0, piecesPerBox:10, kgPerBox:15,
+      customerUnit:"เซ็ต", customerQty:8, allowanceType:"ไม่มี", allowanceValue:0,
+      sellingMethod:"เซ็ต", discountType:"ไม่มี", discountValue:0, orderType:"Stock", remark:"1 เซ็ต = 1 แผง",
+    },
+    decorPiece: {
+      label: "กระเบื้องลาย (ขายเป็นชิ้น)",
+      sku:"DEC-3030-ART", brand:"Campana", collection:"Art", category:"Tile", subcategory:"Decor", look:"Pattern",
+      saleW:30, saleL:30, saleH:0.8, workW:29.7, workL:29.7, workH:0.8,
+      priceUnit:"ชิ้น", pricePerUnit:120, sqmPerBox:0.99, piecesPerBox:11, kgPerBox:14,
+      customerUnit:"ชิ้น", customerQty:15, allowanceType:"ชิ้น", allowanceValue:2,
+      sellingMethod:"ชิ้น", discountType:"ไม่มี", discountValue:0, orderType:"Stock", remark:"",
+    },
+  };
+
+  // สร้างตัวเลือกใน dropdown ตัวอย่างสินค้า
+  function buildSampleOptions() {
+    const sel = $("sampleSelect");
+    sel.innerHTML = "";
+    Object.entries(samples).forEach(([key, s]) => {
+      const opt = document.createElement("option");
+      opt.value = key; opt.textContent = s.label;
+      sel.appendChild(opt);
+    });
+  }
+
+  // โหลดข้อมูลตัวอย่างลงฟอร์มตาม key ที่เลือก
+  function loadSample(key) {
+    const s = samples[key] || samples.floor6060;
+    const set = (id, v) => { $(id).value = (v == null ? "" : v); };
+
+    // ข้อมูลสินค้า
+    ["sku","brand","collection","category","subcategory","look",
+     "saleW","saleL","saleH","workW","workL","workH",
+     "pricePerUnit","sqmPerBox","piecesPerBox","kgPerBox"].forEach(id => set(id, s[id]));
+
+    // ตั้ง U.M. ก่อน แล้วสร้าง dropdown ที่ผูกกับ U.M. ใหม่
+    set("priceUnit", s.priceUnit);
+    rebuildCustomerUnit();
+    rebuildSellingMethod();
+
+    // ข้อมูลการขาย (ต้องตั้งหลัง rebuild เพื่อให้ตัวเลือกถูกต้อง)
+    ["customerUnit","customerQty","sellingMethod",
+     "allowanceType","allowanceValue","discountType","discountValue",
+     "orderType","remark"].forEach(id => set(id, s[id]));
+
+    toggle("allowanceType","allowanceValueWrap","ไม่มี");
+    toggle("discountType","discountValueWrap","ไม่มี");
+    clearImage(); // ตัวอย่างไม่มีรูป จึงล้างรูปที่อัปโหลดไว้
+  }
+
+  /* ---------- การคำนวณ (แปลงตรงจาก calculate_sale ใน data.py) ---------- */
+  function calculate() {
+    const result = $("result");
+
+    // อ่านค่าสินค้า
+    const priceUnit    = $("priceUnit").value;
+    const pricePerUnit = num("pricePerUnit");
+    const sqmPerBox    = num("sqmPerBox");
+    const piecesPerBox = num("piecesPerBox");
+    const kgPerBox     = num("kgPerBox");   // อาจเว้นว่างได้ (จะไม่คิดน้ำหนัก)
+    const saleLen      = num("saleL");      // ความยาว Sale Size (ซม.) — ใช้ตอนคิดแบบเมตร
+
+    // อ่านค่าการขาย
+    const customerUnit   = $("customerUnit").value;
+    const customerQty    = num("customerQty");
+    const allowanceType  = $("allowanceType").value;
+    const allowanceValue = allowanceType === "ไม่มี" ? 0 : num("allowanceValue");
+    const sellingMethod  = $("sellingMethod").value;
+    const discountType   = $("discountType").value;
+    const discountValue  = discountType === "ไม่มี" ? 0 : num("discountValue");
+    const orderType      = $("orderType").value;
+    const remark         = $("remark").value.trim().replace(/</g, "&lt;").replace(/\n/g, "<br>");
+
+    // ตรวจสอบข้อมูล
+    const err = m => { result.innerHTML = `<div class="card"><div class="err">⚠ ${m}</div></div>`; };
+    if (!(pricePerUnit > 0)) return err("กรุณากรอกราคาต่อหน่วยให้มากกว่า 0");
+    if (!(sqmPerBox > 0))    return err("ตารางเมตรต่อกล่องต้องมากกว่า 0");
+    if (!(piecesPerBox > 0)) return err("จำนวนชิ้นต่อกล่องต้องมากกว่า 0");
+    if (!(customerQty > 0))  return err("กรุณากรอกจำนวนที่ลูกค้าต้องการให้มากกว่า 0");
+
+    // ถ้าคิดแบบเมตร ต้องมีความยาว Sale Size (L)
+    const usesMeter = (customerUnit === "เมตร" || priceUnit === "เมตร");
+    if (usesMeter && !(saleLen > 0)) return err("กรุณากรอกความยาว Sale Size (L) ก่อน เพื่อคำนวณแบบเมตร");
+
+    // เซ็ต คิดแบบชิ้น
+    const pieceUnits = ["ชิ้น", "เซ็ต"];
+
+    const sqmPerPiece    = sqmPerBox / piecesPerBox;        // พื้นที่ต่อแผ่น (ตร.ม.)
+    const lengthPerPiece = saleLen > 0 ? saleLen / 100 : 0; // ความยาวต่อแผ่น (เมตร) จาก Sale Size L
+
+    // 1) แปลงจำนวนที่ลูกค้าแจ้งเป็นจำนวนชิ้น
+    let initialPieces;
+    if (customerUnit === "ตารางเมตร")           initialPieces = customerQty / sqmPerPiece;
+    else if (customerUnit === "เมตร")           initialPieces = customerQty / lengthPerPiece;
+    else if (pieceUnits.includes(customerUnit)) initialPieces = customerQty;
+    else                                        initialPieces = customerQty * piecesPerBox; // กล่อง
+
+    // 2) จำนวนเผื่อ (ชิ้น)
+    let allowancePieces = 0;
+    if (allowanceType === "เปอร์เซ็นต์") allowancePieces = initialPieces * allowanceValue / 100;
+    else if (allowanceType === "ชิ้น")   allowancePieces = allowanceValue;
+    else if (allowanceType === "กล่อง")  allowancePieces = allowanceValue * piecesPerBox;
+
+    const totalRequired = initialPieces + allowancePieces;
+    const boxesBeforeRounding = totalRequired / piecesPerBox;
+
+    // 3) จำนวนที่ขายจริง
+    let actualBoxes, actualPieces;
+    if (sellingMethod === "กล่อง") {
+      actualBoxes  = Math.ceil(boxesBeforeRounding);
+      actualPieces = actualBoxes * piecesPerBox;
+    } else if (sellingMethod === "เซ็ต") {
+      actualPieces = Math.floor(totalRequired);   // ขายเป็นเซ็ต → ปัดลงเต็มเซ็ต
+      actualBoxes  = actualPieces / piecesPerBox;
+    } else {
+      actualPieces = Math.ceil(totalRequired);    // ขายเป็นชิ้น → ปัดขึ้น
+      actualBoxes  = actualPieces / piecesPerBox;
+    }
+    const actualSqm    = actualPieces * sqmPerPiece;
+    const actualMeters = actualPieces * lengthPerPiece;   // ความยาวรวม (เมตร)
+
+    // น้ำหนักรวม (คิดตามจำนวนชิ้นที่ขายจริง) — เว้นว่างได้ถ้าไม่กรอก กก./กล่อง
+    const hasWeight = kgPerBox > 0;
+    const kgPerPiece = hasWeight ? kgPerBox / piecesPerBox : 0;
+    const totalWeight = actualPieces * kgPerPiece;
+
+    // 4) ราคาก่อนลด ตามหน่วยราคาสินค้า (เมตร=ความยาว, เซ็ต=ชิ้น)
+    let priceBeforeDiscount;
+    if (priceUnit === "ตารางเมตร")           priceBeforeDiscount = actualSqm    * pricePerUnit;
+    else if (priceUnit === "เมตร")           priceBeforeDiscount = actualMeters * pricePerUnit;
+    else if (pieceUnits.includes(priceUnit)) priceBeforeDiscount = actualPieces * pricePerUnit;
+    else                                     priceBeforeDiscount = actualBoxes  * pricePerUnit; // กล่อง
+
+    // 5) ส่วนลด
+    let discountAmount = 0;
+    if (discountType === "เปอร์เซ็นต์") discountAmount = priceBeforeDiscount * discountValue / 100;
+    else if (discountType === "บาท")    discountAmount = discountValue;
+
+    const netPrice = Math.max(priceBeforeDiscount - discountAmount, 0);
+
+    // ถ้าขายเป็นเซ็ต ให้เรียกหน่วยว่า "เซ็ต" และซ่อนบรรทัด/การ์ดกล่อง
+    const isSet = sellingMethod === "เซ็ต";
+    const pieceWord = isSet ? "เซ็ต" : "ชิ้น";
+
+    // ---------- ที่มา / วิธีคิด ของแต่ละบรรทัด ----------
+    const sPiece = `${fmt(sqmPerBox)} ÷ ${fmt(piecesPerBox)} (ตร.ม./กล่อง ÷ ชิ้น/กล่อง)`;
+
+    let sInitial;
+    if (customerUnit === "ตารางเมตร")           sInitial = `ลูกค้าแจ้ง ${fmt(customerQty)} ตารางเมตร ÷ ${fmt(sqmPerPiece,4)} ตร.ม./ชิ้น`;
+    else if (customerUnit === "เมตร")           sInitial = `ลูกค้าแจ้ง ${fmt(customerQty)} เมตร ÷ ${fmt(lengthPerPiece,4)} ม./แผ่น (Sale Size ยาว ${fmt(saleLen)} ซม.)`;
+    else if (pieceUnits.includes(customerUnit)) sInitial = `ลูกค้าแจ้ง ${fmt(customerQty)} ${customerUnit} = จำนวน${pieceWord}`;
+    else                                        sInitial = `ลูกค้าแจ้ง ${fmt(customerQty)} กล่อง × ${fmt(piecesPerBox)} ชิ้น/กล่อง`;
+
+    let sAllow;
+    if (allowanceType === "ไม่มี")            sAllow = "ไม่เผื่อสินค้า";
+    else if (allowanceType === "เปอร์เซ็นต์") sAllow = `${fmt(initialPieces)} ${pieceWord} × ${fmt(allowanceValue)}%`;
+    else if (allowanceType === "ชิ้น")        sAllow = `เผื่อ ${fmt(allowanceValue)} ชิ้น`;
+    else                                       sAllow = `เผื่อ ${fmt(allowanceValue)} กล่อง × ${fmt(piecesPerBox)} ชิ้น/กล่อง`;
+
+    const sTotal = `จำนวนตั้งต้น ${fmt(initialPieces)} + เผื่อ ${fmt(allowancePieces)} ${pieceWord}`;
+
+    let sBoxes, sPieces;
+    if (sellingMethod === "กล่อง") {
+      sBoxes  = `ปัดขึ้นจาก ${fmt(boxesBeforeRounding)} กล่อง (ขายเป็นกล่อง)`;
+      sPieces = `${fmt(actualBoxes)} กล่อง × ${fmt(piecesPerBox)} ชิ้น/กล่อง`;
+    } else if (isSet) {
+      sPieces = `ปัดลงจาก ${fmt(totalRequired)} เซ็ต (ขายเป็นเซ็ต ปัดลง)`;
+      sBoxes  = "";
+    } else {
+      sPieces = `ปัดขึ้นจาก ${fmt(totalRequired)} ชิ้น (ขายเป็นชิ้น)`;
+      sBoxes  = `${fmt(actualPieces)} ชิ้น ÷ ${fmt(piecesPerBox)} ชิ้น/กล่อง`;
+    }
+
+    const sSqm    = `${fmt(actualPieces)} ชิ้น × ${fmt(sqmPerPiece,4)} ตร.ม./ชิ้น`;
+    const sWeight = `${fmt(actualPieces)} ชิ้น × ${fmt(kgPerPiece,4)} กก./ชิ้น`;
+
+    let sBefore;
+    if (priceUnit === "ตารางเมตร")           sBefore = `${fmt(actualSqm)} ตร.ม. × ${fmt(pricePerUnit)} บาท/ตารางเมตร`;
+    else if (priceUnit === "เมตร")           sBefore = `${fmt(actualMeters)} เมตร × ${fmt(pricePerUnit)} บาท/เมตร`;
+    else if (pieceUnits.includes(priceUnit)) sBefore = `${fmt(actualPieces)} ชิ้น × ${fmt(pricePerUnit)} บาท/${priceUnit}`;
+    else                                     sBefore = `${fmt(actualBoxes)} กล่อง × ${fmt(pricePerUnit)} บาท/กล่อง`;
+
+    let sDiscount;
+    if (discountType === "ไม่มี")            sDiscount = "ไม่มีส่วนลด";
+    else if (discountType === "เปอร์เซ็นต์") sDiscount = `${fmt(priceBeforeDiscount)} บาท × ${fmt(discountValue)}%`;
+    else                                       sDiscount = `ลดตรง ${fmt(discountValue)} บาท`;
+
+    const sNet = `ราคาก่อนลด ${fmt(priceBeforeDiscount)} − ส่วนลด ${fmt(discountAmount)} บาท`;
+
+    // ---------- ประกอบรายงานสรุป ----------
+    const brand = $("brand").value || "-", collection = $("collection").value || "-", sku = $("sku").value || "-";
+    const saleDim = dimStr("saleW","saleL","saleH") || "-";
+    const workDim = dimStr("workW","workL","workH") || "-";
+    const catText = [$("category").value, $("subcategory").value].filter(Boolean).join(" › ") || "-";
+
+    // ข้อความสรุปเงื่อนไขการขาย
+    const allowText = allowanceType === "ไม่มี" ? "ไม่เผื่อ"
+      : allowanceType === "เปอร์เซ็นต์" ? `${fmt(allowanceValue)}%`
+      : `${fmt(allowanceValue)} ${allowanceType}`;
+    const discountText = discountType === "ไม่มี" ? "ไม่มี"
+      : discountType === "เปอร์เซ็นต์" ? `${fmt(discountValue)}%`
+      : `${fmt(discountValue)} บาท`;
+
+    const now = new Date().toLocaleString("th-TH", { dateStyle:"long", timeStyle:"short" });
+
+    // helper: ช่องข้อมูล label/value
+    const item = (lbl, val) => `<div class="rep-item"><div class="lbl">${lbl}</div><div class="val">${val}</div></div>`;
+    // helper: แถวตารางรายละเอียดการคำนวณ (พร้อมที่มา)
+    const row = (name, val, src, cls = "") =>
+      `<tr class="${cls}"><td>${name}<div class="src">ที่มา: ${src}</div></td><td>${val}</td></tr>`;
+
+    // ---------- ข้อมูลสำหรับตารางใบเสนอราคา ----------
+    const money = v => v.toLocaleString("en-US", { minimumFractionDigits:2, maximumFractionDigits:2 });
+
+    // จำนวนที่คิดเงิน (ตามหน่วยราคา) + หน่วยย่อ
+    const billedQty = priceUnit === "ตารางเมตร" ? actualSqm
+      : priceUnit === "เมตร" ? actualMeters
+      : priceUnit === "กล่อง" ? actualBoxes : actualPieces;
+    const qtyUnit = priceUnit === "ตารางเมตร" ? "sqm"
+      : priceUnit === "เมตร" ? "m"
+      : priceUnit === "กล่อง" ? "boxes" : (isSet ? "sets" : "pcs");
+
+    // จำนวนใช้จริง (ก่อนเผื่อ/ปัด) และจำนวนเผื่อ ในหน่วยเดียวกับที่คิดเงิน
+    const actualUse = priceUnit === "ตารางเมตร" ? initialPieces * sqmPerPiece
+      : priceUnit === "เมตร" ? initialPieces * lengthPerPiece
+      : priceUnit === "กล่อง" ? initialPieces / piecesPerBox : initialPieces;
+    const spareQty = billedQty - actualUse;
+
+    // ราคาต่อหน่วยหลังลด และยอดรวม
+    const discountPerUnit = billedQty > 0 ? discountAmount / billedQty : 0;
+    const netUnitPrice = pricePerUnit - discountPerUnit;
+
+    // ขนาดจริงเป็น มม. (จาก Working Size ซม. × 10)
+    const wkWmm = num("workW") * 10, wkLmm = num("workL") * 10;
+    const workMm = (wkWmm > 0 && wkLmm > 0) ? `${fmt(wkWmm)}x${fmt(wkLmm)} mm` : "-";
+
+    // ขนาดขาย W | D | H (จาก Sale Size ซม.)
+    const swW = num("saleW"), swL = num("saleL"), swH = num("saleH");
+    const whhLine = [swW>0?`W ${fmt(swW)}`:null, swL>0?`D ${fmt(swL)}`:null, swH>0?`H ${fmt(swH)}`:null]
+      .filter(Boolean).join(" | ");
+
+    // ข้อความในคอลัมน์ DESCRIPTION
+    const descLines = [
+      $("brand").value || "",
+      [$("collection").value, $("look").value].filter(Boolean).join(", "),
+      whhLine,
+      `U.M. (หน่วย): ${priceUnit}`,
+      `${fmt(sqmPerBox)} Sqm/Box (ตร.ม./กล่อง)`,
+      `${fmt(piecesPerBox)} Pz/Box (ชิ้นหรือแผ่น/กล่อง)`,
+      hasWeight ? `${fmt(kgPerBox)} Kg/Box (กก./กล่อง)` : "",
+      `Working Size (ขนาดจริง): ${workMm}`,
+      `———————————`,
+      `Actual Qty (จำนวนใช้จริง): <b class="hl">${fmt(actualUse)} ${qtyUnit}</b>`,
+      `Spare Qty (จำนวนเผื่อ): ${fmt(spareQty)} ${qtyUnit}`,
+      isSet ? "" : `Total Boxes (จำนวนกล่องทั้งหมด): <b class="hl">${fmt(actualBoxes)} boxes</b>`,
+      hasWeight ? `Total Weight (น้ำหนักทั้งหมด): <b class="hl">${fmt(totalWeight)} kgs</b>` : "",
+    ].filter(Boolean).join("<br>");
+
+    // ---------- ข้อมูลสำหรับใบยืนยันการสั่งซื้อ (Order Confirmation) ----------
+    const vatRate = 0.07;
+    const vat = netPrice * vatRate;
+    const grandTotal = netPrice + vat;
+
+    // รายละเอียดสินค้าในเซลล์ DESCRIPTION
+    // แบ่ง DESCRIPTION เป็น 3 ส่วน มีเส้นคั่นชัดเจน
+    const seg1 = [
+      `<b>${$("brand").value || "-"}${$("collection").value ? " — " + $("collection").value : ""}</b>`,
+      `ประเภทสินค้า: <span class="oc-badge ${orderType === "Stock" ? "stock" : "indent"}">${orderType}</span> ${orderType === "Indent" ? "(สั่งผลิต/รอสินค้า)" : "(มีของพร้อมส่ง)"}`,
+    ].join("<br>");
+    const seg2 = [
+      $("look").value ? "Look: " + $("look").value : "",
+      whhLine ? "ขนาดขาย: " + whhLine : "",
+      `Working Size (ขนาดจริง): ${workMm}`,
+      `U.M.: ${priceUnit} · ${fmt(sqmPerBox)} ตร.ม./กล่อง · ${fmt(piecesPerBox)} แผ่น/กล่อง${hasWeight ? " · " + fmt(kgPerBox) + " กก./กล่อง" : ""}`,
+    ].filter(Boolean).join("<br>");
+    const seg3 = [
+      `จำนวนใช้จริง: <b class="hl">${fmt(actualUse)} ${qtyUnit}</b> · เผื่อ: ${fmt(spareQty)} ${qtyUnit}`,
+      isSet ? "" : `กล่องทั้งหมด: <b class="hl">${fmt(actualBoxes)} กล่อง</b>`,
+      hasWeight ? `น้ำหนักรวม: <b class="hl">${fmt(totalWeight)} กก.</b>` : "",
+    ].filter(Boolean).join("<br>");
+    const seg4 = `หมายเหตุ: ${remark || "-"}`;
+    const ocDesc = [seg1, seg2, seg3, seg4].filter(Boolean).map(s => `<div class="d-block">${s}</div>`).join("");
+
+    result.innerHTML = `
+      <div class="card">
+        <div class="rep-head">
+          <div>
+            <div class="t">สรุปรายงานการคำนวณราคา</div>
+            <div class="date">${now}</div>
+          </div>
+          <button type="button" class="print" onclick="window.print()">🖨 พิมพ์รายงาน</button>
+        </div>
+
+        <div class="rep-sec">
+          <h3>ข้อมูลสินค้า</h3>
+          ${productImage ? `<img class="rep-img" src="${productImage}" alt="รูปสินค้า">` : ""}
+          <div class="rep-grid">
+            ${item("SKU", sku)}
+            ${item("แบรนด์ / คอลเลกชัน", `${brand} / ${collection}`)}
+            ${item("หมวดหมู่", catText)}
+            ${item("ลุค (Look)", $("look").value || "-")}
+            ${item("ขนาดขาย", saleDim)}
+            ${item("ขนาดจริง", workDim)}
+            ${item("หน่วยราคา", priceUnit)}
+            ${item("ราคาต่อหน่วย", `${fmt(pricePerUnit)} บาท`)}
+            ${item("บรรจุ / กล่อง", `${fmt(sqmPerBox)} ตร.ม. · ${fmt(piecesPerBox)} ชิ้น${hasWeight ? " · " + fmt(kgPerBox) + " กก." : ""}`)}
+          </div>
+        </div>
+
+        <div class="rep-sec">
+          <h3>เงื่อนไขการขาย</h3>
+          <div class="rep-grid">
+            ${item("ลูกค้าแจ้ง", `${fmt(customerQty)} ${customerUnit}`)}
+            ${item("เผื่อสินค้า", allowText)}
+            ${item("วิธีขาย", `ขายเป็น${sellingMethod}`)}
+            ${item("ส่วนลด", discountText)}
+            ${item("ประเภทสินค้า", orderType)}
+          </div>
+        </div>
+        ${remark ? `<div class="rep-sec"><h3>หมายเหตุ</h3><div class="remark">${remark}</div></div>` : ""}
+
+        <div class="rep-sec">
+          <h3>สรุปจำนวนที่ขายจริง</h3>
+          <div class="stats">
+            ${isSet ? "" : `<div class="stat"><div class="n">${fmt(actualBoxes)}</div><div class="u">กล่อง</div></div>`}
+            <div class="stat"><div class="n">${fmt(actualPieces)}</div><div class="u">${pieceWord}</div></div>
+            <div class="stat"><div class="n">${fmt(actualSqm)}</div><div class="u">ตร.ม.</div></div>
+            ${usesMeter ? `<div class="stat"><div class="n">${fmt(actualMeters)}</div><div class="u">เมตร</div></div>` : ""}
+            ${hasWeight ? `<div class="stat"><div class="n">${fmt(totalWeight)}</div><div class="u">กก.</div></div>` : ""}
+          </div>
+        </div>
+
+        <div class="rep-sec">
+          <h3>สรุปราคา</h3>
+          <div class="rep-grid">
+            ${item("ราคาก่อนลด", `${fmt(priceBeforeDiscount)} บาท`)}
+            ${item("ส่วนลด", `${fmt(discountAmount)} บาท`)}
+          </div>
+        </div>
+
+        <div class="rep-total">
+          <div class="lbl">ราคาสุทธิ</div>
+          <div class="amt">${fmt(netPrice)} บาท</div>
+        </div>
+
+        <details class="calc">
+          <summary>ดูรายละเอียดการคำนวณ (ที่มาของแต่ละตัวเลข)</summary>
+          <table class="res">
+            ${row("พื้นที่ต่อชิ้น", `${fmt(sqmPerPiece,4)} ตร.ม.`, sPiece, "muted-row")}
+            ${row("จำนวนตั้งต้น", `${fmt(initialPieces)} ${pieceWord}`, sInitial, "muted-row")}
+            ${row("จำนวนเผื่อ", `${fmt(allowancePieces)} ${pieceWord}`, sAllow, "muted-row")}
+            ${row("รวมที่ต้องใช้", `${fmt(totalRequired)} ${pieceWord}`, sTotal, "muted-row")}
+            ${isSet ? "" : row("จำนวนกล่องขายจริง", `${fmt(actualBoxes)} กล่อง`, sBoxes)}
+            ${row(`จำนวน${pieceWord}ขายจริง`, `${fmt(actualPieces)} ${pieceWord}`, sPieces)}
+            ${row("พื้นที่ขายจริง", `${fmt(actualSqm)} ตร.ม.`, sSqm)}
+            ${usesMeter ? row("ความยาวรวม", `${fmt(actualMeters)} เมตร`, `${fmt(actualPieces)} แผ่น × ${fmt(lengthPerPiece,4)} ม./แผ่น`) : ""}
+            ${hasWeight ? row("น้ำหนักรวม", `${fmt(totalWeight)} กก.`, sWeight) : ""}
+            ${row("ราคาก่อนลด", `${fmt(priceBeforeDiscount)} บาท`, sBefore, "muted-row")}
+            ${row("ส่วนลด", `${fmt(discountAmount)} บาท`, sDiscount, "muted-row")}
+            ${row("ราคาสุทธิ", `${fmt(netPrice)} บาท`, sNet, "total")}
+          </table>
+        </details>
+
+        <div class="rep-sec">
+          <h3>ใบเสนอราคา (รูปแบบตาราง)</h3>
+          <div class="quote-wrap">
+            <table class="quote">
+              <thead>
+                <tr>
+                  <th>NO.</th><th>ITEM No.</th><th>IMAGE</th><th>DESCRIPTION</th>
+                  <th>UNIT PRICE<br>(THB)</th><th>DISCOUNT<br>(THB)</th>
+                  <th>UNIT PRICE<br>(THB)</th><th>QTY.</th><th>AMOUNT<br>(THB)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="center">1</td>
+                  <td class="center">${sku}</td>
+                  <td class="center">${productImage ? `<img class="q-img" src="${productImage}" alt="รูปสินค้า">` : "-"}</td>
+                  <td class="desc">${descLines}</td>
+                  <td class="right">${money(pricePerUnit)}</td>
+                  <td class="right">${money(discountPerUnit)}</td>
+                  <td class="right">${money(netUnitPrice)}</td>
+                  <td class="right">${money(billedQty)}</td>
+                  <td class="right"><b>${money(netPrice)}</b></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="rep-sec">
+          <h3>ใบยืนยันการสั่งซื้อ (Order Confirmation)</h3>
+          <div class="quote-wrap">
+            <table class="oc">
+              <thead>
+                <tr>
+                  <th>NO.</th><th>SKU</th><th>IMAGE</th><th>DESCRIPTION</th>
+                  <th>UNIT</th><th class="right">QTY</th><th class="right">UNIT PRICE<br>(THB)</th>
+                  <th class="right">DISCOUNT<br>(THB)</th><th class="right">AMOUNT<br>(THB)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="center">1</td>
+                  <td class="center">${sku}</td>
+                  <td class="center">${productImage ? `<img class="oc-img" src="${productImage}" alt="รูปสินค้า">` : "-"}</td>
+                  <td class="desc">${ocDesc}</td>
+                  <td class="center">${priceUnit}</td>
+                  <td class="right">${money(billedQty)}</td>
+                  <td class="right">${money(pricePerUnit)}</td>
+                  <td class="right">${money(discountAmount)}</td>
+                  <td class="right"><b>${money(netPrice)}</b></td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr><td colspan="8" class="right lbl">ยอดรวม (Subtotal)</td><td class="right">${money(priceBeforeDiscount)}</td></tr>
+                <tr><td colspan="8" class="right lbl">ส่วนลด (Discount)</td><td class="right">-${money(discountAmount)}</td></tr>
+                <tr><td colspan="8" class="right lbl">ยอดก่อนภาษี (Pre-VAT)</td><td class="right">${money(netPrice)}</td></tr>
+                <tr><td colspan="8" class="right lbl">ภาษีมูลค่าเพิ่ม 7% (VAT)</td><td class="right">${money(vat)}</td></tr>
+                <tr class="grand"><td colspan="8" class="right">ยอดสุทธิ (Grand Total)</td><td class="right">${money(grandTotal)}</td></tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>`;
+    result.scrollIntoView({ behavior:"smooth", block:"nearest" });
+  }
+
+  // เติมค่าเริ่มต้นให้ฟอร์มตั้งแต่เปิดหน้า
+  buildSampleOptions();     // สร้างรายการตัวอย่างสินค้า
+  loadSample("floor6060");  // โหลดตัวอย่างแรก (ตัว rebuild อยู่ในนี้แล้ว)
+</script>
+
+</body>
+</html>
