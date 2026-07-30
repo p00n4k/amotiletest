@@ -304,7 +304,8 @@
   }
 
   // ---------- รูปสินค้า ----------
-  let productImage = "";  // เก็บรูปเป็น data URL
+  const SAMPLE_IMAGE = "image.png";  // รูปเริ่มต้นของสินค้าตัวอย่าง
+  let productImage = "";  // เก็บรูปเป็น data URL หรือ path ของไฟล์รูป
 
   function previewImage(e) {
     const file = e.target.files[0];
@@ -326,6 +327,16 @@
     $("imgPreview").style.display = "none";
     $("imgPreview").src = "";
     $("clearImg").classList.add("hidden");
+  }
+
+  // ใช้รูปเริ่มต้นกับสินค้าตัวอย่าง (ผู้ใช้อัปโหลดรูปใหม่ทับได้)
+  function useSampleImage() {
+    productImage = SAMPLE_IMAGE;
+    $("productImage").value = "";
+    const img = $("imgPreview");
+    img.src = SAMPLE_IMAGE;
+    img.style.display = "block";
+    $("clearImg").classList.remove("hidden");
   }
 
   // หน่วยที่ลูกค้าแจ้งได้ทั้งหมด
@@ -487,7 +498,7 @@
 
     toggle("allowanceType","allowanceValueWrap","ไม่มี");
     toggle("discountType","discountValueWrap","ไม่มี");
-    clearImage(); // ตัวอย่างไม่มีรูป จึงล้างรูปที่อัปโหลดไว้
+    useSampleImage(); // สินค้าตัวอย่างใช้รูปเริ่มต้น image.png
   }
 
   /* ---------- การคำนวณ (แปลงตรงจาก calculate_sale ใน data.py) ---------- */
