@@ -587,6 +587,25 @@
         </div>
         <p class="hint">ยอดมัดจำและยอดคงเหลือคำนวณจาก Grand Total ให้อัตโนมัติ</p>
 
+        <div class="row">
+          <div>
+            <label>ส่วนลดท้ายบิล (Discount) — sales เป็นคนใส่</label>
+            <select id="bill_discType" aria-label="ประเภทส่วนลดท้ายบิล"
+                    onchange="toggle('bill_discType','bill_discWrap','ไม่มี'); saveProject(); renderProject()">
+              <option value="ไม่มี">ไม่มี</option>
+              <option value="เปอร์เซ็นต์">เปอร์เซ็นต์ (%)</option>
+              <option value="บาท">บาท</option>
+            </select>
+          </div>
+          <div id="bill_discWrap" class="hidden">
+            <label>จำนวนส่วนลดท้ายบิล</label>
+            <input id="bill_discValue" type="number" min="0" step="any" placeholder="เช่น 5"
+                   oninput="saveProject(); renderProject()">
+          </div>
+        </div>
+        <p class="hint">ช่อง Discount ในท้ายเอกสารมาจากตรงนี้ — เป็นส่วนลดที่ sales ให้ตอนปิดการขาย
+          คิดจากยอดรวมรายการ (Total) ที่หักส่วนลดรายชิ้นไปแล้ว ไม่ใช่ผลรวมของส่วนลดรายชิ้น</p>
+
         <label>Terms &amp; Conditions (ข้อความมาตรฐาน — แก้เฉพาะเมื่อดีลนี้ตกลงต่างจากปกติ)</label>
         <textarea id="terms" rows="14" oninput="saveProject()"></textarea>
 
@@ -1124,7 +1143,8 @@
     "c_name","c_addr","c_tel","c_mobile","c_email","c_taxid",
     "d_type","d_no","d_addno","d_rev","d_ref","d_date","d_validity","d_from",
     "k_code","k_name","k_addr","k_attn",
-    "pay_bank","pay_dep_pct","pay_dep_note","pay_bal_note","terms",
+    "pay_bank","pay_dep_pct","pay_dep_note","pay_bal_note",
+    "bill_discType","bill_discValue","terms",
     "s_sales","s_company","s_mgr_title","s_mgr_name",
   ];
 
@@ -1155,6 +1175,7 @@
     k_code:"", k_name:"", k_addr:"", k_attn:"",
     pay_bank:"Amo Co.,Ltd, Krungthai Bank, xxx-x-xxxxx-x",
     pay_dep_pct:"50", pay_dep_note:"upon order confirmation", pay_bal_note:"before delivery",
+    bill_discType:"ไม่มี", bill_discValue:"0",
     terms: TERMS_DEFAULT,
     s_sales:"", s_company:"AMO Co., Ltd", s_mgr_title:"Sales Manager",
     s_mgr_name:"Panumard (Ann) Manadamrongtham 081.8686.941",
@@ -1195,6 +1216,7 @@
       $(id).value = v;
       project.head[id] = v;
     });
+    toggle("bill_discType", "bill_discWrap", "ไม่มี");
     updateCount();
   }
   const head = id => (project.head[id] || "").trim();
@@ -1270,12 +1292,25 @@
   }
 
   // ยอดรวมทั้งโปรเจกต์ (นับเฉพาะสินค้า ไม่นับรูปที่แทรก)
+  // ส่วนลดมี 2 ชั้น แยกกันคนละเรื่อง:
+  //   1) ส่วนลดรายชิ้น — หักอยู่ในราคาของแต่ละรายการแล้ว (คอลัมน์ DISCOUNT ในตารางสินค้า)
+  //   2) ส่วนลดท้ายบิล — sales ใส่ตอนปิดการขาย คือช่อง Discount ท้ายเอกสาร
+  //      คิดจาก Total (ยอดที่หักส่วนลดรายชิ้นแล้ว) ไม่ใช่ผลรวมของส่วนลดรายชิ้น
   function totals() {
-    const gross = products().reduce((s, i) => s + i.gross, 0);
-    const discount = products().reduce((s, i) => s + i.discountAmount, 0);
-    const net = gross - discount;
+    const gross        = products().reduce((s, i) => s + i.gross, 0);
+    const itemDiscount = products().reduce((s, i) => s + i.discountAmount, 0);
+    const lineTotal    = gross - itemDiscount;   // = ผลรวมคอลัมน์ AMOUNT = Total ท้ายเอกสาร
+
+    const dType  = head("bill_discType");
+    const dValue = parseFloat(head("bill_discValue")) || 0;
+    let billDiscount = 0;
+    if (dType === "เปอร์เซ็นต์") billDiscount = lineTotal * dValue / 100;
+    else if (dType === "บาท")    billDiscount = dValue;
+    billDiscount = Math.min(Math.max(billDiscount, 0), lineTotal);
+
+    const net = lineTotal - billDiscount;
     const vat = net * VAT_RATE;
-    return { gross, discount, net, vat, grand: net + vat };
+    return { gross, itemDiscount, lineTotal, billDiscount, net, vat, grand: net + vat };
   }
 
   function renderProject() {
@@ -1334,8 +1369,10 @@
     $("projectSummary").innerHTML = `
       <tr><td>จำนวนรายการ</td><td>${products().length} รายการ${imgCount ? ` (+ รูปแทรก ${imgCount} รูป)` : ""}</td></tr>
       <tr><td>ยอดรวมก่อนลด (Subtotal)</td><td>${money(t.gross)}</td></tr>
-      <tr><td>ส่วนลดรวม (Discount)</td><td>-${money(t.discount)}</td></tr>
-      <tr><td>ยอดก่อนภาษี (Pre-VAT)</td><td>${money(t.net)}</td></tr>
+      <tr><td>ส่วนลดรายชิ้นรวม</td><td>-${money(t.itemDiscount)}</td></tr>
+      <tr><td>ยอดรวมรายการ (Total)</td><td>${money(t.lineTotal)}</td></tr>
+      <tr><td>ส่วนลดท้ายบิล (Discount)</td><td>-${money(t.billDiscount)}</td></tr>
+      <tr><td>ยอดก่อนภาษี (Sub Total)</td><td>${money(t.net)}</td></tr>
       <tr><td>ภาษีมูลค่าเพิ่ม 7% (VAT)</td><td>${money(t.vat)}</td></tr>
       <tr class="grand"><td>ยอดสุทธิ (Grand Total)</td><td>${money(t.grand)} ฿</td></tr>`;
   }
@@ -1403,7 +1440,8 @@
     const deposit = t.grand * depPct / 100;
     const balance = t.grand - deposit;
     const balPct  = t.grand > 0 ? (balance / t.grand * 100) : 0;
-    const discPct = t.gross > 0 ? (t.discount / t.gross * 100) : 0;
+    // % ของส่วนลดท้ายบิล เทียบกับ Total — sales กรอกเป็น % หรือเป็นบาทก็แสดงผลเป็น % ตรงนี้
+    const discPct = t.lineTotal > 0 ? (t.billDiscount / t.lineTotal * 100) : 0;
 
     const termLines = head("terms").split("\n").map(s => s.trim()).filter(Boolean);
     // บรรทัดที่ไม่ขึ้นต้นด้วยตัวเลข ถือเป็นหัวข้อย่อย (Remark : / Cautions… :)
@@ -1416,12 +1454,12 @@
         <tbody>
           <tr>
             <td class="pay" colspan="4">Payment : ${esc(head("pay_bank")) || "&nbsp;"}</td>
-            <td>&nbsp;</td><td class="right">Total</td><td class="amt">${money(t.gross)}</td>
+            <td>&nbsp;</td><td class="right">Total</td><td class="amt">${money(t.lineTotal)}</td>
           </tr>
           <tr>
             <td>–&nbsp; Deposit</td><td class="amt">${money(deposit)}</td>
             <td class="center">${fmt(depPct)}%</td><td>${esc(head("pay_dep_note"))}</td>
-            <td class="red">${fmt(discPct)}%</td><td class="red">Discount</td><td class="red">${money(t.discount)}</td>
+            <td class="red">${fmt(discPct)}%</td><td class="red">Discount</td><td class="red">${money(t.billDiscount)}</td>
           </tr>
           <tr>
             <td>–&nbsp; Balance</td><td class="amt">${money(balance)}</td>
@@ -1539,6 +1577,8 @@
       return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
     };
     // ส่งออกเฉพาะสินค้า — รูปที่แทรกเป็นภาพประกอบ ไม่มีข้อมูลให้ Excel ใช้
+    // ส่วนลดท้ายบิลเป็นค่าระดับเอกสาร จึงซ้ำเท่ากันทุกแถวเหมือนช่องหัวเอกสารอื่น
+    const t = totals();
     const rows = products().map((i, n) => ({
       "ประเภทเอกสาร": head("d_type"),
       "Quote No.": head("d_no"),
@@ -1567,9 +1607,15 @@
       "จำนวน": i.qty.toFixed(4).replace(/\.?0+$/, ""),
       "ราคาต่อหน่วย": i.unitPrice.toFixed(2),
       "ยอดรวมก่อนลด": i.gross.toFixed(2),
-      "ส่วนลด": i.discountAmount.toFixed(2),
+      "ส่วนลดรายชิ้น": i.discountAmount.toFixed(2),
       "ยอดหลังลด": i.net.toFixed(2),
       "หมายเหตุ": i.remark,
+      "ประเภทส่วนลดท้ายบิล": head("bill_discType") || "ไม่มี",
+      "ค่าส่วนลดท้ายบิลที่กรอก": head("bill_discValue") || "0",
+      "ส่วนลดท้ายบิล (บาท)": t.billDiscount.toFixed(2),
+      "ยอดรวมรายการ (Total)": t.lineTotal.toFixed(2),
+      "ยอดก่อนภาษี (Sub Total)": t.net.toFixed(2),
+      "Grand Total": t.grand.toFixed(2),
     }));
     const headers = Object.keys(rows[0]);
     const csv = [headers.map(cell).join(",")]
