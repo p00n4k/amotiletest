@@ -1,0 +1,538 @@
+<title>Product Catalog — Schema & Data Dictionary</title>
+<style>
+  :root {
+    --paper:   #f5f7f9;
+    --surface: #ffffff;
+    --surface-2: #eef1f4;
+    --ink:     #101720;
+    --muted:   #586573;
+    --faint:   #8a95a1;
+    --line:    #dde3e9;
+    --accent:  #0e7c86;
+    --tile:    #0e7c86;
+    --furniture: #a86a17;
+    --people:  #5566c4;
+    --pk:      #7a4fd0;
+    --fk:      #b5761f;
+    --manual:  #0e7c86;
+    --auto:    #8a95a1;
+    --shadow:  0 1px 2px rgba(16,23,32,.06), 0 8px 24px rgba(16,23,32,.05);
+    --mono: ui-monospace, "SFMono-Regular", "Cascadia Code", "Consolas", monospace;
+    --sans: ui-sans-serif, system-ui, "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper:#0d1218; --surface:#141b23; --surface-2:#1b232d; --ink:#eef2f6; --muted:#93a1b0;
+      --faint:#6a7684; --line:#253039; --accent:#3bb6bf; --tile:#3bb6bf; --furniture:#d69a48;
+      --people:#8b98e8; --pk:#a789e8; --fk:#d69a48; --manual:#3bb6bf; --auto:#6a7684;
+      --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="light"] {
+    --paper:#f5f7f9; --surface:#fff; --surface-2:#eef1f4; --ink:#101720; --muted:#586573;
+    --faint:#8a95a1; --line:#dde3e9; --accent:#0e7c86; --tile:#0e7c86; --furniture:#a86a17;
+    --people:#5566c4; --pk:#7a4fd0; --fk:#b5761f; --manual:#0e7c86; --auto:#8a95a1;
+    --shadow:0 1px 2px rgba(16,23,32,.06),0 8px 24px rgba(16,23,32,.05);
+  }
+  :root[data-theme="dark"] {
+    --paper:#0d1218; --surface:#141b23; --surface-2:#1b232d; --ink:#eef2f6; --muted:#93a1b0;
+    --faint:#6a7684; --line:#253039; --accent:#3bb6bf; --tile:#3bb6bf; --furniture:#d69a48;
+    --people:#8b98e8; --pk:#a789e8; --fk:#d69a48; --manual:#3bb6bf; --auto:#6a7684;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--paper); color:var(--ink); font-family:var(--sans);
+    line-height:1.55; -webkit-font-smoothing:antialiased; }
+  .wrap { max-width: 1000px; margin: 0 auto; padding: 56px 24px 96px; }
+
+  header { border-bottom: 1px solid var(--line); padding-bottom: 28px; margin-bottom: 40px; }
+  .eyebrow { font-family:var(--mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--accent); margin:0 0 14px; }
+  h1 { font-size: clamp(28px, 4vw, 40px); line-height:1.1; margin:0 0 12px; letter-spacing:-.02em;
+    text-wrap:balance; font-weight:650; }
+  .lede { color: var(--muted); font-size: 16px; max-width: 64ch; margin: 0; }
+  .meta { display:flex; flex-wrap:wrap; gap:8px 20px; margin-top:20px; font-family:var(--mono);
+    font-size:12.5px; color:var(--faint); }
+  .meta b { color: var(--muted); font-weight: 500; }
+
+  h2 { font-size:13px; font-family:var(--mono); text-transform:uppercase; letter-spacing:.12em;
+    color:var(--muted); margin:56px 0 20px; padding-bottom:10px; border-bottom:1px solid var(--line);
+    display:flex; align-items:baseline; gap:10px; }
+  h2 span { color: var(--faint); font-size: 11px; letter-spacing: .1em; }
+
+  .legend { display:flex; flex-wrap:wrap; gap:10px 18px; margin:0 0 8px; }
+  .chip { display:inline-flex; align-items:center; gap:7px; font-family:var(--mono); font-size:12px; color:var(--muted); }
+  .dot { width:10px; height:10px; border-radius:3px; display:inline-block; }
+
+  .diagram { background:#ffffff; border:1px solid var(--line); border-radius:12px; padding:20px;
+    overflow-x:auto; box-shadow:var(--shadow); }
+  .diagram pre.mermaid { margin:0; text-align:center; min-width:720px; }
+  .diagram-note { font-size:12.5px; color:var(--faint); margin:12px 2px 0; font-family:var(--mono); line-height:1.7; }
+
+  .card { background:var(--surface); border:1px solid var(--line); border-radius:12px;
+    box-shadow:var(--shadow); margin-bottom:22px; overflow:hidden; }
+  .card-head { display:flex; align-items:center; gap:12px; flex-wrap:wrap; padding:16px 20px;
+    border-bottom:1px solid var(--line); background:var(--surface-2); }
+  .card-head h3 { margin:0; font-family:var(--mono); font-size:15px; font-weight:600; letter-spacing:-.01em; }
+  .tag { font-family:var(--mono); font-size:10.5px; text-transform:uppercase; letter-spacing:.08em;
+    padding:3px 8px; border-radius:999px; font-weight:600; }
+  .tag.tile { color:var(--tile); background:color-mix(in srgb,var(--tile) 14%,transparent); }
+  .tag.furniture { color:var(--furniture); background:color-mix(in srgb,var(--furniture) 16%,transparent); }
+  .tag.core { color:var(--accent); background:color-mix(in srgb,var(--accent) 14%,transparent); }
+  .tag.lookup { color:var(--muted); background:color-mix(in srgb,var(--muted) 14%,transparent); }
+  .tag.people { color:var(--people); background:color-mix(in srgb,var(--people) 16%,transparent); }
+  .card-head .desc { color:var(--muted); font-size:13.5px; margin-left:auto; flex-basis:100%; }
+
+  .tbl-scroll { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; min-width: 620px; }
+  th { text-align:left; font-family:var(--mono); font-weight:500; font-size:11px; text-transform:uppercase;
+    letter-spacing:.08em; color:var(--faint); padding:11px 18px; border-bottom:1px solid var(--line); white-space:nowrap; }
+  td { padding:10px 18px; border-bottom:1px solid var(--line); vertical-align:top; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: color-mix(in srgb, var(--accent) 4%, transparent); }
+  .col { font-family:var(--mono); font-weight:600; color:var(--ink); white-space:nowrap; }
+  .type { font-family:var(--mono); font-size:12.5px; color:var(--muted); white-space:nowrap; }
+  .en { color: var(--ink); }
+  .th { color: var(--muted); font-size: 12.5px; }
+
+  .key { font-family:var(--mono); font-size:10px; font-weight:700; letter-spacing:.04em;
+    padding:2px 6px; border-radius:5px; margin-right:5px; display:inline-block; vertical-align:middle; }
+  .key.pk { color:var(--pk); border:1px solid color-mix(in srgb,var(--pk) 45%,transparent); }
+  .key.fk { color:var(--fk); border:1px solid color-mix(in srgb,var(--fk) 45%,transparent); }
+  .key.uq { color:var(--muted); border:1px solid var(--line); }
+  .req { color: var(--furniture); font-weight: 700; }
+
+  /* Manual / Auto input badge */
+  .io { font-family:var(--mono); font-size:10px; font-weight:700; letter-spacing:.03em;
+    padding:2px 7px; border-radius:999px; display:inline-block; white-space:nowrap; }
+  .io.m { color:var(--manual); background:color-mix(in srgb,var(--manual) 14%,transparent); }
+  .io.a { color:var(--auto);   background:color-mix(in srgb,var(--auto) 18%,transparent); }
+
+  .audit-row td { background: color-mix(in srgb, var(--auto) 6%, transparent); font-size:12.5px; color:var(--muted); }
+  .audit-row .col { color: var(--muted); font-weight: 500; }
+
+  /* Provide vs generate split */
+  .split { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:24px; }
+  @media (max-width: 720px) { .split { grid-template-columns: 1fr; } }
+  .panel { border:1px solid var(--line); border-radius:12px; padding:22px 22px 8px; background:var(--surface);
+    box-shadow:var(--shadow); }
+  .panel.provide { border-top:3px solid var(--manual); }
+  .panel.generate { border-top:3px solid var(--auto); }
+  .panel h3 { margin:0 0 4px; font-size:16px; letter-spacing:-.01em; display:flex; align-items:center; gap:9px; }
+  .panel .sub { margin:0 0 14px; font-size:13px; color:var(--muted); }
+  .panel ul { list-style:none; margin:0; padding:0; }
+  .panel li { padding:9px 0; border-top:1px solid var(--line); font-size:13.5px; display:flex; gap:10px; align-items:baseline; }
+  .panel li b { font-family:var(--mono); font-size:12.5px; color:var(--ink); font-weight:600; }
+  .panel li span { color:var(--muted); }
+  .mark { flex:0 0 auto; font-family:var(--mono); font-weight:700; }
+  .mark.m { color:var(--manual); }
+  .mark.a { color:var(--auto); }
+
+  .flow { border:1px solid var(--line); border-radius:12px; background:var(--surface-2); padding:20px 22px; box-shadow:var(--shadow); }
+  .flow h3 { margin:0 0 14px; font-size:13px; font-family:var(--mono); text-transform:uppercase; letter-spacing:.1em; color:var(--muted); }
+  .flow ol { margin:0; padding-left:0; list-style:none; counter-reset:step; }
+  .flow li { counter-increment:step; position:relative; padding:8px 0 8px 40px; font-size:13.5px; color:var(--muted); border-top:1px solid var(--line); }
+  .flow li:first-child { border-top:none; }
+  .flow li::before { content:counter(step); position:absolute; left:0; top:8px; width:24px; height:24px;
+    border-radius:7px; background:var(--accent); color:#fff; font-family:var(--mono); font-size:12px; font-weight:700;
+    display:flex; align-items:center; justify-content:center; }
+  .flow b { color: var(--ink); }
+  .flow .auto-out { color:var(--auto); font-family:var(--mono); font-size:12px; }
+
+  footer { margin-top:64px; padding-top:24px; border-top:1px solid var(--line);
+    font-family:var(--mono); font-size:12px; color:var(--faint); line-height:1.8; }
+  code { font-family:var(--mono); background:var(--surface-2); padding:1px 5px; border-radius:4px; font-size:.92em; }
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Database Reference · SQLite</p>
+    <h1>Product Catalog — Schema &amp; Data Dictionary</h1>
+    <p class="lede">One catalog for <b>tiles</b> and <b>furniture</b>, with multi-image products, users &amp; roles, and a full audit trail — who added, edited, discontinued, or repriced anything, and when. Every column is marked <b>Manual</b> (a user types it) or <b>Auto</b> (the system fills it).</p>
+    <div class="meta">
+      <span><b>Engine:</b> SQLite</span>
+      <span><b>Tables:</b> 12</span>
+      <span><b>Units:</b> CM · THB</span>
+      <span><b>Source:</b> schema.sql</span>
+    </div>
+  </header>
+
+  <h2>Who provides what <span>admin input vs system-generated</span></h2>
+  <div class="split">
+    <div class="panel provide">
+      <h3><span class="io m">MANUAL</span> Admin / user provides</h3>
+      <p class="sub">The real catalog content. Someone types or chooses these when adding or editing a record.</p>
+      <ul>
+        <li><span class="mark m">›</span><span><b>Brand, category, collection</b> names — the lookups</span></li>
+        <li><span class="mark m">›</span><span><b>SKU</b> and <b>product type</b> (tile / furniture)</span></li>
+        <li><span class="mark m">›</span><span><b>Long description</b> for the product detail page</span></li>
+        <li><span class="mark m">›</span><span><b>Dimensions</b> (width × length × height, in CM)</span></li>
+        <li><span class="mark m">›</span><span><b>Images</b> — main product photos <em>and</em> per-option photos (shown together), which is primary, order</span></li>
+        <li><span class="mark m">›</span><span><b>Tile spec:</b> price unit, price, sqm/box, pieces/box, kg/box, surface…</span></li>
+        <li><span class="mark m">›</span><span><b>Furniture options:</b> each configuration's price + its parts (Top / Base + material)</span></li>
+        <li><span class="mark m">›</span><span><b>Users &amp; roles</b> — username, display name, role</span></li>
+        <li><span class="mark m">›</span><span>Optional <b>note</b> / reason on an audit action</span></li>
+      </ul>
+    </div>
+    <div class="panel generate">
+      <h3><span class="io a">AUTO</span> System creates by itself</h3>
+      <p class="sub">Generated automatically the moment the admin saves — never typed by hand.</p>
+      <ul>
+        <li><span class="mark a">›</span><span><b>id</b> — every primary key (autoincrement)</span></li>
+        <li><span class="mark a">›</span><span><b>created_at / updated_at / deleted_at</b> — all timestamps</span></li>
+        <li><span class="mark a">›</span><span><b>created_by / updated_by / deleted_by</b> — the logged-in user's id</span></li>
+        <li><span class="mark a">›</span><span><b>status = 'active'</b> — default on new brand / product</span></li>
+        <li><span class="mark a">›</span><span><b>discontinued_at / by</b> — stamped when "ไม่ขายแล้ว" is clicked</span></li>
+        <li><span class="mark a">›</span><span>A <b>price_history</b> row — written on every price change</span></li>
+        <li><span class="mark a">›</span><span>An <b>audit_log</b> row — written on every add / edit / delete / discontinue</span></li>
+      </ul>
+    </div>
+  </div>
+  <div class="flow">
+    <h3>What happens after the admin saves</h3>
+    <ol>
+      <li>Admin logs in — the app now knows <b>who</b> they are (their <code>users.id</code>).</li>
+      <li>Admin types the <b>manual</b> fields (SKU, name, price…) and clicks Save.</li>
+      <li>System assigns the <b>id</b>, sets <b>created_at = now</b> and <b>created_by = that user</b>, and defaults <b>status = active</b>. <span class="auto-out">→ AUTO</span></li>
+      <li>System writes one <b>audit_log</b> row: <code>create · products · #id · by user</code>. <span class="auto-out">→ AUTO</span></li>
+      <li>Later, on any edit it stamps <b>updated_at / by</b>; on a price change it also inserts a <b>price_history</b> row. <span class="auto-out">→ AUTO</span></li>
+    </ol>
+  </div>
+
+  <h2>Entity Relationship Diagram <span>12 tables</span></h2>
+  <div class="legend">
+    <span class="chip"><span class="dot" style="background:var(--pk)"></span>PK — primary key</span>
+    <span class="chip"><span class="dot" style="background:var(--fk)"></span>FK — foreign key</span>
+    <span class="chip"><span class="dot" style="background:var(--people)"></span>People / audit</span>
+    <span class="chip"><span class="dot" style="background:var(--tile)"></span>Tile</span>
+    <span class="chip"><span class="dot" style="background:var(--furniture)"></span>Furniture</span>
+    <span class="chip">||—o{ one-to-many</span>
+    <span class="chip">||—o| one-to-(zero/one)</span>
+  </div>
+  <div class="diagram">
+    <pre class="mermaid">
+erDiagram
+    roles ||--o{ users : "assigned to"
+    brands ||--o{ collections : has
+    brands ||--o{ products : makes
+    categories ||--o{ products : classifies
+    categories ||--o{ categories : "parent of"
+    collections ||--o{ products : groups
+    products ||--o| tile_specs : "extends (tile)"
+    products ||--o{ product_options : "extends (furniture)"
+    product_options ||--o{ option_parts : "made of"
+    products ||--o{ product_images : shows
+    product_options ||--o{ product_images : "option photo"
+    products ||--o{ price_history : logs
+    product_options ||--o{ price_history : logs
+    users ||--o{ audit_log : performs
+    users ||--o{ price_history : "changed by"
+
+    roles {
+        int id PK
+        text name UK
+    }
+    users {
+        int id PK
+        text username UK
+        int role_id FK
+        int is_active
+    }
+    brands {
+        int id PK
+        text name UK
+        text status
+        int created_by FK
+        int deleted_by FK
+    }
+    categories {
+        int id PK
+        text name
+        int parent_id FK
+    }
+    collections {
+        int id PK
+        int brand_id FK
+        text name
+    }
+    products {
+        int id PK
+        text sku UK
+        text product_type
+        text status
+        int brand_id FK
+        int created_by FK
+    }
+    product_images {
+        int id PK
+        int product_id FK
+        int option_id FK
+        text image_path
+        int is_primary
+    }
+    tile_specs {
+        int product_id PK
+        text price_unit
+        num price_per_unit
+        num sqm_per_box
+        num pieces_per_box
+    }
+    product_options {
+        int id PK
+        int product_id FK
+        text label
+        num price
+        int updated_by FK
+    }
+    option_parts {
+        int id PK
+        int option_id FK
+        text title
+        text sub_description
+    }
+    price_history {
+        int id PK
+        int option_id FK
+        num new_price
+        int changed_by FK
+    }
+    audit_log {
+        int id PK
+        int user_id FK
+        text action
+        text entity_type
+        int entity_id
+    }
+    </pre>
+  </div>
+  <p class="diagram-note">
+    A product is exactly one type: tiles get one <code>tile_specs</code> row; furniture gets many <code>product_options</code>, and each option is made of several <code>option_parts</code> (Top, Base…). Both types can have many <code>product_images</code>.<br>
+    Every table also carries <code>created_by / updated_by / deleted_by / discontinued_by</code> → <code>users.id</code>. Those arrows are omitted above to keep the diagram readable — the <code>audit_log</code> ties them all together.
+  </p>
+
+  <h2>Data Dictionary <span>column · type · input · meaning</span></h2>
+  <div class="legend" style="margin-bottom:18px">
+    <span class="chip"><span class="io m">MANUAL</span> user enters / chooses it</span>
+    <span class="chip"><span class="io a">AUTO</span> system fills it — autoincrement id, <code>datetime('now')</code>, or the logged-in user's id</span>
+    <span class="chip"><span class="req">·req</span> required (NOT NULL)</span>
+  </div>
+
+  <!-- roles -->
+  <div class="card">
+    <div class="card-head"><h3>roles</h3><span class="tag people">People</span>
+      <p class="desc">What a user is allowed to do.</p></div>
+    <div class="tbl-scroll"><table>
+      <thead><tr><th>Column</th><th>Type</th><th>Input</th><th>Description</th><th>ไทย</th></tr></thead>
+      <tbody>
+        <tr><td class="col"><span class="key pk">PK</span>id</td><td class="type">INTEGER</td><td><span class="io a">AUTO</span></td><td class="en">Surrogate key</td><td class="th">รหัสบทบาท</td></tr>
+        <tr><td class="col"><span class="key uq">UQ</span>name</td><td class="type">TEXT <span class="req">·req</span></td><td><span class="io m">MANUAL</span></td><td class="en">Admin / Manager / Sales / Viewer</td><td class="th">ชื่อบทบาท</td></tr>
+        <tr><td class="col">description</td><td class="type">TEXT</td><td><span class="io m">MANUAL</span></td><td class="en">What this role may do</td><td class="th">คำอธิบาย</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <!-- users -->
+  <div class="card">
+    <div class="card-head"><h3>users</h3><span class="tag people">People</span>
+      <p class="desc">Everyone who touches the catalog. Referenced by every <code>*_by</code> column.</p></div>
+    <div class="tbl-scroll"><table>
+      <thead><tr><th>Column</th><th>Type</th><th>Input</th><th>Description</th><th>ไทย</th></tr></thead>
+      <tbody>
+        <tr><td class="col"><span class="key pk">PK</span>id</td><td class="type">INTEGER</td><td><span class="io a">AUTO</span></td><td class="en">Surrogate key</td><td class="th">รหัสผู้ใช้</td></tr>
+        <tr><td class="col"><span class="key uq">UQ</span>username</td><td class="type">TEXT <span class="req">·req</span></td><td><span class="io m">MANUAL</span></td><td class="en">Login name</td><td class="th">ชื่อผู้ใช้</td></tr>
+        <tr><td class="col">display_name</td><td class="type">TEXT <span class="req">·req</span></td><td><span class="io m">MANUAL</span></td><td class="en">Shown in audit, e.g. Ann</td><td class="th">ชื่อที่แสดง</td></tr>
+        <tr><td class="col"><span class="key uq">UQ</span>email</td><td class="type">TEXT</td><td><span class="io m">MANUAL</span></td><td class="en">Email address</td><td class="th">อีเมล</td></tr>
+        <tr><td class="col"><span class="key fk">FK</span>role_id</td><td class="type">INTEGER <span class="req">·req</span></td><td><span class="io m">MANUAL</span></td><td class="en">→ roles.id</td><td class="th">บทบาท</td></tr>
+        <tr><td class="col">is_active</td><td class="type">INTEGER <span class="req">·req</span></td><td><span class="io m">MANUAL</span></td><td class="en">1 = can log in, 0 = disabled (default 1)</td><td class="th">สถานะใช้งาน</td></tr>
+        <tr><td class="col">created_at</td><td class="type">TEXT</td><td><span class="io a">AUTO</span></td><td class="en">When account was created</td><td class="th">วันที่สร้าง</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <!-- brands -->
+  <div class="card">
+    <div class="card-head"><h3>brands</h3><span class="tag lookup">Lookup</span>
+      <p class="desc">แบรนด์. Tracks who added it, who discontinued it ("we don't sell anymore"), who deleted it.</p></div>
+    <div class="tbl-scroll"><table>
+      <thead><tr><th>Column</th><th>Type</th><th>Input</th><th>Description</th><th>ไทย</th></tr></thead>
+      <tbody>
+        <tr><td class="col"><span class="key pk">PK</span>id</td><td class="type">INTEGER</td><td><span class="io a">AUTO</span></td><td class="en">Surrogate key</td><td class="th">รหัสแบรนด์</td></tr>
+        <tr><td class="col"><span class="key uq">UQ</span>name</td><td class="type">TEXT <span class="req">·req</span></td><td><span class="io m">MANUAL</span></td><td class="en">Brand name, e.g. Botempi</td><td class="th">ชื่อแบรนด์</td></tr>
+        <tr><td class="col">status</td><td class="type">TEXT <span class="req">·req</span></td><td><span class="io a">AUTO</span></td><td class="en">active / discontinued — set by an action, default active</td><td class="th">สถานะ</td></tr>
+        <tr><td class="col">discontinued_at</td><td class="type">TEXT</td><td><span class="io a">AUTO</span></td><td class="en">When marked "ไม่ขายแล้ว"</td><td class="th">วันที่เลิกขาย</td></tr>
+        <tr><td class="col"><span class="key fk">FK</span>discontinued_by</td><td class="type">INTEGER</td><td><span class="io a">AUTO</span></td><td class="en">Who marked it → users.id</td><td class="th">ผู้เลิกขาย</td></tr>
+        <tr class="audit-row"><td class="col">＋ audit block</td><td class="type">—</td><td><span class="io a">AUTO</span></td><td class="en" colspan="2"><code>created_at</code>, <code>created_by</code>, <code>updated_at</code>, <code>updated_by</code>, <code>deleted_at</code>, <code>deleted_by</code> — soft delete; NULL <code>deleted_at</code> = live</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <!-- categories -->
+  <div class="card">
+    <div class="card-head"><h3>categories</h3><span class="tag lookup">Lookup · self-ref</span>
+      <p class="desc">Main category → sub-category in one table via <code>parent_id</code>.</p></div>
+    <div class="tbl-scroll"><table>
+      <thead><tr><th>Column</th><th>Type</th><th>Input</th><th>Description</th><th>ไทย</th></tr></thead>
+      <tbody>
+        <tr><td class="col"><span class="key pk">PK</span>id</td><td class="type">INTEGER</td><td><span class="io a">AUTO</span></td><td class="en">Surrogate key</td><td class="th">รหัสหมวดหมู่</td></tr>
+        <tr><td class="col">name</td><td class="type">TEXT <span class="req">·req</span></td><td><span class="io m">MANUAL</span></td><td class="en">Table / Coffee Table</td><td class="th">ชื่อหมวดหมู่</td></tr>
+        <tr><td class="col"><span class="key fk">FK</span>parent_id</td><td class="type">INTEGER</td><td><span class="io m">MANUAL</span></td><td class="en">NULL = main (หมวดหมู่); set = sub (หมวดหมู่ย่อย)</td><td class="th">หมวดหมู่แม่</td></tr>
+        <tr class="audit-row"><td class="col">＋ audit block</td><td class="type">—</td><td><span class="io a">AUTO</span></td><td class="en" colspan="2"><code>created_at / by</code>, <code>updated_at / by</code>, <code>deleted_at / by</code></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <!-- collections -->
+  <div class="card">
+    <div class="card-head"><h3>collections</h3><span class="tag lookup">Lookup</span>
+      <p class="desc">คอลเลกชัน within a brand, e.g. Botempi → Core.</p></div>
+    <div class="tbl-scroll"><table>
+      <thead><tr><th>Column</th><th>Type</th><th>Input</th><th>Description</th><th>ไทย</th></tr></thead>
+      <tbody>
+        <tr><td class="col"><span class="key pk">PK</span>id</td><td class="type">INTEGER</td><td><span class="io a">AUTO</span></td><td class="en">Surrogate key</td><td class="th">รหัสคอลเลกชัน</td></tr>
+        <tr><td class="col"><span class="key fk">FK</span>brand_id</td><td class="type">INTEGER <span class="req">·req</span></td><td><span class="io m">MANUAL</span></td><td class="en">→ brands.id</td><td class="th">แบรนด์</td></tr>
+        <tr><td class="col">name</td><td class="type">TEXT <span class="req">·req</span></td><td><span class="io m">MANUAL</span></td><td class="en">Collection name, e.g. Core</td><td class="th">ชื่อคอลเลกชัน</td></tr>
+        <tr class="audit-row"><td class="col">＋ audit block</td><td class="type">—</td><td><span class="io a">AUTO</span></td><td class="en" colspan="2"><code>created_at / by</code>, <code>updated_at / by</code>, <code>deleted_at / by</code></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <!-- products -->
+  <div class="card">
+    <div class="card-head"><h3>products</h3><span class="tag core">Core</span>
+      <p class="desc">Shared fields for every product. <code>product_type</code> decides the extension table.</p></div>
+    <div class="tbl-scroll"><table>
+      <thead><tr><th>Column</th><th>Type</th><th>Input</th><th>Description</th><th>ไทย</th></tr></thead>
+      <tbody>
+        <tr><td class="col"><span class="key pk">PK</span>id</td><td class="type">INTEGER</td><td><span class="io a">AUTO</span></td><td class="en">Surrogate key</td><td class="th">รหัสภายใน</td></tr>
+        <tr><td class="col"><span class="key uq">UQ</span>sku</td><td class="type">TEXT <span class="req">·req</span></td><td><span class="io m">MANUAL</span></td><td class="en">Product code (= รหัสเมืองนอก)</td><td class="th">SKU</td></tr>
+        <tr><td class="col">product_type</td><td class="type">TEXT <span class="req">·req</span></td><td><span class="io m">MANUAL</span></td><td class="en">tile | furniture (chosen)</td><td class="th">ประเภท</td></tr>
+        <tr><td class="col"><span class="key fk">FK</span>category_id</td><td class="type">INTEGER</td><td><span class="io m">MANUAL</span></td><td class="en">→ categories.id</td><td class="th">หมวดหมู่</td></tr>
+        <tr><td class="col"><span class="key fk">FK</span>brand_id</td><td class="type">INTEGER</td><td><span class="io m">MANUAL</span></td><td class="en">→ brands.id</td><td class="th">แบรนด์</td></tr>
+        <tr><td class="col"><span class="key fk">FK</span>collection_id</td><td class="type">INTEGER</td><td><span class="io m">MANUAL</span></td><td class="en">→ collections.id</td><td class="th">คอลเลกชัน</td></tr>
+        <tr><td class="col">name</td><td class="type">TEXT</td><td><span class="io m">MANUAL</span></td><td class="en">Optional display name</td><td class="th">ชื่อสินค้า</td></tr>
+        <tr><td class="col">description</td><td class="type">TEXT</td><td><span class="io m">MANUAL</span></td><td class="en">Long description for the detail page</td><td class="th">รายละเอียดสินค้า</td></tr>
+        <tr><td class="col">width / length / height</td><td class="type">REAL</td><td><span class="io m">MANUAL</span></td><td class="en">Dimensions in CM (กว้าง × ยาว × สูง)</td><td class="th">ขนาด (ซม.)</td></tr>
+        <tr><td class="col">status</td><td class="type">TEXT <span class="req">·req</span></td><td><span class="io a">AUTO</span></td><td class="en">active / discontinued — via action, default active</td><td class="th">สถานะ</td></tr>
+        <tr><td class="col">discontinued_at / by</td><td class="type">TEXT / INT</td><td><span class="io a">AUTO</span></td><td class="en">When & who marked "ไม่ขายแล้ว"</td><td class="th">การเลิกขาย</td></tr>
+        <tr class="audit-row"><td class="col">＋ audit block</td><td class="type">—</td><td><span class="io a">AUTO</span></td><td class="en" colspan="2"><code>created_at / by</code>, <code>updated_at / by</code>, <code>deleted_at / by</code> — soft delete</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <!-- product_images -->
+  <div class="card">
+    <div class="card-head"><h3>product_images</h3><span class="tag core">Core · 1:N</span>
+      <p class="desc">Many images per product — tiles <em>and</em> furniture. Main images <b>and</b> per-option photos share this table, so they show together in one gallery.</p></div>
+    <div class="tbl-scroll"><table>
+      <thead><tr><th>Column</th><th>Type</th><th>Input</th><th>Description</th><th>ไทย</th></tr></thead>
+      <tbody>
+        <tr><td class="col"><span class="key pk">PK</span>id</td><td class="type">INTEGER</td><td><span class="io a">AUTO</span></td><td class="en">Surrogate key</td><td class="th">รหัสรูป</td></tr>
+        <tr><td class="col"><span class="key fk">FK</span>product_id</td><td class="type">INTEGER <span class="req">·req</span></td><td><span class="io m">MANUAL</span></td><td class="en">→ products.id</td><td class="th">รหัสสินค้า</td></tr>
+        <tr><td class="col"><span class="key fk">FK</span>option_id</td><td class="type">INTEGER</td><td><span class="io m">MANUAL</span></td><td class="en"><b>NULL = main product image; set = that option's photo</b> → product_options.id</td><td class="th">รูปของ option (ว่าง = รูปหลัก)</td></tr>
+        <tr><td class="col">image_path</td><td class="type">TEXT <span class="req">·req</span></td><td><span class="io m">MANUAL</span></td><td class="en">File path or URL</td><td class="th">ที่อยู่รูป</td></tr>
+        <tr><td class="col">caption</td><td class="type">TEXT</td><td><span class="io m">MANUAL</span></td><td class="en">Optional caption</td><td class="th">คำบรรยาย</td></tr>
+        <tr><td class="col">is_primary</td><td class="type">INTEGER</td><td><span class="io m">MANUAL</span></td><td class="en">1 = cover image (default 0)</td><td class="th">รูปหลัก</td></tr>
+        <tr><td class="col">sort_order</td><td class="type">INTEGER</td><td><span class="io m">MANUAL</span></td><td class="en">Display order</td><td class="th">ลำดับ</td></tr>
+        <tr><td class="col">created_at</td><td class="type">TEXT</td><td><span class="io a">AUTO</span></td><td class="en">Upload time</td><td class="th">วันที่อัปโหลด</td></tr>
+        <tr><td class="col"><span class="key fk">FK</span>created_by</td><td class="type">INTEGER</td><td><span class="io a">AUTO</span></td><td class="en">Who uploaded → users.id</td><td class="th">ผู้อัปโหลด</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <!-- tile_specs -->
+  <div class="card">
+    <div class="card-head"><h3>tile_specs</h3><span class="tag tile">Tile · 1:1</span>
+      <p class="desc">Extends a tile product. Drives <code>calculate_sale()</code> in data.py.</p></div>
+    <div class="tbl-scroll"><table>
+      <thead><tr><th>Column</th><th>Type</th><th>Input</th><th>Description</th><th>ไทย</th></tr></thead>
+      <tbody>
+        <tr><td class="col"><span class="key pk">PK</span><span class="key fk">FK</span>product_id</td><td class="type">INTEGER</td><td><span class="io m">MANUAL</span></td><td class="en">→ products.id (shared PK)</td><td class="th">รหัสสินค้า</td></tr>
+        <tr><td class="col">look / color / surface</td><td class="type">TEXT</td><td><span class="io m">MANUAL</span></td><td class="en">Look, Color, Surface</td><td class="th">ลุค / สี / พื้นผิว</td></tr>
+        <tr><td class="col">sale_size / working_size</td><td class="type">TEXT</td><td><span class="io m">MANUAL</span></td><td class="en">e.g. 60x60</td><td class="th">ขนาดขาย / ขนาดจริง</td></tr>
+        <tr><td class="col">price_unit</td><td class="type">TEXT <span class="req">·req</span></td><td><span class="io m">MANUAL</span></td><td class="en">ตารางเมตร | ชิ้น | กล่อง (U.M.)</td><td class="th">หน่วยราคา</td></tr>
+        <tr><td class="col">price_per_unit</td><td class="type">NUMERIC <span class="req">·req</span></td><td><span class="io m">MANUAL</span></td><td class="en">Price per unit</td><td class="th">ราคาตามหน่วย</td></tr>
+        <tr><td class="col">sqm_per_box</td><td class="type">NUMERIC <span class="req">·req</span></td><td><span class="io m">MANUAL</span></td><td class="en">m² per box, &gt; 0</td><td class="th">ตร.ม./กล่อง</td></tr>
+        <tr><td class="col">pieces_per_box</td><td class="type">NUMERIC <span class="req">·req</span></td><td><span class="io m">MANUAL</span></td><td class="en">Pieces per box, &gt; 0</td><td class="th">ชิ้น/กล่อง</td></tr>
+        <tr><td class="col">kg_per_box</td><td class="type">NUMERIC</td><td><span class="io m">MANUAL</span></td><td class="en">Weight per box (info)</td><td class="th">กก./กล่อง</td></tr>
+        <tr><td class="col">updated_at / by</td><td class="type">TEXT / INT</td><td><span class="io a">AUTO</span></td><td class="en">Who last changed the price/spec</td><td class="th">ผู้แก้ไขล่าสุด</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <!-- product_options -->
+  <div class="card">
+    <div class="card-head"><h3>product_options</h3><span class="tag furniture">Furniture · 1:N</span>
+      <p class="desc">One <b>option = one whole configuration with ONE price</b> (e.g. the "Grey" or "Black Wood" version). Made of <code>option_parts</code>.</p></div>
+    <div class="tbl-scroll"><table>
+      <thead><tr><th>Column</th><th>Type</th><th>Input</th><th>Description</th><th>ไทย</th></tr></thead>
+      <tbody>
+        <tr><td class="col"><span class="key pk">PK</span>id</td><td class="type">INTEGER</td><td><span class="io a">AUTO</span></td><td class="en">Surrogate key</td><td class="th">รหัสตัวเลือก</td></tr>
+        <tr><td class="col"><span class="key fk">FK</span>product_id</td><td class="type">INTEGER <span class="req">·req</span></td><td><span class="io m">MANUAL</span></td><td class="en">→ products.id</td><td class="th">รหัสสินค้า</td></tr>
+        <tr><td class="col">label</td><td class="type">TEXT</td><td><span class="io m">MANUAL</span></td><td class="en">Optional option name, e.g. "Grey", "Black Wood"</td><td class="th">ชื่อตัวเลือก</td></tr>
+        <tr><td class="col">price</td><td class="type">NUMERIC</td><td><span class="io m">MANUAL</span></td><td class="en">Price of the WHOLE configuration (THB)</td><td class="th">ราคา</td></tr>
+        <tr><td class="col">updated_at</td><td class="type">TEXT</td><td><span class="io a">AUTO</span></td><td class="en">Last price update</td><td class="th">วันที่อัปเดต</td></tr>
+        <tr><td class="col"><span class="key fk">FK</span>updated_by</td><td class="type">INTEGER</td><td><span class="io a">AUTO</span></td><td class="en">Who changed it → users.id</td><td class="th">บุคคล</td></tr>
+        <tr class="audit-row"><td class="col">＋ created_at / by</td><td class="type">—</td><td><span class="io a">AUTO</span></td><td class="en" colspan="2">who first added this option</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <!-- option_parts -->
+  <div class="card">
+    <div class="card-head"><h3>option_parts</h3><span class="tag furniture">Furniture · 1:N</span>
+      <p class="desc">The pieces inside one option — Top, Base, Legs… Just a name + material; the price lives on the option above.</p></div>
+    <div class="tbl-scroll"><table>
+      <thead><tr><th>Column</th><th>Type</th><th>Input</th><th>Description</th><th>ไทย</th></tr></thead>
+      <tbody>
+        <tr><td class="col"><span class="key pk">PK</span>id</td><td class="type">INTEGER</td><td><span class="io a">AUTO</span></td><td class="en">Surrogate key</td><td class="th">รหัสชิ้นส่วน</td></tr>
+        <tr><td class="col"><span class="key fk">FK</span>option_id</td><td class="type">INTEGER <span class="req">·req</span></td><td><span class="io m">MANUAL</span></td><td class="en">→ product_options.id</td><td class="th">รหัสตัวเลือก</td></tr>
+        <tr><td class="col">title</td><td class="type">TEXT <span class="req">·req</span></td><td><span class="io m">MANUAL</span></td><td class="en">Top / Base / Legs — unique per option</td><td class="th">หัวข้อ</td></tr>
+        <tr><td class="col">sub_description</td><td class="type">TEXT</td><td><span class="io m">MANUAL</span></td><td class="en">Material, e.g. GreyWood</td><td class="th">รายละเอียดย่อย</td></tr>
+        <tr><td class="col">sort_order</td><td class="type">INTEGER</td><td><span class="io m">MANUAL</span></td><td class="en">Order within the option</td><td class="th">ลำดับ</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <!-- price_history -->
+  <div class="card">
+    <div class="card-head"><h3>price_history</h3><span class="tag core">Audit</span>
+      <p class="desc">Every price change: old → new, when, who. Links to an option or a product.</p></div>
+    <div class="tbl-scroll"><table>
+      <thead><tr><th>Column</th><th>Type</th><th>Input</th><th>Description</th><th>ไทย</th></tr></thead>
+      <tbody>
+        <tr><td class="col"><span class="key pk">PK</span>id</td><td class="type">INTEGER</td><td><span class="io a">AUTO</span></td><td class="en">Surrogate key</td><td class="th">รหัส</td></tr>
+        <tr><td class="col"><span class="key fk">FK</span>option_id</td><td class="type">INTEGER</td><td><span class="io a">AUTO</span></td><td class="en">→ product_options.id (furniture)</td><td class="th">ตัวเลือก</td></tr>
+        <tr><td class="col"><span class="key fk">FK</span>product_id</td><td class="type">INTEGER</td><td><span class="io a">AUTO</span></td><td class="en">→ products.id (tile)</td><td class="th">สินค้า</td></tr>
+        <tr><td class="col">old_price / new_price</td><td class="type">NUMERIC</td><td><span class="io a">AUTO</span></td><td class="en">Price before → after</td><td class="th">ราคา ก่อน / หลัง</td></tr>
+        <tr><td class="col">changed_at</td><td class="type">TEXT</td><td><span class="io a">AUTO</span></td><td class="en">Timestamp</td><td class="th">วันที่เปลี่ยน</td></tr>
+        <tr><td class="col"><span class="key fk">FK</span>changed_by</td><td class="type">INTEGER</td><td><span class="io a">AUTO</span></td><td class="en">Who → users.id</td><td class="th">ผู้แก้ไข</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <!-- audit_log -->
+  <div class="card">
+    <div class="card-head"><h3>audit_log</h3><span class="tag people">Audit · everything</span>
+      <p class="desc">One row per action on ANY table — add, edit, delete, discontinue, restore, price change.</p></div>
+    <div class="tbl-scroll"><table>
+      <thead><tr><th>Column</th><th>Type</th><th>Input</th><th>Description</th><th>ไทย</th></tr></thead>
+      <tbody>
+        <tr><td class="col"><span class="key pk">PK</span>id</td><td class="type">INTEGER</td><td><span class="io a">AUTO</span></td><td class="en">Surrogate key</td><td class="th">รหัส</td></tr>
+        <tr><td class="col"><span class="key fk">FK</span>user_id</td><td class="type">INTEGER</td><td><span class="io a">AUTO</span></td><td class="en">Actor → users.id</td><td class="th">ผู้กระทำ</td></tr>
+        <tr><td class="col">action</td><td class="type">TEXT <span class="req">·req</span></td><td><span class="io a">AUTO</span></td><td class="en">create / update / delete / restore / discontinue / reactivate / price_change</td><td class="th">การกระทำ</td></tr>
+        <tr><td class="col">entity_type</td><td class="type">TEXT <span class="req">·req</span></td><td><span class="io a">AUTO</span></td><td class="en">Table name, e.g. brands</td><td class="th">ตาราง</td></tr>
+        <tr><td class="col">entity_id</td><td class="type">INTEGER <span class="req">·req</span></td><td><span class="io a">AUTO</span></td><td class="en">Row affected</td><td class="th">รหัสแถว</td></tr>
+        <tr><td class="col">field / old_value / new_value</td><td class="type">TEXT</td><td><span class="io a">AUTO</span></td><td class="en">Which column changed, and from→to</td><td class="th">ค่าที่เปลี่ยน</td></tr>
+        <tr><td class="col">note</td><td class="type">TEXT</td><td><span class="io m">MANUAL</span></td><td class="en">Optional reason typed by the user</td><td class="th">หมายเหตุ</td></tr>
+        <tr><td class="col">changed_at</td><td class="type">TEXT</td><td><span class="io a">AUTO</span></td><td class="en">Timestamp</td><td class="th">เวลา</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <footer>
+    <span class="io m">MANUAL</span> = user types / chooses &nbsp;·&nbsp; <span class="io a">AUTO</span> = system fills (id, timestamp, or logged-in user).<br>
+    Rule of thumb: <b>ids, all timestamps, and every <code>*_by</code> field are AUTO</b> — the app records them from the session, never typed by hand.<br>
+    PK primary key · FK foreign key · UQ unique · <span class="req">·req</span> NOT NULL · dimensions CM · currency THB · generated from schema.sql.
+  </footer>
+</div>

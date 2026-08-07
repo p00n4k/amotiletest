@@ -113,25 +113,18 @@
   table.quote .hl { color:var(--accent-d); }
   table.quote img.q-img { max-width:120px; max-height:150px; object-fit:contain; display:block; margin:auto; border-radius:4px; }
 
-  /* ===== ใบยืนยันการสั่งซื้อ (Order Confirmation) ===== */
-  table.oc { border-collapse:collapse; width:100%; min-width:820px; font-size:12px; }
-  table.oc th, table.oc td { border:1px solid var(--line); padding:8px 9px; vertical-align:top; }
-  table.oc thead th { background:var(--accent); color:#fff; text-align:center; font-size:11px;
-    letter-spacing:.02em; line-height:1.3; }
-  table.oc th.right { text-align:right; }
-  table.oc td.center { text-align:center; vertical-align:middle; }
-  table.oc td.right { text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
-  table.oc td.desc { line-height:1.75; min-width:300px; }
-  table.oc td.desc .d-block + .d-block { border-top:1px solid var(--line); margin-top:7px; padding-top:7px; }
-  table.oc .hl { color:var(--accent-d); font-weight:700; }
-  table.oc img.oc-img { max-width:110px; max-height:130px; object-fit:contain; display:block; margin:auto; border-radius:4px; }
-  table.oc tfoot td { background:var(--shade); font-weight:700; }
-  table.oc tfoot td.lbl { font-weight:500; color:var(--muted); }
-  table.oc tfoot tr.grand td { background:var(--accent); color:#fff; font-size:14px; font-weight:800; }
-  table.oc td.oc-note { text-align:left; font-weight:400; color:var(--ink); background:var(--card); line-height:1.6; }
-  .oc-badge { display:inline-block; font-size:10px; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; }
-  .oc-badge.stock { background:color-mix(in srgb, var(--good) 16%, transparent); color:var(--good); }
-  .oc-badge.indent { background:color-mix(in srgb, var(--warn) 18%, transparent); color:var(--warn); }
+  /* ===== ใบยืนยันการสั่งซื้อ (Order Confirmation) =====
+     ตั้งใจใช้ CSS พื้นฐานเท่านั้น: เส้นตาราง + การจัดชิด + ขาว/ดำคงที่
+     ห้ามใส่สีธีม, ไล่เฉด, มุมโค้ง, badge, CSS variable, color-mix, object-fit
+     เพราะตารางนี้ต้องคัดลอกไปวางใน Excel ได้ตรง ๆ (Excel อ่าน CSS พวกนั้นไม่ได้) */
+  table.oc { border-collapse:collapse; width:100%; min-width:820px; font-size:12px;
+    background:#fff; color:#000; }
+  table.oc th, table.oc td { border:1px solid #000; padding:6px 8px; vertical-align:top;
+    background:#fff; color:#000; font-weight:400; text-align:left; }
+  table.oc th { font-weight:700; text-align:center; }
+  table.oc th.right, table.oc td.right { text-align:right; }
+  table.oc td.center { text-align:center; }
+  table.oc td.desc { min-width:300px; line-height:1.6; }
 
   details.calc { padding:14px 22px; }
   details.calc summary { cursor:pointer; font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
@@ -715,24 +708,25 @@
     const grandTotal = netPrice + vat;
 
     // รายละเอียดสินค้าในเซลล์ DESCRIPTION
-    // แบ่ง DESCRIPTION เป็น 3 ส่วน มีเส้นคั่นชัดเจน
-    const seg1 = [
-      `<b>${$("brand").value || "-"}${$("collection").value ? " — " + $("collection").value : ""}</b>`,
-      `ประเภทสินค้า: <span class="oc-badge ${orderType === "Stock" ? "stock" : "indent"}">${orderType}</span> ${orderType === "Indent" ? "(สั่งผลิต/รอสินค้า)" : "(มีของพร้อมส่ง)"}`,
-    ].join("<br>");
-    const seg2 = [
+    // ใช้ข้อความล้วน + <br> เท่านั้น (ไม่มี span/div/class ที่พึ่ง CSS)
+    // เพื่อให้คัดลอกลง Excel แล้วได้ขึ้นบรรทัดใหม่ในเซลล์ตามเดิม
+    const ocLines = [
+      `${$("brand").value || "-"}${$("collection").value ? " — " + $("collection").value : ""}`,
+      `ประเภทสินค้า: ${orderType} ${orderType === "Indent" ? "(สั่งผลิต/รอสินค้า)" : "(มีของพร้อมส่ง)"}`,
       $("look").value ? "Look: " + $("look").value : "",
       whhLine ? "ขนาดขาย: " + whhLine : "",
       `Working Size (ขนาดจริง): ${workMm}`,
-      `U.M.: ${priceUnit} · ${fmt(sqmPerBox)} ตร.ม./กล่อง · ${fmt(piecesPerBox)} แผ่น/กล่อง${hasWeight ? " · " + fmt(kgPerBox) + " กก./กล่อง" : ""}`,
-    ].filter(Boolean).join("<br>");
-    const seg3 = [
-      `จำนวนใช้จริง: <b class="hl">${fmt(actualUse)} ${qtyUnit}</b> · เผื่อ: ${fmt(spareQty)} ${qtyUnit}`,
-      isSet ? "" : `กล่องทั้งหมด: <b class="hl">${fmt(actualBoxes)} กล่อง</b>`,
-      hasWeight ? `น้ำหนักรวม: <b class="hl">${fmt(totalWeight)} กก.</b>` : "",
-    ].filter(Boolean).join("<br>");
-    const seg4 = `หมายเหตุ: ${remark || "-"}`;
-    const ocDesc = [seg1, seg2, seg3, seg4].filter(Boolean).map(s => `<div class="d-block">${s}</div>`).join("");
+      `U.M.: ${priceUnit}`,
+      `${fmt(sqmPerBox)} ตร.ม./กล่อง`,
+      `${fmt(piecesPerBox)} แผ่น/กล่อง`,
+      hasWeight ? `${fmt(kgPerBox)} กก./กล่อง` : "",
+      `จำนวนใช้จริง: ${fmt(actualUse)} ${qtyUnit}`,
+      `จำนวนเผื่อ: ${fmt(spareQty)} ${qtyUnit}`,
+      isSet ? "" : `กล่องทั้งหมด: ${fmt(actualBoxes)} กล่อง`,
+      hasWeight ? `น้ำหนักรวม: ${fmt(totalWeight)} กก.` : "",
+      `หมายเหตุ: ${remark || "-"}`,
+    ].filter(Boolean);
+    const ocDesc = ocLines.join("<br>");
 
     result.innerHTML = `
       <div class="card">
@@ -857,21 +851,21 @@
                 <tr>
                   <td class="center">1</td>
                   <td class="center">${sku}</td>
-                  <td class="center">${productImage ? `<img class="oc-img" src="${productImage}" alt="รูปสินค้า">` : "-"}</td>
+                  <td class="center">${productImage ? `<img src="${productImage}" alt="รูปสินค้า" width="100">` : "-"}</td>
                   <td class="desc">${ocDesc}</td>
                   <td class="center">${priceUnit}</td>
                   <td class="right">${money(billedQty)}</td>
                   <td class="right">${money(pricePerUnit)}</td>
                   <td class="right">${money(discountAmount)}</td>
-                  <td class="right"><b>${money(netPrice)}</b></td>
+                  <td class="right">${money(netPrice)}</td>
                 </tr>
               </tbody>
               <tfoot>
-                <tr><td colspan="8" class="right lbl">ยอดรวม (Subtotal)</td><td class="right">${money(priceBeforeDiscount)}</td></tr>
-                <tr><td colspan="8" class="right lbl">ส่วนลด (Discount)</td><td class="right">-${money(discountAmount)}</td></tr>
-                <tr><td colspan="8" class="right lbl">ยอดก่อนภาษี (Pre-VAT)</td><td class="right">${money(netPrice)}</td></tr>
-                <tr><td colspan="8" class="right lbl">ภาษีมูลค่าเพิ่ม 7% (VAT)</td><td class="right">${money(vat)}</td></tr>
-                <tr class="grand"><td colspan="8" class="right">ยอดสุทธิ (Grand Total)</td><td class="right">${money(grandTotal)}</td></tr>
+                <tr><td colspan="8" class="right">ยอดรวม (Subtotal)</td><td class="right">${money(priceBeforeDiscount)}</td></tr>
+                <tr><td colspan="8" class="right">ส่วนลด (Discount)</td><td class="right">-${money(discountAmount)}</td></tr>
+                <tr><td colspan="8" class="right">ยอดก่อนภาษี (Pre-VAT)</td><td class="right">${money(netPrice)}</td></tr>
+                <tr><td colspan="8" class="right">ภาษีมูลค่าเพิ่ม 7% (VAT)</td><td class="right">${money(vat)}</td></tr>
+                <tr><td colspan="8" class="right"><b>ยอดสุทธิ (Grand Total)</b></td><td class="right"><b>${money(grandTotal)}</b></td></tr>
               </tfoot>
             </table>
           </div>

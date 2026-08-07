@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AMO — เพิ่มสินค้าเข้าโปรเจกต์ → ใบยืนยันการสั่งซื้อ (Mockup)</title>
+<style>
+  * { box-sizing: border-box; }
+  :root {
+    --paper:#f4f6f8; --card:#fff; --ink:#16202b; --muted:#5c6a78; --line:#dde3e9;
+    --accent:#0e7c86; --accent-d:#0b636b; --tile:#0e7c86; --furn:#a86a17; --shade:#eef4f5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --paper:#0e141a; --card:#161f28; --ink:#eaf0f4; --muted:#93a1af; --line:#26313c;
+      --accent:#37b3bd; --accent-d:#2b98a1; --tile:#37b3bd; --furn:#d69a48; --shade:#182530; }
+  }
+  body {
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Segoe UI","Sarabun",system-ui,sans-serif; line-height:1.5;
+  }
+  header { background:var(--accent); color:#fff; padding:18px 24px; }
+  header h1 { margin:0; font-size:19px; }
+  header p { margin:4px 0 0; opacity:.9; font-size:13px; }
+
+  /* ===== แท็บสลับหน้า ===== */
+  nav.tabs { background:var(--card); border-bottom:1px solid var(--line); padding:0 24px;
+    display:flex; gap:4px; overflow-x:auto; position:sticky; top:0; z-index:5; }
+  nav.tabs button { background:transparent; border:none; border-bottom:3px solid transparent;
+    padding:13px 16px; font-size:14px; font-family:inherit; color:var(--muted);
+    cursor:pointer; white-space:nowrap; }
+  nav.tabs button:hover { color:var(--ink); }
+  nav.tabs button.on { color:var(--accent-d); border-bottom-color:var(--accent); font-weight:600; }
+  nav.tabs .count { display:inline-block; min-width:20px; padding:0 6px; margin-left:6px;
+    background:var(--accent); color:#fff; border-radius:999px; font-size:11px; font-weight:700; }
+
+  .wrap { max-width:1000px; margin:0 auto; padding:22px 24px 60px; }
+  .view { display:none; }
+  .view.on { display:block; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; align-items:start; }
+  @media (max-width:760px){ .grid { grid-template-columns:1fr; } }
+  .span2 { grid-column:1 / -1; }
+
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px;
+    box-shadow:0 1px 3px rgba(0,0,0,.06); overflow:hidden; margin-bottom:18px; }
+  .card h2 { margin:0; font-size:14px; padding:13px 18px; background:var(--shade);
+    border-bottom:1px solid var(--line); color:var(--accent-d); }
+  .card-body { padding:16px 18px; }
+
+  label { display:block; font-size:13px; color:var(--muted); margin:12px 0 5px; }
+  label:first-child { margin-top:0; }
+  input, select, textarea {
+    width:100%; padding:9px 11px; font-size:14px; color:var(--ink);
+    border:1px solid var(--line); border-radius:8px; background:var(--card);
+    font-family:inherit; resize:vertical;
+  }
+  input:focus, select:focus, textarea:focus { outline:2px solid var(--accent); border-color:var(--accent); }
+  .row { display:flex; gap:10px; }
+  .row > div { flex:1; min-width:0; }
+  .hidden { display:none; }
+  .dim { display:flex; align-items:center; gap:8px; }
+  .dim input { text-align:center; }
+  .dim span { color:var(--muted); font-size:14px; }
+  .prev { display:none; max-width:100%; max-height:170px; border-radius:8px;
+    margin-top:10px; border:1px solid var(--line); object-fit:contain; }
+  .link-btn { width:auto; margin-top:8px; padding:4px 10px; font-size:12px; background:transparent;
+    color:#c0392b; border:1px solid var(--line); border-radius:7px; cursor:pointer; }
+
+  .btn { width:100%; margin-top:6px; padding:13px; font-size:16px; font-weight:600;
+    color:#fff; background:var(--accent); border:none; border-radius:9px; cursor:pointer; }
+  .btn:hover { background:var(--accent-d); }
+  .btn.ghost { background:transparent; color:var(--accent); border:1px solid var(--line); }
+  .btn.ghost:hover { background:var(--shade); }
+  .btn.danger { background:transparent; color:#c0392b; border:1px solid var(--line); }
+  .btn-row { display:flex; gap:10px; margin-top:16px; }
+  .btn-row .btn { margin-top:0; }
+
+  /* ===== เลือกประเภทสินค้า ===== */
+  .typepick { display:flex; gap:10px; margin-bottom:18px; }
+  .typepick button { flex:1; padding:14px; border-radius:10px; cursor:pointer; font-family:inherit;
+    font-size:15px; font-weight:600; background:var(--card); color:var(--muted);
+    border:2px solid var(--line); }
+  .typepick button .s { display:block; font-size:12px; font-weight:400; margin-top:2px; }
+  .typepick button.on.tile { border-color:var(--tile); color:var(--tile); }
+  .typepick button.on.furn { border-color:var(--furn); color:var(--furn); }
+
+  /* ===== ตัวเลือกเฟอร์นิเจอร์ ===== */
+  .opt { border:1px solid var(--line); border-radius:10px; padding:14px; margin-bottom:12px;
+    background:var(--paper); }
+  .opt-head { display:flex; align-items:center; gap:10px; }
+  .opt-head .n { font-size:12px; font-weight:700; color:var(--furn);
+    text-transform:uppercase; letter-spacing:.06em; }
+  .opt-head .del { margin-left:auto; width:auto; padding:4px 10px; font-size:12px;
+    background:transparent; color:#c0392b; border:1px solid var(--line); border-radius:7px; cursor:pointer; }
+  .parts-lbl { font-size:12px; color:var(--muted); margin:14px 0 0;
+    padding-top:10px; border-top:1px dashed var(--line); }
+  .part { display:flex; gap:8px; margin-top:8px; }
+  .part input { flex:1; min-width:0; }
+  .x-btn { flex:0 0 auto; width:34px; padding:0; font-size:15px; line-height:1;
+    background:transparent; color:var(--muted); border:1px solid var(--line);
+    border-radius:8px; cursor:pointer; }
+  .x-btn:hover { color:#c0392b; }
+  .add-btn { width:auto; margin-top:9px; padding:6px 12px; font-size:12.5px;
+    background:transparent; color:var(--furn); border:1px dashed var(--line);
+    border-radius:8px; cursor:pointer; }
+  .add-opt { width:100%; margin-top:4px; padding:10px; font-size:13.5px; font-weight:600;
+    background:transparent; color:var(--furn); border:1px dashed var(--line);
+    border-radius:9px; cursor:pointer; }
+  .hint { font-size:12px; color:var(--muted); margin:0 0 14px; }
+
+  /* ===== ข้อความแจ้ง ===== */
+  .msg { margin-top:14px; padding:12px 16px; border-radius:10px; font-size:14px;
+    display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .msg.ok  { background:var(--shade); color:var(--accent-d); border:1px solid var(--line); }
+  .msg.err { background:#fdecea; color:#c0392b; border:1px solid #f5c6c0; }
+  @media (prefers-color-scheme: dark) { .msg.err { background:#3a1f1d; border-color:#5c2f2b; color:#ef9a93; } }
+  .msg button { width:auto; margin:0; padding:6px 12px; font-size:13px; cursor:pointer;
+    background:var(--accent); color:#fff; border:none; border-radius:7px; }
+
+  /* ===== รายการในโปรเจกต์ ===== */
+  .item { display:flex; gap:14px; padding:14px 18px; border-bottom:1px solid var(--line); }
+  .item:last-child { border-bottom:none; }
+  .item img { width:78px; height:78px; object-fit:contain; border-radius:8px;
+    border:1px solid var(--line); flex:0 0 auto; background:var(--paper); }
+  .item .no-img { width:78px; height:78px; border-radius:8px; border:1px dashed var(--line);
+    flex:0 0 auto; display:flex; align-items:center; justify-content:center;
+    color:var(--muted); font-size:11px; }
+  .item .body { flex:1; min-width:0; }
+  .item .top { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .item .sku { font-weight:700; font-size:14px; }
+  .badge { font-size:10.5px; font-weight:700; padding:2px 8px; border-radius:999px;
+    border:1px solid currentColor; }
+  .badge.tile { color:var(--tile); }
+  .badge.furn { color:var(--furn); }
+  .badge.plain { color:var(--muted); font-weight:500; }
+  .item .lines { font-size:12.5px; color:var(--muted); margin-top:5px; line-height:1.65; }
+  .item .money { text-align:right; flex:0 0 auto; }
+  .item .money .amt { font-size:16px; font-weight:700; font-variant-numeric:tabular-nums; }
+  .item .money .qty { font-size:12px; color:var(--muted); }
+  .item .money button { width:auto; margin-top:8px; padding:3px 9px; font-size:11.5px;
+    background:transparent; color:#c0392b; border:1px solid var(--line);
+    border-radius:6px; cursor:pointer; }
+  .empty { padding:44px 18px; text-align:center; color:var(--muted); font-size:14px; }
+
+  table.sum { width:100%; border-collapse:collapse; font-size:14px; }
+  table.sum td { padding:9px 18px; border-bottom:1px solid var(--line); }
+  table.sum td:last-child { text-align:right; font-variant-numeric:tabular-nums; font-weight:600; }
+  table.sum tr.grand td { font-size:19px; color:var(--accent-d); font-weight:800;
+    border-bottom:none; padding-top:14px; }
+
+  /* ===== ใบยืนยันการสั่งซื้อ (Order Confirmation) =====
+     ตั้งใจใช้ CSS พื้นฐานเท่านั้น: เส้นตาราง + การจัดชิด + ขาว/ดำคงที่
+     ห้ามใส่สีธีม, ไล่เฉด, มุมโค้ง, badge, CSS variable, color-mix, object-fit
+     เพราะตารางนี้ต้องคัดลอกไปวางใน Excel ได้ตรง ๆ (Excel อ่าน CSS พวกนั้นไม่ได้) */
+  .oc-wrap { overflow-x:auto; }
+  table.oc { border-collapse:collapse; width:100%; min-width:900px; font-size:12px;
+    background:#fff; color:#000; }
+  table.oc th, table.oc td { border:1px solid #000; padding:6px 8px; vertical-align:top;
+    background:#fff; color:#000; font-weight:400; text-align:left; }
+  table.oc th { font-weight:700; text-align:center; }
+  table.oc th.right, table.oc td.right { text-align:right; }
+  table.oc td.center { text-align:center; }
+  table.oc td.desc { min-width:290px; line-height:1.6; }
+
+  .doc-head { display:flex; justify-content:space-between; align-items:flex-end;
+    flex-wrap:wrap; gap:12px; padding:18px 22px; background:var(--accent); color:#fff; }
+  .doc-head .t { font-size:18px; font-weight:700; }
+  .doc-head .meta { font-size:12.5px; opacity:.92; margin-top:3px; line-height:1.6; }
+  .doc-head .acts { display:flex; gap:8px; }
+  .doc-head button { background:rgba(255,255,255,.18); color:#fff; border:1px solid rgba(255,255,255,.4);
+    border-radius:7px; padding:7px 13px; font-size:13px; cursor:pointer; }
+  .doc-head button:hover { background:rgba(255,255,255,.3); }
+
+  @media print {
+    header, nav.tabs, .doc-head .acts, .view:not(.on) { display:none !important; }
+    body { background:#fff; }
+    .wrap { padding:0; max-width:none; }
+    .card { box-shadow:none; border:none; margin:0; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>AMO — ระบบสินค้า → โปรเจกต์ → ใบยืนยันการสั่งซื้อ</h1>
+  <p>ตัวอย่างการทำงาน (Mockup): เพิ่มได้ทั้งกระเบื้องและเฟอร์นิเจอร์ในโปรเจกต์เดียวกัน</p>
+</header>
+
+<nav class="tabs">
+  <button type="button" id="tab-add"     class="on" onclick="showView('add')">1 · เพิ่มสินค้า</button>
+  <button type="button" id="tab-project"           onclick="showView('project')">2 · โปรเจกต์ <span class="count" id="tabCount">0</span></button>
+  <button type="button" id="tab-oc"                onclick="showView('oc')">3 · ใบยืนยันการสั่งซื้อ</button>
+</nav>
+
+<div class="wrap">
+
+<!-- ==================== หน้า 1: เพิ่มสินค้า ==================== -->
+<div class="view on" id="view-add">
+
+  <div class="typepick">
+    <button type="button" id="pick-tile" class="on tile" onclick="setType('tile')">
+      กระเบื้อง (Tile)<span class="s">คิดจาก ตร.ม. / กล่อง / เผื่อ / ปัดกล่อง</span>
+    </button>
+    <button type="button" id="pick-furn" class="furn" onclick="setType('furniture')">
+      เฟอร์นิเจอร์ (Furnishing)<span class="s">ขายเป็นชิ้น · ราคาต่อตัวเลือก</span>
+    </button>
+  </div>
+
+  <!-- ---------- ฟอร์มกระเบื้อง ---------- -->
+  <div id="form-tile">
+    <div class="grid">
+      <div class="card">
+        <h2>ข้อมูลสินค้า (tile_specs)</h2>
+        <div class="card-body">
+          <label>โหลดตัวอย่างสินค้า</label>
+          <select id="t_sample" aria-label="เลือกตัวอย่างกระเบื้อง" onchange="loadTileSample(this.value)"></select>
+
+          <label>SKU</label>
+          <input id="t_sku" type="text" placeholder="เช่น TILE-6060-GRY">
+
+          <div class="row">
+            <div><label>แบรนด์</label><input id="t_brand" type="text" placeholder="เช่น Cotto"></div>
+            <div><label>คอลเลกชัน</label><input id="t_collection" type="text" placeholder="เช่น Stone"></div>
+          </div>
+          <div class="row">
+            <div><label>หมวดหมู่</label><input id="t_category" type="text" placeholder="เช่น Tile"></div>
+            <div><label>หมวดหมู่ย่อย</label><input id="t_subcategory" type="text" placeholder="เช่น Floor Tile"></div>
+          </div>
+
+          <label>ลุค (Look)</label>
+          <input id="t_look" type="text" placeholder="เช่น Stone / Wood / Marble">
+
+          <label>รูปสินค้า</label>
+          <input id="t_imageFile" type="file" accept="image/*" aria-label="อัปโหลดรูปกระเบื้อง" onchange="pickImage('tile', event)">
+          <img id="t_prev" class="prev" alt="รูปสินค้า">
+          <button type="button" id="t_clearImg" class="link-btn hidden" onclick="clearImg('tile')">ลบรูป</button>
+
+          <label>ขนาดขาย (Sale Size) — กว้าง × ยาว × สูง (ซม.)</label>
+          <div class="dim">
+            <input id="t_saleW" type="number" min="0" step="any" placeholder="W" aria-label="ขนาดขาย กว้าง"><span>×</span>
+            <input id="t_saleL" type="number" min="0" step="any" placeholder="L" aria-label="ขนาดขาย ยาว"><span>×</span>
+            <input id="t_saleH" type="number" min="0" step="any" placeholder="H" aria-label="ขนาดขาย สูง">
+          </div>
+
+          <label>ขนาดจริง (Working Size) — กว้าง × ยาว × สูง (ซม.)</label>
+          <div class="dim">
+            <input id="t_workW" type="number" min="0" step="any" placeholder="W" aria-label="ขนาดจริง กว้าง"><span>×</span>
+            <input id="t_workL" type="number" min="0" step="any" placeholder="L" aria-label="ขนาดจริง ยาว"><span>×</span>
+            <input id="t_workH" type="number" min="0" step="any" placeholder="H" aria-label="ขนาดจริง สูง">
+          </div>
+
+          <label>หน่วยราคาสินค้า (U.M.)</label>
+          <select id="t_priceUnit" aria-label="หน่วยราคาสินค้า" onchange="rebuildCustomerUnit(); rebuildSellingMethod()">
+            <option value="ตารางเมตร">ตารางเมตร</option>
+            <option value="เมตร">เมตร (คิดจากความยาว)</option>
+            <option value="ชิ้น">ชิ้น</option>
+            <option value="เซ็ต">เซ็ต (คิดแบบชิ้น)</option>
+            <option value="กล่อง">กล่อง</option>
+          </select>
+
+          <label>ราคาต่อหน่วย (บาท)</label>
+          <input id="t_pricePerUnit" type="number" min="0" step="any" placeholder="เช่น 2100">
+
+          <div class="row">
+            <div><label>ตร.ม./กล่อง</label><input id="t_sqmPerBox" type="number" min="0" step="any" placeholder="1.08"></div>
+            <div><label>ชิ้น/กล่อง</label><input id="t_piecesPerBox" type="number" min="0" step="any" placeholder="3"></div>
+            <div><label>กก./กล่อง</label><input id="t_kgPerBox" type="number" min="0" step="any" placeholder="21.23"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>ข้อมูลการขาย</h2>
+        <div class="card-body">
+          <label>ลูกค้าแจ้งจำนวนเป็นหน่วยใด</label>
+          <select id="t_customerUnit" aria-label="หน่วยที่ลูกค้าแจ้ง"></select>
+
+          <label>จำนวนที่ลูกค้าต้องการ</label>
+          <input id="t_customerQty" type="number" min="0" step="any" placeholder="เช่น 25">
+
+          <label>วิธีเผื่อสินค้า</label>
+          <select id="t_allowanceType" aria-label="วิธีเผื่อสินค้า" onchange="toggle('t_allowanceType','t_allowanceWrap','ไม่มี')">
+            <option value="ไม่มี">ไม่มี</option>
+            <option value="เปอร์เซ็นต์">เปอร์เซ็นต์ (%)</option>
+            <option value="ชิ้น">ชิ้น</option>
+            <option value="กล่อง">กล่อง</option>
+          </select>
+          <div id="t_allowanceWrap" class="hidden">
+            <label>จำนวนเผื่อ</label>
+            <input id="t_allowanceValue" type="number" min="0" step="any" placeholder="เช่น 10">
+          </div>
+
+          <label>วิธีขาย</label>
+          <select id="t_sellingMethod" aria-label="วิธีขาย"></select>
+
+          <label>ประเภทส่วนลด</label>
+          <select id="t_discountType" aria-label="ประเภทส่วนลด" onchange="toggle('t_discountType','t_discountWrap','ไม่มี')">
+            <option value="ไม่มี">ไม่มี</option>
+            <option value="เปอร์เซ็นต์">เปอร์เซ็นต์ (%)</option>
+            <option value="บาท">บาท</option>
+          </select>
+          <div id="t_discountWrap" class="hidden">
+            <label>จำนวนส่วนลด</label>
+            <input id="t_discountValue" type="number" min="0" step="any" placeholder="เช่น 5">
+          </div>
+
+          <label>ประเภทสินค้า (Stock / Indent)</label>
+          <select id="t_orderType" aria-label="ประเภทสินค้ากระเบื้อง">
+            <option value="Stock">Stock — มีของพร้อมส่ง</option>
+            <option value="Indent">Indent — สั่งผลิต/รอสินค้า</option>
+          </select>
+
+          <label>หมายเหตุ</label>
+          <textarea id="t_remark" rows="2" placeholder="เช่น รอของ 30-45 วัน"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ---------- ฟอร์มเฟอร์นิเจอร์ ---------- -->
+  <div id="form-furn" class="hidden">
+    <div class="grid">
+      <div class="card">
+        <h2>ข้อมูลสินค้า (products)</h2>
+        <div class="card-body">
+          <label>โหลดตัวอย่างสินค้า</label>
+          <select id="f_sample" aria-label="เลือกตัวอย่างเฟอร์นิเจอร์" onchange="loadFurnSample(this.value)"></select>
+
+          <label>SKU</label>
+          <input id="f_sku" type="text" placeholder="เช่น FUR-TBL-001">
+
+          <label>ชื่อสินค้า</label>
+          <input id="f_name" type="text" placeholder="เช่น Coffee Table Nordic">
+
+          <div class="row">
+            <div><label>แบรนด์</label><input id="f_brand" type="text" placeholder="เช่น Botempi"></div>
+            <div><label>คอลเลกชัน</label><input id="f_collection" type="text" placeholder="เช่น Core"></div>
+          </div>
+          <div class="row">
+            <div><label>หมวดหมู่</label><input id="f_category" type="text" placeholder="เช่น Table"></div>
+            <div><label>หมวดหมู่ย่อย</label><input id="f_subcategory" type="text" placeholder="เช่น Coffee Table"></div>
+          </div>
+
+          <label>ขนาด กว้าง × ยาว × สูง (ซม.)</label>
+          <div class="dim">
+            <input id="f_width" type="number" step="any" placeholder="กว้าง" aria-label="กว้าง"><span>×</span>
+            <input id="f_length" type="number" step="any" placeholder="ยาว" aria-label="ยาว"><span>×</span>
+            <input id="f_height" type="number" step="any" placeholder="สูง" aria-label="สูง">
+          </div>
+
+          <label>รายละเอียดสินค้า</label>
+          <textarea id="f_description" rows="3" placeholder="รายละเอียดยาวสำหรับหน้าสินค้า"></textarea>
+
+          <label>รูปสินค้าหลัก</label>
+          <input id="f_imageFile" type="file" accept="image/*" aria-label="อัปโหลดรูปเฟอร์นิเจอร์" onchange="pickImage('furniture', event)">
+          <img id="f_prev" class="prev" alt="รูปสินค้า">
+          <button type="button" id="f_clearImg" class="link-btn hidden" onclick="clearImg('furniture')">ลบรูป</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>ข้อมูลการขาย</h2>
+        <div class="card-body">
+          <label>เลือกตัวเลือกที่ลูกค้าสั่ง</label>
+          <select id="f_orderOption" aria-label="เลือกตัวเลือกที่ลูกค้าสั่ง"></select>
+
+          <div class="row">
+            <div><label>จำนวน</label><input id="f_qty" type="number" step="1" min="1" value="1" aria-label="จำนวน"></div>
+            <div>
+              <label>หน่วยขาย</label>
+              <select id="f_qtyUnit" aria-label="หน่วยขาย">
+                <option value="ชิ้น">ชิ้น</option>
+                <option value="ตัว">ตัว</option>
+                <option value="ชุด">ชุด</option>
+              </select>
+            </div>
+          </div>
+
+          <label>ประเภทส่วนลด</label>
+          <select id="f_discountType" aria-label="ประเภทส่วนลดเฟอร์นิเจอร์" onchange="toggle('f_discountType','f_discountWrap','ไม่มี')">
+            <option value="ไม่มี">ไม่มี</option>
+            <option value="เปอร์เซ็นต์">เปอร์เซ็นต์ (%)</option>
+            <option value="บาท">บาท</option>
+          </select>
+          <div id="f_discountWrap" class="hidden">
+            <label>มูลค่าส่วนลด</label>
+            <input id="f_discountValue" type="number" step="any" value="0" aria-label="มูลค่าส่วนลดเฟอร์นิเจอร์">
+          </div>
+
+          <label>ประเภทสินค้า (Stock / Indent)</label>
+          <select id="f_orderType" aria-label="ประเภทสินค้าเฟอร์นิเจอร์">
+            <option value="Stock">Stock — มีของพร้อมส่ง</option>
+            <option value="Indent">Indent — สั่งผลิต/รอสินค้า</option>
+          </select>
+
+          <label>หมายเหตุ</label>
+          <textarea id="f_remark" rows="2" placeholder="เช่น รอสินค้า 60–90 วัน"></textarea>
+        </div>
+      </div>
+
+      <div class="card span2">
+        <h2>ตัวเลือกสินค้า (product_options + option_parts)</h2>
+        <div class="card-body">
+          <p class="hint">
+            1 ตัวเลือก = 1 รูปแบบสินค้าที่มี <b>ราคาเดียว</b> — ภายในใส่ชิ้นส่วนได้ไม่จำกัด (Top / Base / Legs + วัสดุ)
+          </p>
+          <div id="optionsWrap"></div>
+          <button type="button" class="add-opt" onclick="addOption()">+ เพิ่มตัวเลือกสินค้า</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <button type="button" class="btn" onclick="addToProject()">＋ เพิ่มเข้าโปรเจกต์</button>
+  <div id="addMsg"></div>
+</div>
+
+<!-- ==================== หน้า 2: โปรเจกต์ ==================== -->
+<div class="view" id="view-project">
+  <div class="card">
+    <h2>ข้อมูลโปรเจกต์</h2>
+    <div class="card-body">
+      <div class="row">
+        <div><label>ชื่อโปรเจกต์</label><input id="p_name" type="text" placeholder="เช่น บ้านคุณสมชาย ชั้น 2" oninput="saveProject()"></div>
+        <div><label>ลูกค้า</label><input id="p_customer" type="text" placeholder="เช่น คุณสมชาย ใจดี" oninput="saveProject()"></div>
+      </div>
+      <div class="row">
+        <div><label>เลขที่เอกสาร</label><input id="p_docno" type="text" placeholder="เช่น OC-2569-001" oninput="saveProject()"></div>
+        <div><label>ผู้ขาย / ผู้จัดทำ</label><input id="p_sales" type="text" placeholder="เช่น Ann" oninput="saveProject()"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>รายการสินค้าในโปรเจกต์</h2>
+    <div id="itemList"></div>
+  </div>
+
+  <div class="card">
+    <h2>สรุปยอด</h2>
+    <table class="sum" id="projectSummary"></table>
+  </div>
+
+  <div class="btn-row">
+    <button type="button" class="btn ghost" onclick="showView('add')">＋ เพิ่มสินค้าอีก</button>
+    <button type="button" class="btn" onclick="showView('oc')">ไปที่ใบยืนยันการสั่งซื้อ →</button>
+  </div>
+  <div class="btn-row">
+    <button type="button" class="btn danger" onclick="clearProject()">ล้างโปรเจกต์ทั้งหมด</button>
+  </div>
+</div>
+
+<!-- ==================== หน้า 3: ใบยืนยันการสั่งซื้อ ==================== -->
+<div class="view" id="view-oc">
+  <div class="card">
+    <div class="doc-head">
+      <div>
+        <div class="t">ใบยืนยันการสั่งซื้อ (Order Confirmation)</div>
+        <div class="meta" id="ocMeta"></div>
+      </div>
+      <div class="acts">
+        <button type="button" onclick="exportCSV()">⬇ Export CSV</button>
+        <button type="button" onclick="window.print()">🖨 พิมพ์</button>
+      </div>
+    </div>
+    <div id="ocBody"></div>
+  </div>
+</div>
+
+</div><!-- /wrap -->
+
+<script>
+  /* ================= helpers ================= */
+  const $ = id => document.getElementById(id);
+  const val = id => $(id).value;
+  const num = id => parseFloat($(id).value) || 0;
+  const money = v => v.toLocaleString("en-US", { minimumFractionDigits:2, maximumFractionDigits:2 });
+  const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
+  // ตัดเลข 0 ท้ายทศนิยมออก เหมือน format_number() ใน data.py
+  const fmt = (v, d = 2) => {
+    let s = (v || 0).toLocaleString("en-US", { minimumFractionDigits:d, maximumFractionDigits:d });
+    if (s.includes(".")) s = s.replace(/0+$/, "").replace(/\.$/, "");
+    return s;
+  };
+  function toggle(selectId, wrapId, hideValue) {
+    $(wrapId).classList.toggle("hidden", $(selectId).value === hideValue);
+  }
+
+  const SAMPLE_IMAGE = "image.png";   // รูปเริ่มต้นของสินค้าตัวอย่าง
+  const VAT_RATE = 0.07;
+
+  /* ================= สลับหน้า ================= */
+  function showView(name) {
+    ["add","project","oc"].forEach(v => {
+      $("view-" + v).classList.toggle("on", v === name);
+      $("tab-" + v).classList.toggle("on", v === name);
+    });
+    if (name === "project") renderProject();
+    if (name === "oc")      renderOC();
+    window.scrollTo({ top:0, behavior:"smooth" });
+  }
+
+  /* ================= สลับประเภทสินค้า ================= */
+  let productType = "tile";
+  function setType(t) {
+    productType = t;
+    $("form-tile").classList.toggle("hidden", t !== "tile");
+    $("form-furn").classList.toggle("hidden", t !== "furniture");
+    $("pick-tile").classList.toggle("on", t === "tile");
+    $("pick-furn").classList.toggle("on", t === "furniture");
+    $("addMsg").innerHTML = "";
+  }
+
+  /* ================= รูปสินค้า ================= */
+  const images = { tile:"", furniture:"" };
+  const imgIds = { tile:{ file:"t_imageFile", prev:"t_prev", clear:"t_clearImg" },
+                   furniture:{ file:"f_imageFile", prev:"f_prev", clear:"f_clearImg" } };
+
+  function pickImage(type, e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => { images[type] = ev.target.result; showImg(type); };
+    reader.readAsDataURL(file);
+  }
+  function showImg(type) {
+    const ids = imgIds[type];
+    $(ids.prev).src = images[type];
+    $(ids.prev).style.display = "block";
+    $(ids.clear).classList.remove("hidden");
+  }
+  function clearImg(type) {
+    images[type] = "";
+    $(imgIds[type].file).value = "";
+    $(imgIds[type].prev).style.display = "none";
+    $(imgIds[type].prev).src = "";
+    $(imgIds[type].clear).classList.add("hidden");
+  }
+  // สินค้าตัวอย่างใช้รูปเริ่มต้น image.png (ผู้ใช้อัปโหลดทับได้)
+  function useSampleImage(type) {
+    images[type] = SAMPLE_IMAGE;
+    $(imgIds[type].file).value = "";
+    showImg(type);
+  }
+
+  /* ================= กระเบื้อง: dropdown ที่ผูกกับ U.M. ================= */
+  const customerUnitOptions = [
+    ["ตารางเมตร","ตารางเมตร"], ["เมตร","เมตร"], ["ชิ้น","ชิ้น"], ["เซ็ต","เซ็ต"], ["กล่อง","กล่อง"],
+  ];
+  const allowedCustomerUnits = {
+    "เมตร": ["เมตร","ชิ้น"],        // U.M. เมตร → แจ้งได้แค่ เมตร/ชิ้น
+    "เซ็ต": ["ตารางเมตร","เซ็ต"],   // U.M. เซ็ต → แจ้งได้ ตร.ม./เซ็ต
+  };
+  function rebuildCustomerUnit() {
+    const allow = allowedCustomerUnits[val("t_priceUnit")] || customerUnitOptions.map(o => o[0]);
+    const sel = $("t_customerUnit"), prev = sel.value;
+    sel.innerHTML = "";
+    customerUnitOptions.filter(o => allow.includes(o[0])).forEach(([v, label]) => {
+      const opt = document.createElement("option");
+      opt.value = v; opt.textContent = label;
+      sel.appendChild(opt);
+    });
+    sel.value = allow.includes(prev) ? prev : allow[0];
+  }
+
+  const sellingMethodOptions = [
+    ["กล่อง","ขายเป็นกล่อง (ปัดขึ้นเต็มกล่อง)"], ["ชิ้น","ขายเป็นชิ้น"], ["เซ็ต","ขายเป็นเซ็ต (ปัดลงเต็มเซ็ต)"],
+  ];
+  const allowedSellingMethods = { "เซ็ต": ["เซ็ต"] };  // U.M. เซ็ต → ขายได้แค่เป็นเซ็ต
+  function rebuildSellingMethod() {
+    const allow = allowedSellingMethods[val("t_priceUnit")] || ["กล่อง","ชิ้น"];
+    const sel = $("t_sellingMethod"), prev = sel.value;
+    sel.innerHTML = "";
+    sellingMethodOptions.filter(o => allow.includes(o[0])).forEach(([v, label]) => {
+      const opt = document.createElement("option");
+      opt.value = v; opt.textContent = label;
+      sel.appendChild(opt);
+    });
+    sel.value = allow.includes(prev) ? prev : allow[0];
+  }
+
+  /* ================= เฟอร์นิเจอร์: ตัวเลือกสินค้า ================= */
+  let options = [];
+  const blankOption = () => ({ label:"", price:"", parts:[{ title:"", sub:"" }] });
+  const optName = (o, i) => String(o.label).trim() || `ตัวเลือกที่ ${i + 1}`;
+
+  // วาดใหม่เฉพาะตอนเพิ่ม/ลบ เพื่อไม่ให้ช่องที่กำลังพิมพ์เสีย focus
+  function renderOptions() {
+    $("optionsWrap").innerHTML = options.map((o, i) => `
+      <div class="opt">
+        <div class="opt-head">
+          <span class="n">ตัวเลือกที่ ${i + 1}</span>
+          ${options.length > 1 ? `<button type="button" class="del" onclick="removeOption(${i})">ลบตัวเลือกนี้</button>` : ""}
+        </div>
+        <div class="row">
+          <div>
+            <label>ชื่อตัวเลือก (label)</label>
+            <input type="text" value="${esc(o.label)}" placeholder="เช่น Grey"
+                   oninput="setOpt(${i},'label',this.value)" onchange="refreshOptionSelect()">
+          </div>
+          <div>
+            <label>ราคา (บาท) — ทั้งชุดของตัวเลือกนี้</label>
+            <input type="number" step="any" value="${esc(o.price)}" placeholder="0.00"
+                   oninput="setOpt(${i},'price',this.value)" onchange="refreshOptionSelect()">
+          </div>
+        </div>
+        <p class="parts-lbl">ชิ้นส่วนภายในตัวเลือก (option_parts) — หัวข้อ + วัสดุ</p>
+        ${o.parts.map((p, j) => `
+          <div class="part">
+            <input type="text" value="${esc(p.title)}" placeholder="หัวข้อ เช่น Top"
+                   oninput="setPart(${i},${j},'title',this.value)">
+            <input type="text" value="${esc(p.sub)}" placeholder="รายละเอียด/วัสดุ เช่น GreyWood"
+                   oninput="setPart(${i},${j},'sub',this.value)">
+            <button type="button" class="x-btn" title="ลบชิ้นส่วนนี้" onclick="removePart(${i},${j})">✕</button>
+          </div>`).join("")}
+        <button type="button" class="add-btn" onclick="addPart(${i})">+ เพิ่มชิ้นส่วน</button>
+      </div>`).join("");
+    refreshOptionSelect();
+  }
+  function setOpt(i, f, v)      { options[i][f] = v; }
+  function setPart(i, j, f, v)  { options[i].parts[j][f] = v; }
+  function addOption()          { options.push(blankOption()); renderOptions(); }
+  function removeOption(i)      { options.splice(i,1); if (!options.length) options.push(blankOption()); renderOptions(); }
+  function addPart(i)           { options[i].parts.push({ title:"", sub:"" }); renderOptions(); }
+  function removePart(i, j) {
+    options[i].parts.splice(j,1);
+    if (!options[i].parts.length) options[i].parts.push({ title:"", sub:"" });
+    renderOptions();
+  }
+  function refreshOptionSelect() {
+    const sel = $("f_orderOption"), keep = sel.value;
+    sel.innerHTML = "";
+    options.forEach((o, i) => {
+      const price = parseFloat(o.price) || 0;
+      const opt = document.createElement("option");
+      opt.value = i;
+      opt.textContent = `${optName(o,i)} — ${price ? money(price) + " บาท" : "ยังไม่ใส่ราคา"}`;
+      sel.appendChild(opt);
+    });
+    if (keep !== "" && options[keep]) sel.value = keep;
+  }
+
+  /* ================= ข้อมูลตัวอย่าง ================= */
+  const tileSamples = {
+    floor6060: { label:"กระเบื้องพื้น 60×60 (ขาย ตร.ม.)",
+      sku:"TILE-6060-GRY", brand:"Cotto", collection:"Stone", category:"Tile", subcategory:"Floor Tile", look:"Stone",
+      saleW:60, saleL:60, saleH:0.9, workW:59.5, workL:59.5, workH:0.9,
+      priceUnit:"ตารางเมตร", pricePerUnit:2100, sqmPerBox:1.08, piecesPerBox:3, kgPerBox:21.23,
+      customerUnit:"ตารางเมตร", customerQty:25, allowanceType:"เปอร์เซ็นต์", allowanceValue:10,
+      sellingMethod:"กล่อง", discountType:"ไม่มี", discountValue:0, orderType:"Stock", remark:"" },
+    wall3060: { label:"กระเบื้องผนัง 30×60 (ขาย ตร.ม.)",
+      sku:"TILE-3060-WHT", brand:"Duragres", collection:"Pure", category:"Tile", subcategory:"Wall Tile", look:"Plain",
+      saleW:30, saleL:60, saleH:0.85, workW:29.7, workL:59.7, workH:0.85,
+      priceUnit:"ตารางเมตร", pricePerUnit:850, sqmPerBox:1.44, piecesPerBox:8, kgPerBox:19.5,
+      customerUnit:"ตารางเมตร", customerQty:18.5, allowanceType:"เปอร์เซ็นต์", allowanceValue:5,
+      sellingMethod:"กล่อง", discountType:"เปอร์เซ็นต์", discountValue:3, orderType:"Stock", remark:"" },
+    granite8080: { label:"แกรนิตโต้ขัดเงา 80×80 (ขาย ตร.ม.)",
+      sku:"GRA-8080-BLK", brand:"Cotto", collection:"Luxe", category:"Tile", subcategory:"Floor Tile", look:"Marble",
+      saleW:80, saleL:80, saleH:1.05, workW:79.6, workL:79.6, workH:1.05,
+      priceUnit:"ตารางเมตร", pricePerUnit:3600, sqmPerBox:1.28, piecesPerBox:2, kgPerBox:33,
+      customerUnit:"ตารางเมตร", customerQty:42, allowanceType:"เปอร์เซ็นต์", allowanceValue:7,
+      sellingMethod:"กล่อง", discountType:"บาท", discountValue:5000, orderType:"Indent", remark:"รอสินค้า 30–45 วัน" },
+    trimMeter: { label:"กระเบื้องบัว/คิ้ว (ขายเป็นเมตร)",
+      sku:"TRIM-60-GRY", brand:"Sosuco", collection:"Line", category:"Tile", subcategory:"Trim", look:"Stone",
+      saleW:6, saleL:60, saleH:0.9, workW:6, workL:60, workH:0.9,
+      priceUnit:"เมตร", pricePerUnit:180, sqmPerBox:0.36, piecesPerBox:10, kgPerBox:8,
+      customerUnit:"เมตร", customerQty:24, allowanceType:"ไม่มี", allowanceValue:0,
+      sellingMethod:"ชิ้น", discountType:"ไม่มี", discountValue:0, orderType:"Stock", remark:"" },
+    decorPiece: { label:"กระเบื้องลาย (ขายเป็นชิ้น)",
+      sku:"DEC-3030-ART", brand:"Campana", collection:"Art", category:"Tile", subcategory:"Decor", look:"Pattern",
+      saleW:30, saleL:30, saleH:0.8, workW:29.7, workL:29.7, workH:0.8,
+      priceUnit:"ชิ้น", pricePerUnit:120, sqmPerBox:0.99, piecesPerBox:11, kgPerBox:14,
+      customerUnit:"ชิ้น", customerQty:15, allowanceType:"ชิ้น", allowanceValue:2,
+      sellingMethod:"ชิ้น", discountType:"ไม่มี", discountValue:0, orderType:"Stock", remark:"" },
+  };
+
+  const furnSamples = {
+    coffeeTable: { label:"โต๊ะกลาง Coffee Table (2 ตัวเลือก)",
+      sku:"FUR-TBL-001", name:"Coffee Table Nordic", brand:"Botempi", collection:"Core",
+      category:"Table", subcategory:"Coffee Table", width:120, length:60, height:42,
+      description:"โต๊ะกลางไม้จริง ท็อปหนา 25 มม. ขาเหล็กพ่นสีฝุ่น รับน้ำหนักได้ 80 กก.",
+      qtyUnit:"ตัว", qty:2, discountType:"เปอร์เซ็นต์", discountValue:5, orderType:"Stock", remark:"",
+      options:[
+        { label:"Grey", price:24500, parts:[{ title:"Top", sub:"GreyWood ผิวเมลามีน" },{ title:"Base", sub:"เหล็กพ่นสีดำด้าน" }] },
+        { label:"Black Wood", price:27800, parts:[{ title:"Top", sub:"Black Oak Veneer" },{ title:"Base", sub:"เหล็กพ่นสีดำด้าน" },{ title:"Legs", sub:"ปลายขาไม้โอ๊คแท้" }] },
+      ] },
+    sofa3: { label:"โซฟา 3 ที่นั่ง (3 ตัวเลือกผ้า)",
+      sku:"FUR-SOF-003", name:"Sofa Milano 3 Seater", brand:"Natuzzi", collection:"Editions",
+      category:"Sofa", subcategory:"3 Seater", width:210, length:92, height:85,
+      description:"โซฟา 3 ที่นั่ง โครงไม้ยางพารา เบาะฟองน้ำอัดความหนาแน่นสูง",
+      qtyUnit:"ชุด", qty:1, discountType:"บาท", discountValue:8000, orderType:"Indent",
+      remark:"สั่งผลิต รอสินค้า 60–90 วัน",
+      options:[
+        { label:"Fabric Beige", price:89000, parts:[{ title:"Upholstery", sub:"ผ้า Linen สี Beige" },{ title:"Frame", sub:"ไม้ยางพาราอบแห้ง" },{ title:"Legs", sub:"ไม้วอลนัท" }] },
+        { label:"Leather Black", price:145000, parts:[{ title:"Upholstery", sub:"หนังแท้ Full Grain สีดำ" },{ title:"Frame", sub:"ไม้ยางพาราอบแห้ง" },{ title:"Legs", sub:"สแตนเลสเงา" }] },
+        { label:"Velvet Green", price:98000, parts:[{ title:"Upholstery", sub:"ผ้ากำมะหยี่สีเขียว" },{ title:"Frame", sub:"ไม้ยางพาราอบแห้ง" },{ title:"Legs", sub:"ทองเหลืองรมดำ" }] },
+      ] },
+    chair: { label:"เก้าอี้ทานอาหาร (ขายเป็นชิ้น)",
+      sku:"FUR-CHR-012", name:"Dining Chair Oslo", brand:"Hay", collection:"Basic",
+      category:"Chair", subcategory:"Dining Chair", width:46, length:52, height:81,
+      description:"เก้าอี้ทานอาหาร เบาะหุ้มผ้า ขาไม้บีชแท้ ซ้อนเก็บได้",
+      qtyUnit:"ชิ้น", qty:6, discountType:"ไม่มี", discountValue:0, orderType:"Stock", remark:"",
+      options:[
+        { label:"Natural", price:4900, parts:[{ title:"Seat", sub:"ผ้าสีครีม" },{ title:"Legs", sub:"ไม้บีชสีธรรมชาติ" }] },
+        { label:"Walnut", price:5400, parts:[{ title:"Seat", sub:"ผ้าสีเทาเข้ม" },{ title:"Legs", sub:"ไม้บีชย้อมสีวอลนัท" }] },
+      ] },
+  };
+
+  function buildSampleSelect(selId, samples, onLoad) {
+    const sel = $(selId);
+    sel.innerHTML = "";
+    Object.entries(samples).forEach(([key, s]) => {
+      const opt = document.createElement("option");
+      opt.value = key; opt.textContent = s.label;
+      sel.appendChild(opt);
+    });
+  }
+
+  function loadTileSample(key) {
+    const s = tileSamples[key] || tileSamples.floor6060;
+    const set = (id, v) => { $(id).value = (v == null ? "" : v); };
+    ["sku","brand","collection","category","subcategory","look",
+     "saleW","saleL","saleH","workW","workL","workH",
+     "pricePerUnit","sqmPerBox","piecesPerBox","kgPerBox"].forEach(id => set("t_" + id, s[id]));
+
+    set("t_priceUnit", s.priceUnit);
+    rebuildCustomerUnit();
+    rebuildSellingMethod();
+
+    ["customerUnit","customerQty","sellingMethod","allowanceType","allowanceValue",
+     "discountType","discountValue","orderType","remark"].forEach(id => set("t_" + id, s[id]));
+    toggle("t_allowanceType","t_allowanceWrap","ไม่มี");
+    toggle("t_discountType","t_discountWrap","ไม่มี");
+    useSampleImage("tile");
+  }
+
+  function loadFurnSample(key) {
+    const s = furnSamples[key] || furnSamples.coffeeTable;
+    const set = (id, v) => { $(id).value = (v == null ? "" : v); };
+    ["sku","name","brand","collection","category","subcategory",
+     "width","length","height","description"].forEach(id => set("f_" + id, s[id]));
+
+    // คัดลอกออกมา เพื่อไม่ให้แก้ทับข้อมูลตัวอย่างต้นฉบับ
+    options = s.options.map(o => ({
+      label:o.label, price:o.price,
+      parts:o.parts.map(p => ({ title:p.title, sub:p.sub })),
+    }));
+    renderOptions();
+
+    ["qty","qtyUnit","discountType","discountValue","orderType","remark"].forEach(id => set("f_" + id, s[id]));
+    toggle("f_discountType","f_discountWrap","ไม่มี");
+    $("f_orderOption").value = 0;
+    useSampleImage("furniture");
+  }
+
+  /* ================= สร้างรายการกระเบื้อง =================
+     คณิตศาสตร์แปลงตรงจาก calculate_sale() เดิม (ตร.ม./กล่อง, เผื่อ, ปัดกล่อง) */
+  function buildTileItem() {
+    const priceUnit    = val("t_priceUnit");
+    const pricePerUnit = num("t_pricePerUnit");
+    const sqmPerBox    = num("t_sqmPerBox");
+    const piecesPerBox = num("t_piecesPerBox");
+    const kgPerBox     = num("t_kgPerBox");
+    const saleLen      = num("t_saleL");
+
+    const customerUnit   = val("t_customerUnit");
+    const customerQty    = num("t_customerQty");
+    const allowanceType  = val("t_allowanceType");
+    const allowanceValue = allowanceType === "ไม่มี" ? 0 : num("t_allowanceValue");
+    const sellingMethod  = val("t_sellingMethod");
+    const discountType   = val("t_discountType");
+    const discountValue  = discountType === "ไม่มี" ? 0 : num("t_discountValue");
+
+    if (!(pricePerUnit > 0)) throw "กรุณากรอกราคาต่อหน่วยให้มากกว่า 0";
+    if (!(sqmPerBox > 0))    throw "ตารางเมตรต่อกล่องต้องมากกว่า 0";
+    if (!(piecesPerBox > 0)) throw "จำนวนชิ้นต่อกล่องต้องมากกว่า 0";
+    if (!(customerQty > 0))  throw "กรุณากรอกจำนวนที่ลูกค้าต้องการให้มากกว่า 0";
+
+    const usesMeter = (customerUnit === "เมตร" || priceUnit === "เมตร");
+    if (usesMeter && !(saleLen > 0)) throw "กรุณากรอกความยาว Sale Size (L) ก่อน เพื่อคำนวณแบบเมตร";
+
+    const pieceUnits     = ["ชิ้น","เซ็ต"];
+    const sqmPerPiece    = sqmPerBox / piecesPerBox;
+    const lengthPerPiece = saleLen > 0 ? saleLen / 100 : 0;
+
+    // 1) แปลงจำนวนที่ลูกค้าแจ้งเป็นจำนวนชิ้น
+    let initialPieces;
+    if (customerUnit === "ตารางเมตร")           initialPieces = customerQty / sqmPerPiece;
+    else if (customerUnit === "เมตร")           initialPieces = customerQty / lengthPerPiece;
+    else if (pieceUnits.includes(customerUnit)) initialPieces = customerQty;
+    else                                        initialPieces = customerQty * piecesPerBox;
+
+    // 2) จำนวนเผื่อ (ชิ้น)
+    let allowancePieces = 0;
+    if (allowanceType === "เปอร์เซ็นต์") allowancePieces = initialPieces * allowanceValue / 100;
+    else if (allowanceType === "ชิ้น")   allowancePieces = allowanceValue;
+    else if (allowanceType === "กล่อง")  allowancePieces = allowanceValue * piecesPerBox;
+
+    const totalRequired = initialPieces + allowancePieces;
+
+    // 3) จำนวนที่ขายจริง
+    let actualBoxes, actualPieces;
+    if (sellingMethod === "กล่อง") {
+      actualBoxes  = Math.ceil(totalRequired / piecesPerBox);
+      actualPieces = actualBoxes * piecesPerBox;
+    } else if (sellingMethod === "เซ็ต") {
+      actualPieces = Math.floor(totalRequired);   // ขายเป็นเซ็ต → ปัดลง
+      actualBoxes  = actualPieces / piecesPerBox;
+    } else {
+      actualPieces = Math.ceil(totalRequired);    // ขายเป็นชิ้น → ปัดขึ้น
+      actualBoxes  = actualPieces / piecesPerBox;
+    }
+    const actualSqm    = actualPieces * sqmPerPiece;
+    const actualMeters = actualPieces * lengthPerPiece;
+    const hasWeight    = kgPerBox > 0;
+    const totalWeight  = hasWeight ? actualPieces * (kgPerBox / piecesPerBox) : 0;
+
+    // 4) ราคาก่อนลด ตามหน่วยราคาสินค้า
+    let gross;
+    if (priceUnit === "ตารางเมตร")           gross = actualSqm    * pricePerUnit;
+    else if (priceUnit === "เมตร")           gross = actualMeters * pricePerUnit;
+    else if (pieceUnits.includes(priceUnit)) gross = actualPieces * pricePerUnit;
+    else                                     gross = actualBoxes  * pricePerUnit;
+
+    // 5) ส่วนลด
+    let discountAmount = 0;
+    if (discountType === "เปอร์เซ็นต์") discountAmount = gross * discountValue / 100;
+    else if (discountType === "บาท")    discountAmount = discountValue;
+    if (discountAmount > gross) discountAmount = gross;
+
+    const isSet = sellingMethod === "เซ็ต";
+    // จำนวนที่คิดเงิน + หน่วย ตามหน่วยราคา
+    const billedQty = priceUnit === "ตารางเมตร" ? actualSqm
+      : priceUnit === "เมตร" ? actualMeters
+      : priceUnit === "กล่อง" ? actualBoxes : actualPieces;
+    const unit = priceUnit === "ตารางเมตร" ? "sqm"
+      : priceUnit === "เมตร" ? "m"
+      : priceUnit === "กล่อง" ? "boxes" : (isSet ? "sets" : "pcs");
+    const actualUse = priceUnit === "ตารางเมตร" ? initialPieces * sqmPerPiece
+      : priceUnit === "เมตร" ? initialPieces * lengthPerPiece
+      : priceUnit === "กล่อง" ? initialPieces / piecesPerBox : initialPieces;
+
+    const wkW = num("t_workW") * 10, wkL = num("t_workL") * 10;
+    const workMm = (wkW > 0 && wkL > 0) ? `${fmt(wkW)}x${fmt(wkL)} mm` : "-";
+    const sw = [num("t_saleW"), num("t_saleL"), num("t_saleH")];
+    const saleDim = [sw[0]>0?`W ${fmt(sw[0])}`:null, sw[1]>0?`D ${fmt(sw[1])}`:null, sw[2]>0?`H ${fmt(sw[2])}`:null]
+      .filter(Boolean).join(" | ");
+    const orderType = val("t_orderType");
+    const remark    = val("t_remark").trim();
+
+    // บรรทัดใน DESCRIPTION — ข้อความล้วน ไม่มี HTML/CSS (คัดลอกลง Excel ได้)
+    const descLines = [
+      [val("t_brand"), val("t_collection")].filter(Boolean).join(" — ") || "-",
+      val("t_look") ? "Look: " + val("t_look") : "",
+      saleDim ? "ขนาดขาย: " + saleDim : "",
+      `Working Size (ขนาดจริง): ${workMm}`,
+      `U.M.: ${priceUnit}`,
+      `${fmt(sqmPerBox)} ตร.ม./กล่อง`,
+      `${fmt(piecesPerBox)} แผ่น/กล่อง`,
+      hasWeight ? `${fmt(kgPerBox)} กก./กล่อง` : "",
+      `จำนวนใช้จริง: ${fmt(actualUse)} ${unit}`,
+      `จำนวนเผื่อ: ${fmt(billedQty - actualUse)} ${unit}`,
+      isSet ? "" : `กล่องทั้งหมด: ${fmt(actualBoxes)} กล่อง`,
+      hasWeight ? `น้ำหนักรวม: ${fmt(totalWeight)} กก.` : "",
+      `ประเภทสินค้า: ${orderType} ${orderType === "Indent" ? "(สั่งผลิต/รอสินค้า)" : "(มีของพร้อมส่ง)"}`,
+      `หมายเหตุ: ${remark || "-"}`,
+    ].filter(Boolean);
+
+    return {
+      id: Date.now() + "-" + Math.random().toString(36).slice(2,7),
+      type: "tile",
+      sku: val("t_sku").trim() || "-",
+      name: "",
+      brand: val("t_brand").trim(), collection: val("t_collection").trim(),
+      category: val("t_category").trim(), subcategory: val("t_subcategory").trim(),
+      variant: val("t_look").trim(),        // ลุค ใช้ช่องเดียวกับ "ตัวเลือก" ของเฟอร์นิเจอร์
+      image: images.tile,
+      orderType, remark,
+      unit, qty: billedQty, unitPrice: pricePerUnit,
+      gross, discountAmount, net: gross - discountAmount,
+      descLines,
+      // ข้อมูลเสริมไว้โชว์ในหน้าโปรเจกต์
+      extra: { boxes: actualBoxes, pieces: actualPieces, sqm: actualSqm, weight: totalWeight, isSet },
+    };
+  }
+
+  /* ================= สร้างรายการเฟอร์นิเจอร์ =================
+     ขายเป็นชิ้น: ยอดรวม = ราคาตัวเลือก × จำนวน (ไม่มีการแปลงหน่วย/เผื่อ/ปัดกล่อง) */
+  function buildFurnItem() {
+    const idx = parseInt(val("f_orderOption"), 10);
+    const opt = options[idx];
+    if (!opt) throw "ยังไม่ได้เลือกตัวเลือกสินค้า";
+
+    const unitPrice = parseFloat(opt.price) || 0;
+    if (!(unitPrice > 0)) throw `ตัวเลือก "${optName(opt, idx)}" ยังไม่ได้ใส่ราคา`;
+
+    const qty = num("f_qty");
+    if (!(qty > 0)) throw "จำนวนต้องมากกว่า 0";
+
+    const discountType  = val("f_discountType");
+    const discountValue = discountType === "ไม่มี" ? 0 : num("f_discountValue");
+    const gross = unitPrice * qty;
+
+    let discountAmount = 0;
+    if (discountType === "เปอร์เซ็นต์") discountAmount = gross * discountValue / 100;
+    else if (discountType === "บาท")    discountAmount = discountValue;
+    if (discountAmount > gross) discountAmount = gross;
+
+    const w = num("f_width"), l = num("f_length"), h = num("f_height");
+    const dimText = (w || l || h) ? `${w || "-"} × ${l || "-"} × ${h || "-"} ซม.` : "-";
+    const parts = opt.parts.filter(p => p.title.trim() || p.sub.trim());
+    const orderType = val("f_orderType");
+    const remark    = val("f_remark").trim();
+
+    const descLines = [
+      [val("f_brand"), val("f_collection")].filter(Boolean).join(" — ") || "-",
+      val("f_name").trim(),
+      `ตัวเลือก: ${optName(opt, idx)}`,
+      ...(parts.length ? parts.map(p => `${p.title.trim() || "-"}: ${p.sub.trim() || "-"}`) : ["ชิ้นส่วน: -"]),
+      `ขนาด (กว้าง × ยาว × สูง): ${dimText}`,
+      val("f_category").trim() ? `หมวดหมู่: ${val("f_category").trim()}` : "",
+      val("f_subcategory").trim() ? `หมวดหมู่ย่อย: ${val("f_subcategory").trim()}` : "",
+      `ประเภทสินค้า: ${orderType} ${orderType === "Indent" ? "(สั่งผลิต/รอสินค้า)" : "(มีของพร้อมส่ง)"}`,
+      `หมายเหตุ: ${remark || "-"}`,
+    ].filter(Boolean);
+
+    return {
+      id: Date.now() + "-" + Math.random().toString(36).slice(2,7),
+      type: "furniture",
+      sku: val("f_sku").trim() || "-",
+      name: val("f_name").trim(),
+      brand: val("f_brand").trim(), collection: val("f_collection").trim(),
+      category: val("f_category").trim(), subcategory: val("f_subcategory").trim(),
+      variant: optName(opt, idx),
+      image: images.furniture,
+      orderType, remark,
+      unit: val("f_qtyUnit"), qty, unitPrice,
+      gross, discountAmount, net: gross - discountAmount,
+      descLines,
+      extra: { parts: parts.map(p => `${p.title.trim() || "-"}: ${p.sub.trim() || "-"}`), dim: dimText },
+    };
+  }
+
+  /* ================= โปรเจกต์ (เก็บใน localStorage) ================= */
+  const STORE_KEY = "amo-project-mockup";
+  let project = { name:"", customer:"", docno:"", sales:"", items:[] };
+
+  function saveProject() {
+    project.name     = val("p_name");
+    project.customer = val("p_customer");
+    project.docno    = val("p_docno");
+    project.sales    = val("p_sales");
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(project)); } catch (e) { /* โหมด private อาจเซฟไม่ได้ */ }
+  }
+  function loadProject() {
+    try {
+      const raw = localStorage.getItem(STORE_KEY);
+      if (raw) project = Object.assign(project, JSON.parse(raw));
+    } catch (e) { /* ข้อมูลเสีย — ใช้ค่าเริ่มต้น */ }
+    $("p_name").value = project.name || "";
+    $("p_customer").value = project.customer || "";
+    $("p_docno").value = project.docno || "";
+    $("p_sales").value = project.sales || "";
+    updateCount();
+  }
+  function updateCount() { $("tabCount").textContent = project.items.length; }
+
+  function addToProject() {
+    const box = $("addMsg");
+    let item;
+    try {
+      item = productType === "tile" ? buildTileItem() : buildFurnItem();
+    } catch (msg) {
+      box.innerHTML = `<div class="msg err">⚠ ${esc(msg)}</div>`;
+      return;
+    }
+    project.items.push(item);
+    saveProject();
+    updateCount();
+    box.innerHTML = `
+      <div class="msg ok">
+        <span>✓ เพิ่ม <b>${esc(item.sku)}</b>${item.variant ? " (" + esc(item.variant) + ")" : ""}
+          ${fmt(item.qty)} ${esc(item.unit)} — ${money(item.net)} บาท เข้าโปรเจกต์แล้ว
+          (ตอนนี้มี ${project.items.length} รายการ)</span>
+        <button type="button" onclick="showView('project')">ดูโปรเจกต์ →</button>
+      </div>`;
+  }
+
+  function removeItem(id) {
+    project.items = project.items.filter(i => i.id !== id);
+    saveProject(); updateCount(); renderProject();
+  }
+  function clearProject() {
+    if (!project.items.length) return;
+    if (!confirm("ลบสินค้าทั้งหมดในโปรเจกต์?")) return;
+    project.items = [];
+    saveProject(); updateCount(); renderProject();
+  }
+
+  // ยอดรวมทั้งโปรเจกต์
+  function totals() {
+    const gross = project.items.reduce((s, i) => s + i.gross, 0);
+    const discount = project.items.reduce((s, i) => s + i.discountAmount, 0);
+    const net = gross - discount;
+    const vat = net * VAT_RATE;
+    return { gross, discount, net, vat, grand: net + vat };
+  }
+
+  function renderProject() {
+    const list = $("itemList");
+    if (!project.items.length) {
+      list.innerHTML = `<div class="empty">ยังไม่มีสินค้าในโปรเจกต์<br>กลับไปหน้า "เพิ่มสินค้า" เพื่อเพิ่มกระเบื้องหรือเฟอร์นิเจอร์</div>`;
+    } else {
+      list.innerHTML = project.items.map((i, n) => `
+        <div class="item">
+          ${i.image ? `<img src="${esc(i.image)}" alt="รูปสินค้า">` : `<div class="no-img">ไม่มีรูป</div>`}
+          <div class="body">
+            <div class="top">
+              <span class="badge ${i.type === "tile" ? "tile" : "furn"}">${i.type === "tile" ? "กระเบื้อง" : "เฟอร์นิเจอร์"}</span>
+              <span class="sku">${n + 1}. ${esc(i.sku)}</span>
+              ${i.variant ? `<span class="badge plain">${esc(i.variant)}</span>` : ""}
+              <span class="badge plain">${esc(i.orderType)}</span>
+            </div>
+            <div class="lines">${i.descLines.slice(0, 6).map(esc).join("<br>")}</div>
+          </div>
+          <div class="money">
+            <div class="amt">${money(i.net)}</div>
+            <div class="qty">${fmt(i.qty)} ${esc(i.unit)} × ${money(i.unitPrice)}</div>
+            ${i.discountAmount > 0 ? `<div class="qty">ลด ${money(i.discountAmount)}</div>` : ""}
+            <button type="button" onclick="removeItem('${i.id}')">ลบ</button>
+          </div>
+        </div>`).join("");
+    }
+
+    const t = totals();
+    $("projectSummary").innerHTML = `
+      <tr><td>จำนวนรายการ</td><td>${project.items.length} รายการ</td></tr>
+      <tr><td>ยอดรวมก่อนลด (Subtotal)</td><td>${money(t.gross)}</td></tr>
+      <tr><td>ส่วนลดรวม (Discount)</td><td>-${money(t.discount)}</td></tr>
+      <tr><td>ยอดก่อนภาษี (Pre-VAT)</td><td>${money(t.net)}</td></tr>
+      <tr><td>ภาษีมูลค่าเพิ่ม 7% (VAT)</td><td>${money(t.vat)}</td></tr>
+      <tr class="grand"><td>ยอดสุทธิ (Grand Total)</td><td>${money(t.grand)} ฿</td></tr>`;
+  }
+
+  /* ================= ใบยืนยันการสั่งซื้อ ================= */
+  function renderOC() {
+    const now = new Date().toLocaleString("th-TH", { dateStyle:"long", timeStyle:"short" });
+    $("ocMeta").innerHTML = [
+      project.docno ? `เลขที่: ${esc(project.docno)}` : "",
+      project.name ? `โปรเจกต์: ${esc(project.name)}` : "",
+      project.customer ? `ลูกค้า: ${esc(project.customer)}` : "",
+      project.sales ? `ผู้จัดทำ: ${esc(project.sales)}` : "",
+      `วันที่: ${now}`,
+    ].filter(Boolean).join(" &nbsp;·&nbsp; ");
+
+    if (!project.items.length) {
+      $("ocBody").innerHTML = `<div class="empty">ยังไม่มีสินค้าในโปรเจกต์ — เพิ่มสินค้าก่อนจึงจะออกใบยืนยันการสั่งซื้อได้</div>`;
+      return;
+    }
+
+    const t = totals();
+    const rows = project.items.map((i, n) => `
+      <tr>
+        <td class="center">${n + 1}</td>
+        <td class="center">${esc(i.sku)}</td>
+        <td class="center">${i.image ? `<img src="${esc(i.image)}" alt="รูปสินค้า" width="100">` : "-"}</td>
+        <td class="desc">${i.descLines.map(esc).join("<br>")}</td>
+        <td class="center">${esc(i.unit)}</td>
+        <td class="right">${money(i.qty)}</td>
+        <td class="right">${money(i.unitPrice)}</td>
+        <td class="right">${money(i.discountAmount)}</td>
+        <td class="right">${money(i.net)}</td>
+      </tr>`).join("");
+
+    $("ocBody").innerHTML = `
+      <div class="oc-wrap">
+        <table class="oc">
+          <thead>
+            <tr>
+              <th>NO.</th><th>SKU</th><th>IMAGE</th><th>DESCRIPTION</th>
+              <th>UNIT</th><th class="right">QTY</th><th class="right">UNIT PRICE<br>(THB)</th>
+              <th class="right">DISCOUNT<br>(THB)</th><th class="right">AMOUNT<br>(THB)</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+          <tfoot>
+            <tr><td colspan="8" class="right">ยอดรวม (Subtotal)</td><td class="right">${money(t.gross)}</td></tr>
+            <tr><td colspan="8" class="right">ส่วนลด (Discount)</td><td class="right">-${money(t.discount)}</td></tr>
+            <tr><td colspan="8" class="right">ยอดก่อนภาษี (Pre-VAT)</td><td class="right">${money(t.net)}</td></tr>
+            <tr><td colspan="8" class="right">ภาษีมูลค่าเพิ่ม 7% (VAT)</td><td class="right">${money(t.vat)}</td></tr>
+            <tr><td colspan="8" class="right"><b>ยอดสุทธิ (Grand Total)</b></td><td class="right"><b>${money(t.grand)}</b></td></tr>
+          </tfoot>
+        </table>
+      </div>`;
+  }
+
+  /* ---------- Export CSV สำหรับ Excel ----------
+     1 แถว = 1 รายการสินค้า, 1 คอลัมน์ = 1 ค่า, ไม่มี merged cell
+     ใส่ BOM เพื่อให้ Excel อ่านภาษาไทยเป็น UTF-8 ถูกต้อง */
+  function exportCSV() {
+    if (!project.items.length) { alert("ยังไม่มีสินค้าในโปรเจกต์"); return; }
+    const cell = v => {
+      const s = String(v ?? "");
+      return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+    const rows = project.items.map((i, n) => ({
+      "เลขที่เอกสาร": project.docno,
+      "โปรเจกต์": project.name,
+      "ลูกค้า": project.customer,
+      "ผู้จัดทำ": project.sales,
+      "ลำดับ": n + 1,
+      "ประเภท": i.type === "tile" ? "กระเบื้อง" : "เฟอร์นิเจอร์",
+      "SKU": i.sku,
+      "ชื่อสินค้า": i.name,
+      "แบรนด์": i.brand,
+      "คอลเลกชัน": i.collection,
+      "หมวดหมู่": i.category,
+      "หมวดหมู่ย่อย": i.subcategory,
+      "ตัวเลือก/ลุค": i.variant,
+      "รายละเอียด": i.descLines.join(" | "),
+      "ประเภทสินค้า": i.orderType,
+      "หน่วย": i.unit,
+      "จำนวน": i.qty.toFixed(4).replace(/\.?0+$/, ""),
+      "ราคาต่อหน่วย": i.unitPrice.toFixed(2),
+      "ยอดรวมก่อนลด": i.gross.toFixed(2),
+      "ส่วนลด": i.discountAmount.toFixed(2),
+      "ยอดหลังลด": i.net.toFixed(2),
+      "หมายเหตุ": i.remark,
+    }));
+    const headers = Object.keys(rows[0]);
+    const csv = [headers.map(cell).join(",")]
+      .concat(rows.map(r => headers.map(h => cell(r[h])).join(",")))
+      .join("\r\n");
+
+    const blob = new Blob(["﻿" + csv], { type:"text/csv;charset=utf-8;" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `order-confirmation-${project.docno || "project"}.csv`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  /* ================= เริ่มต้น ================= */
+  buildSampleSelect("t_sample", tileSamples);
+  buildSampleSelect("f_sample", furnSamples);
+  rebuildCustomerUnit();
+  rebuildSellingMethod();
+  loadTileSample("floor6060");
+  loadFurnSample("coffeeTable");
+  setType("tile");
+  loadProject();
+</script>
+
+</body>
+</html>

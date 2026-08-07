@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ใบเสนอราคาเฟอร์นิเจอร์</title>
+<style>
+  * { box-sizing: border-box; }
+  :root {
+    --paper:#f4f6f8; --card:#fff; --ink:#16202b; --muted:#5c6a78; --line:#dde3e9;
+    --accent:#a86a17; --accent-d:#8a5613; --good:#0e7c86; --warn:#b5761f; --shade:#f6f0e6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --paper:#0e141a; --card:#161f28; --ink:#eaf0f4; --muted:#93a1af; --line:#26313c;
+      --accent:#d69a48; --accent-d:#c1863a; --good:#37b3bd; --warn:#d69a48; --shade:#232a2f; }
+  }
+  body {
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Segoe UI","Sarabun",system-ui,sans-serif; line-height:1.5;
+  }
+  header { background:var(--accent); color:#fff; padding:20px 24px; }
+  header h1 { margin:0; font-size:20px; }
+  header p { margin:4px 0 0; opacity:.9; font-size:13px; }
+
+  .wrap { max-width:940px; margin:0 auto; padding:24px; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; align-items:start; }
+  @media (max-width:720px){ .grid { grid-template-columns:1fr; } }
+  .span2 { grid-column:1 / -1; }
+
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px;
+    box-shadow:0 1px 3px rgba(0,0,0,.06); overflow:hidden; }
+  .card h2 { margin:0; font-size:14px; padding:14px 18px; background:var(--shade);
+    border-bottom:1px solid var(--line); color:var(--accent-d); }
+  .card-body { padding:16px 18px; }
+
+  label { display:block; font-size:13px; color:var(--muted); margin:12px 0 5px; }
+  label:first-child { margin-top:0; }
+  input, select, textarea {
+    width:100%; padding:9px 11px; font-size:14px; color:var(--ink);
+    border:1px solid var(--line); border-radius:8px; background:var(--card);
+    font-family:inherit; resize:vertical;
+  }
+  input:focus, select:focus, textarea:focus { outline:2px solid var(--accent); border-color:var(--accent); }
+  .row { display:flex; gap:10px; }
+  .row > div { flex:1; }
+  .hidden { display:none; }
+  .dim { display:flex; align-items:center; gap:8px; }
+  .dim input { text-align:center; }
+  .dim span { color:var(--muted); font-size:14px; }
+  #imgPreview { display:none; max-width:100%; max-height:200px; border-radius:8px;
+    margin-top:10px; border:1px solid var(--line); object-fit:contain; }
+  .link-btn { width:auto; margin-top:8px; padding:4px 10px; font-size:12px; background:transparent;
+    color:#c0392b; border:1px solid var(--line); border-radius:7px; cursor:pointer; }
+
+  .btn {
+    width:100%; margin-top:20px; padding:13px; font-size:16px; font-weight:600;
+    color:#fff; background:var(--accent); border:none; border-radius:9px; cursor:pointer;
+  }
+  .btn:hover { background:var(--accent-d); }
+
+  /* ===== ตัวเลือกสินค้า (product_options) ===== */
+  .opt { border:1px solid var(--line); border-radius:10px; padding:14px; margin-bottom:12px;
+    background:var(--paper); }
+  .opt-head { display:flex; align-items:center; gap:10px; }
+  .opt-head .n { font-size:12px; font-weight:700; color:var(--accent-d);
+    text-transform:uppercase; letter-spacing:.06em; }
+  .opt-head .del { margin-left:auto; width:auto; margin-top:0; padding:4px 10px; font-size:12px;
+    background:transparent; color:#c0392b; border:1px solid var(--line); border-radius:7px; cursor:pointer; }
+  .parts-lbl { font-size:12px; color:var(--muted); margin:14px 0 0;
+    padding-top:10px; border-top:1px dashed var(--line); }
+  .part { display:flex; gap:8px; margin-top:8px; }
+  .part input { flex:1; min-width:0; }
+  .x-btn { flex:0 0 auto; width:34px; padding:0; font-size:15px; line-height:1;
+    background:transparent; color:var(--muted); border:1px solid var(--line);
+    border-radius:8px; cursor:pointer; }
+  .x-btn:hover { color:#c0392b; }
+  .add-btn { width:auto; margin-top:9px; padding:6px 12px; font-size:12.5px;
+    background:transparent; color:var(--accent); border:1px dashed var(--line);
+    border-radius:8px; cursor:pointer; }
+  .add-btn:hover { border-color:var(--accent); }
+  .add-opt { width:100%; margin-top:4px; padding:10px; font-size:13.5px; font-weight:600;
+    background:transparent; color:var(--accent); border:1px dashed var(--line);
+    border-radius:9px; cursor:pointer; }
+  .add-opt:hover { border-color:var(--accent); }
+  .opt-img { display:none; max-width:100%; max-height:120px; border-radius:8px; margin-top:8px;
+    border:1px solid var(--line); object-fit:contain; }
+  .hint { font-size:12px; color:var(--muted); margin:0 0 14px; }
+
+  /* result */
+  .result { margin-top:20px; }
+  table.res { width:100%; border-collapse:collapse; font-size:14px; }
+  table.res td { padding:9px 18px; border-bottom:1px solid var(--line); vertical-align:top; }
+  table.res td:last-child { text-align:right; font-variant-numeric:tabular-nums; font-weight:600; }
+  .err { color:#c0392b; font-size:14px; padding:14px 18px; }
+
+  /* ===== รายงานสรุป ===== */
+  .rep-head { background:var(--accent); color:#fff; padding:18px 22px;
+    display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:10px; }
+  .rep-head .t { font-size:18px; font-weight:700; }
+  .rep-head .date { font-size:12px; opacity:.9; }
+  .rep-head .acts { display:flex; gap:8px; }
+  .rep-head button { background:rgba(255,255,255,.18); color:#fff; border:1px solid rgba(255,255,255,.4);
+    border-radius:7px; padding:6px 12px; font-size:13px; cursor:pointer; }
+  .rep-head button:hover { background:rgba(255,255,255,.3); }
+
+  .rep-sec { padding:16px 22px; border-bottom:1px solid var(--line); }
+  .rep-sec h3 { margin:0 0 12px; font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--accent-d); }
+  .rep-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px 22px; }
+  @media (max-width:600px){ .rep-grid { grid-template-columns:repeat(2,1fr); } }
+  .rep-item .lbl { font-size:11px; color:var(--muted); }
+  .rep-item .val { font-size:14px; font-weight:600; margin-top:1px; }
+  .rep-img { max-width:180px; max-height:180px; border-radius:8px; border:1px solid var(--line);
+    margin-bottom:14px; object-fit:contain; }
+  .remark { font-size:14px; color:var(--ink); background:var(--shade); border-radius:8px; padding:10px 12px; }
+
+  .stats { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+  @media (max-width:600px){ .stats { grid-template-columns:repeat(2,1fr); } }
+  .stat { background:var(--shade); border-radius:10px; padding:14px 8px; text-align:center; }
+  .stat .n { font-size:20px; font-weight:700; color:var(--accent-d); font-variant-numeric:tabular-nums; }
+  .stat .u { font-size:11px; color:var(--muted); margin-top:3px; }
+
+  .rep-total { padding:18px 22px; display:flex; justify-content:space-between; align-items:center;
+    background:var(--shade); gap:12px; }
+  .rep-total .lbl { font-size:16px; font-weight:600; }
+  .rep-total .amt { font-size:28px; font-weight:800; color:var(--accent-d); font-variant-numeric:tabular-nums; }
+
+  /* ===== ตารางใบเสนอราคา ===== */
+  .quote-wrap { overflow-x:auto; }
+  table.quote { border-collapse:collapse; width:100%; min-width:820px; font-size:12px; }
+  table.quote th, table.quote td { border:1px solid var(--line); padding:7px 9px; vertical-align:top; }
+  table.quote th { background:var(--shade); text-align:center; font-size:11px; color:var(--accent-d); line-height:1.3; }
+  table.quote td.center { text-align:center; vertical-align:middle; }
+  table.quote td.right { text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  table.quote td.desc { line-height:1.65; min-width:280px; }
+  table.quote .hl { color:var(--accent-d); font-weight:600; }
+  table.quote img.q-img { max-width:120px; max-height:150px; object-fit:contain; display:block; margin:auto; border-radius:4px; }
+
+  /* ===== ใบยืนยันการสั่งซื้อ (Order Confirmation) =====
+     ตั้งใจใช้ CSS พื้นฐานเท่านั้น: เส้นตาราง + การจัดชิด + ขาว/ดำคงที่
+     ห้ามใส่สีธีม, ไล่เฉด, มุมโค้ง, badge, CSS variable, color-mix, object-fit
+     เพราะตารางนี้ต้องคัดลอกไปวางใน Excel ได้ตรง ๆ (Excel อ่าน CSS พวกนั้นไม่ได้) */
+  table.oc { border-collapse:collapse; width:100%; min-width:820px; font-size:12px;
+    background:#fff; color:#000; }
+  table.oc th, table.oc td { border:1px solid #000; padding:6px 8px; vertical-align:top;
+    background:#fff; color:#000; font-weight:400; text-align:left; }
+  table.oc th { font-weight:700; text-align:center; }
+  table.oc th.right, table.oc td.right { text-align:right; }
+  table.oc td.center { text-align:center; }
+  table.oc td.desc { min-width:300px; line-height:1.6; }
+
+  @media print {
+    header, .grid, .wrap > .btn { display:none !important; }
+    body { background:#fff; }
+    .wrap { padding:0; }
+    .card { box-shadow:none; border:none; }
+    .rep-head .acts { display:none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>ระบบใบเสนอราคาเฟอร์นิเจอร์ (Furnishing)</h1>
+  <p>เฟอร์นิเจอร์ขายเป็นชิ้น — ไม่มีการคำนวณ ตร.ม./กล่อง แบบกระเบื้อง</p>
+</header>
+
+<div class="wrap">
+  <div class="grid">
+
+    <!-- ================= 1. ข้อมูลสินค้า (products) ================= -->
+    <div class="card">
+      <h2>1. ข้อมูลสินค้า (products)</h2>
+      <div class="card-body">
+        <label>โหลดตัวอย่างสินค้า</label>
+        <select id="sampleSelect" aria-label="เลือกตัวอย่างสินค้า" onchange="loadSample(this.value)"></select>
+
+        <label>SKU (รหัสสินค้า)</label>
+        <input id="sku" type="text" placeholder="เช่น FUR-TBL-001">
+
+        <label>ชื่อสินค้า (name)</label>
+        <input id="name" type="text" placeholder="เช่น Coffee Table">
+
+        <div class="row">
+          <div>
+            <label>แบรนด์ (brands)</label>
+            <input id="brand" type="text" placeholder="เช่น Botempi">
+          </div>
+          <div>
+            <label>คอลเลกชัน (collections)</label>
+            <input id="collection" type="text" placeholder="เช่น Core">
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label>หมวดหมู่ (categories)</label>
+            <input id="category" type="text" placeholder="เช่น Table">
+          </div>
+          <div>
+            <label>หมวดหมู่ย่อย (parent_id)</label>
+            <input id="subcategory" type="text" placeholder="เช่น Coffee Table">
+          </div>
+        </div>
+
+        <label>ขนาด กว้าง × ยาว × สูง (ซม.)</label>
+        <div class="dim">
+          <input id="width" type="number" step="0.1" placeholder="กว้าง"><span>×</span>
+          <input id="length" type="number" step="0.1" placeholder="ยาว"><span>×</span>
+          <input id="height" type="number" step="0.1" placeholder="สูง">
+        </div>
+
+        <label>รายละเอียดสินค้า (description)</label>
+        <textarea id="description" rows="3" placeholder="รายละเอียดยาวสำหรับหน้าสินค้า"></textarea>
+
+        <label>รูปสินค้าหลัก (product_images)</label>
+        <input id="productImage" type="file" accept="image/*" aria-label="อัปโหลดรูปสินค้า" onchange="previewImage(event)">
+        <img id="imgPreview" alt="รูปสินค้า">
+        <button type="button" id="clearImg" class="link-btn hidden" onclick="clearImage()">ลบรูป</button>
+      </div>
+    </div>
+
+    <!-- ================= 3. การขาย ================= -->
+    <div class="card">
+      <h2>3. ข้อมูลการขาย</h2>
+      <div class="card-body">
+        <label>เลือกตัวเลือกที่ลูกค้าสั่ง</label>
+        <select id="orderOption" aria-label="เลือกตัวเลือกที่ลูกค้าสั่ง"></select>
+
+        <div class="row">
+          <div>
+            <label>จำนวน</label>
+            <input id="qty" type="number" step="1" min="1" value="1" aria-label="จำนวน">
+          </div>
+          <div>
+            <label>หน่วยขาย</label>
+            <select id="qtyUnit" aria-label="หน่วยขาย">
+              <option value="ชิ้น">ชิ้น</option>
+              <option value="ตัว">ตัว</option>
+              <option value="ชุด">ชุด</option>
+            </select>
+          </div>
+        </div>
+
+        <label>ประเภทส่วนลด</label>
+        <select id="discountType" aria-label="ประเภทส่วนลด" onchange="toggle('discountType','discountValueWrap','ไม่มี')">
+          <option value="ไม่มี">ไม่มี</option>
+          <option value="เปอร์เซ็นต์">เปอร์เซ็นต์ (%)</option>
+          <option value="บาท">บาท</option>
+        </select>
+        <div id="discountValueWrap" class="hidden">
+          <label>มูลค่าส่วนลด</label>
+          <input id="discountValue" type="number" step="0.01" value="0" aria-label="มูลค่าส่วนลด">
+        </div>
+
+        <label>ประเภทสินค้า (Stock / Indent)</label>
+        <select id="orderType" aria-label="ประเภทสินค้า Stock หรือ Indent">
+          <option value="Stock">Stock — มีของพร้อมส่ง</option>
+          <option value="Indent">Indent — สั่งผลิต/รอสินค้า</option>
+        </select>
+
+        <label>หมายเหตุ</label>
+        <textarea id="remark" rows="2" placeholder="เช่น รอสินค้า 60–90 วัน"></textarea>
+      </div>
+    </div>
+
+    <!-- ================= 2. ตัวเลือกสินค้า (product_options) ================= -->
+    <div class="card span2">
+      <h2>2. ตัวเลือกสินค้า (product_options + option_parts)</h2>
+      <div class="card-body">
+        <p class="hint">
+          1 ตัวเลือก = 1 รูปแบบสินค้าที่มี <b>ราคาเดียว</b> (เช่น "Grey", "Black Wood")
+          — ภายในแต่ละตัวเลือกใส่ชิ้นส่วนได้ไม่จำกัด (Top / Base / Legs + วัสดุ)
+        </p>
+        <div id="optionsWrap"></div>
+        <button type="button" class="add-opt" onclick="addOption()">+ เพิ่มตัวเลือกสินค้า</button>
+      </div>
+    </div>
+
+  </div>
+
+  <button type="button" class="btn" onclick="calculate()">สร้างใบเสนอราคา</button>
+  <div id="result" class="result"></div>
+</div>
+
+<script>
+  const $ = id => document.getElementById(id);
+  const num = id => parseFloat($(id).value) || 0;
+  const money = v => v.toLocaleString("en-US", { minimumFractionDigits:2, maximumFractionDigits:2 });
+  const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
+
+  function toggle(selectId, wrapId, hideValue) {
+    $(wrapId).classList.toggle("hidden", $(selectId).value === hideValue);
+  }
+
+  // ---------- รูปสินค้าหลัก ----------
+  const SAMPLE_IMAGE = "image.png";  // รูปเริ่มต้นของสินค้าตัวอย่าง
+  let productImage = "";             // data URL หรือ path ของไฟล์รูป
+
+  function previewImage(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      productImage = ev.target.result;
+      const img = $("imgPreview");
+      img.src = productImage;
+      img.style.display = "block";
+      $("clearImg").classList.remove("hidden");
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function clearImage() {
+    productImage = "";
+    $("productImage").value = "";
+    $("imgPreview").style.display = "none";
+    $("imgPreview").src = "";
+    $("clearImg").classList.add("hidden");
+  }
+
+  // ใช้รูปเริ่มต้นกับสินค้าตัวอย่าง (ผู้ใช้อัปโหลดรูปใหม่ทับได้)
+  function useSampleImage() {
+    productImage = SAMPLE_IMAGE;
+    $("productImage").value = "";
+    const img = $("imgPreview");
+    img.src = SAMPLE_IMAGE;
+    img.style.display = "block";
+    $("clearImg").classList.remove("hidden");
+  }
+
+  /* ================= ตัวเลือกสินค้า (product_options) =================
+     โครงตามสคีมา: 1 option = 1 configuration ที่มีราคาเดียว
+     option.parts = option_parts (title + sub_description) ใส่ได้ไม่จำกัด
+     option.image = product_images ที่มี option_id (ว่าง = ใช้รูปหลัก) */
+  let options = [];
+
+  const blankOption = () => ({
+    label: "", price: "", image: "",
+    parts: [ { title:"", sub:"" } ],
+  });
+
+  // วาดรายการตัวเลือกใหม่ทั้งหมด (เรียกเฉพาะตอนเพิ่ม/ลบ เพื่อไม่ให้ช่องที่พิมพ์อยู่เสีย focus)
+  function renderOptions() {
+    const wrap = $("optionsWrap");
+    wrap.innerHTML = options.map((o, i) => `
+      <div class="opt">
+        <div class="opt-head">
+          <span class="n">ตัวเลือกที่ ${i + 1}</span>
+          ${options.length > 1 ? `<button type="button" class="del" onclick="removeOption(${i})">ลบตัวเลือกนี้</button>` : ""}
+        </div>
+
+        <div class="row">
+          <div>
+            <label>ชื่อตัวเลือก (label)</label>
+            <input type="text" value="${esc(o.label)}" placeholder="เช่น Grey"
+                   oninput="setOpt(${i},'label',this.value)" onchange="refreshOptionSelect()">
+          </div>
+          <div>
+            <label>ราคา (บาท) — ทั้งชุดของตัวเลือกนี้</label>
+            <input type="number" step="0.01" value="${esc(o.price)}" placeholder="0.00"
+                   oninput="setOpt(${i},'price',this.value)" onchange="refreshOptionSelect()">
+          </div>
+        </div>
+
+        <p class="parts-lbl">ชิ้นส่วนภายในตัวเลือก (option_parts) — หัวข้อ + วัสดุ</p>
+        <div id="parts-${i}">
+          ${o.parts.map((p, j) => `
+            <div class="part">
+              <input type="text" value="${esc(p.title)}" placeholder="หัวข้อ เช่น Top"
+                     oninput="setPart(${i},${j},'title',this.value)">
+              <input type="text" value="${esc(p.sub)}" placeholder="รายละเอียด/วัสดุ เช่น GreyWood"
+                     oninput="setPart(${i},${j},'sub',this.value)">
+              <button type="button" class="x-btn" title="ลบชิ้นส่วนนี้" onclick="removePart(${i},${j})">✕</button>
+            </div>`).join("")}
+        </div>
+        <button type="button" class="add-btn" onclick="addPart(${i})">+ เพิ่มชิ้นส่วน</button>
+
+        <label>รูปของตัวเลือกนี้ (ไม่ใส่ = ใช้รูปหลัก)</label>
+        <input type="file" accept="image/*" aria-label="รูปของตัวเลือกที่ ${i + 1}" onchange="setOptImage(${i}, event)">
+        <img class="opt-img" id="optImg-${i}" alt="รูปตัวเลือก"
+             ${o.image ? `src="${esc(o.image)}" style="display:block"` : ""}>
+      </div>`).join("");
+    refreshOptionSelect();
+  }
+
+  // แก้ค่าใน state เฉย ๆ ไม่วาดใหม่ (กัน focus หลุดระหว่างพิมพ์)
+  function setOpt(i, field, value)     { options[i][field] = value; }
+  function setPart(i, j, field, value) { options[i].parts[j][field] = value; }
+
+  function setOptImage(i, e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      options[i].image = ev.target.result;
+      const img = $("optImg-" + i);
+      img.src = options[i].image;
+      img.style.display = "block";
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function addOption()     { options.push(blankOption()); renderOptions(); }
+  function removeOption(i) { options.splice(i, 1); if (!options.length) options.push(blankOption()); renderOptions(); }
+  function addPart(i)      { options[i].parts.push({ title:"", sub:"" }); renderOptions(); }
+  function removePart(i, j) {
+    options[i].parts.splice(j, 1);
+    if (!options[i].parts.length) options[i].parts.push({ title:"", sub:"" });
+    renderOptions();
+  }
+
+  // ชื่อที่ใช้แสดงตัวเลือก (เผื่อผู้ใช้ไม่ได้ตั้ง label)
+  const optName = (o, i) => String(o.label).trim() || `ตัวเลือกที่ ${i + 1}`;
+
+  // สร้าง dropdown "เลือกตัวเลือกที่ลูกค้าสั่ง" ใหม่ โดยคงตัวที่เลือกไว้เดิม
+  function refreshOptionSelect() {
+    const sel = $("orderOption");
+    const keep = sel.value;
+    sel.innerHTML = "";
+    options.forEach((o, i) => {
+      const price = parseFloat(o.price) || 0;
+      const opt = document.createElement("option");
+      opt.value = i;
+      opt.textContent = `${optName(o, i)} — ${price ? money(price) + " บาท" : "ยังไม่ใส่ราคา"}`;
+      sel.appendChild(opt);
+    });
+    if (keep !== "" && options[keep]) sel.value = keep;
+  }
+
+  /* ---------- ข้อมูลจำลองสินค้าเฟอร์นิเจอร์ ---------- */
+  const samples = {
+    coffeeTable: {
+      label: "โต๊ะกลาง Coffee Table (2 ตัวเลือก)",
+      sku:"FUR-TBL-001", name:"Coffee Table Nordic", brand:"Botempi", collection:"Core",
+      category:"Table", subcategory:"Coffee Table",
+      width:120, length:60, height:42,
+      description:"โต๊ะกลางไม้จริง ท็อปหนา 25 มม. ขาเหล็กพ่นสีฝุ่น รับน้ำหนักได้ 80 กก.",
+      qtyUnit:"ตัว", qty:2, discountType:"เปอร์เซ็นต์", discountValue:5, orderType:"Stock", remark:"",
+      options: [
+        { label:"Grey", price:24500, parts:[
+          { title:"Top", sub:"GreyWood ผิวเมลามีน" },
+          { title:"Base", sub:"เหล็กพ่นสีดำด้าน" },
+        ]},
+        { label:"Black Wood", price:27800, parts:[
+          { title:"Top", sub:"Black Oak Veneer" },
+          { title:"Base", sub:"เหล็กพ่นสีดำด้าน" },
+          { title:"Legs", sub:"ปลายขาไม้โอ๊คแท้" },
+        ]},
+      ],
+    },
+    sofa3: {
+      label: "โซฟา 3 ที่นั่ง (3 ตัวเลือกผ้า)",
+      sku:"FUR-SOF-003", name:"Sofa Milano 3 Seater", brand:"Natuzzi", collection:"Editions",
+      category:"Sofa", subcategory:"3 Seater",
+      width:210, length:92, height:85,
+      description:"โซฟา 3 ที่นั่ง โครงไม้ยางพารา เบาะฟองน้ำอัดความหนาแน่นสูง",
+      qtyUnit:"ชุด", qty:1, discountType:"บาท", discountValue:8000, orderType:"Indent",
+      remark:"สั่งผลิต รอสินค้า 60–90 วัน",
+      options: [
+        { label:"Fabric Beige", price:89000, parts:[
+          { title:"Upholstery", sub:"ผ้า Linen สี Beige" },
+          { title:"Frame", sub:"ไม้ยางพาราอบแห้ง" },
+          { title:"Legs", sub:"ไม้วอลนัท" },
+        ]},
+        { label:"Leather Black", price:145000, parts:[
+          { title:"Upholstery", sub:"หนังแท้ Full Grain สีดำ" },
+          { title:"Frame", sub:"ไม้ยางพาราอบแห้ง" },
+          { title:"Legs", sub:"สแตนเลสเงา" },
+        ]},
+        { label:"Velvet Green", price:98000, parts:[
+          { title:"Upholstery", sub:"ผ้ากำมะหยี่สีเขียว" },
+          { title:"Frame", sub:"ไม้ยางพาราอบแห้ง" },
+          { title:"Legs", sub:"ทองเหลืองรมดำ" },
+        ]},
+      ],
+    },
+    chair: {
+      label: "เก้าอี้ทานอาหาร (ขายเป็นชิ้น)",
+      sku:"FUR-CHR-012", name:"Dining Chair Oslo", brand:"Hay", collection:"Basic",
+      category:"Chair", subcategory:"Dining Chair",
+      width:46, length:52, height:81,
+      description:"เก้าอี้ทานอาหาร เบาะหุ้มผ้า ขาไม้บีชแท้ ซ้อนเก็บได้",
+      qtyUnit:"ชิ้น", qty:6, discountType:"ไม่มี", discountValue:0, orderType:"Stock", remark:"",
+      options: [
+        { label:"Natural", price:4900, parts:[
+          { title:"Seat", sub:"ผ้าสีครีม" },
+          { title:"Legs", sub:"ไม้บีชสีธรรมชาติ" },
+        ]},
+        { label:"Walnut", price:5400, parts:[
+          { title:"Seat", sub:"ผ้าสีเทาเข้ม" },
+          { title:"Legs", sub:"ไม้บีชย้อมสีวอลนัท" },
+        ]},
+      ],
+    },
+  };
+
+  function buildSampleOptions() {
+    const sel = $("sampleSelect");
+    sel.innerHTML = "";
+    Object.entries(samples).forEach(([key, s]) => {
+      const opt = document.createElement("option");
+      opt.value = key; opt.textContent = s.label;
+      sel.appendChild(opt);
+    });
+  }
+
+  function loadSample(key) {
+    const s = samples[key] || samples.coffeeTable;
+    const set = (id, v) => { $(id).value = (v == null ? "" : v); };
+
+    ["sku","name","brand","collection","category","subcategory",
+     "width","length","height","description"].forEach(id => set(id, s[id]));
+
+    // ตัวเลือกสินค้า — คัดลอกออกมาเพื่อไม่ให้แก้ทับข้อมูลตัวอย่างต้นฉบับ
+    options = s.options.map(o => ({
+      label:o.label, price:o.price, image:"",
+      parts:o.parts.map(p => ({ title:p.title, sub:p.sub })),
+    }));
+    renderOptions();
+
+    ["qty","qtyUnit","discountType","discountValue","orderType","remark"].forEach(id => set(id, s[id]));
+    toggle("discountType","discountValueWrap","ไม่มี");
+    $("orderOption").value = 0;
+    useSampleImage(); // สินค้าตัวอย่างใช้รูปเริ่มต้น image.png
+  }
+
+  /* ================= คำนวณ =================
+     เฟอร์นิเจอร์ขายเป็นชิ้น: ยอดรวม = ราคาตัวเลือก × จำนวน
+     ไม่มีการแปลงหน่วย / เผื่อสินค้า / ปัดกล่อง แบบกระเบื้อง */
+  let lastRow = null;   // เก็บข้อมูลแถวล่าสุดไว้ทำ CSV
+
+  function calculate() {
+    const result = $("result");
+    const err = m => { result.innerHTML = `<div class="card"><div class="err">⚠ ${m}</div></div>`; };
+
+    const idx = parseInt($("orderOption").value, 10);
+    const opt = options[idx];
+    if (!opt) return err("ยังไม่ได้เลือกตัวเลือกสินค้า");
+
+    const unitPrice = parseFloat(opt.price) || 0;
+    if (unitPrice <= 0) return err(`ตัวเลือก "${esc(optName(opt, idx))}" ยังไม่ได้ใส่ราคา`);
+
+    const qty = num("qty");
+    if (qty <= 0) return err("จำนวนต้องมากกว่า 0");
+
+    const qtyUnit       = $("qtyUnit").value;
+    const discountType  = $("discountType").value;
+    const discountValue = num("discountValue");
+    const orderType     = $("orderType").value;
+    const remark        = $("remark").value.trim();
+    const sku           = $("sku").value.trim() || "-";
+
+    // ยอดเงิน
+    const priceBeforeDiscount = unitPrice * qty;
+    let discountAmount = 0;
+    if (discountType === "เปอร์เซ็นต์") discountAmount = priceBeforeDiscount * discountValue / 100;
+    else if (discountType === "บาท")    discountAmount = discountValue;
+    if (discountAmount > priceBeforeDiscount) discountAmount = priceBeforeDiscount;
+
+    const netPrice   = priceBeforeDiscount - discountAmount;
+    const vat        = netPrice * 0.07;
+    const grandTotal = netPrice + vat;
+
+    // ข้อความประกอบ
+    const now = new Date().toLocaleString("th-TH", { dateStyle:"long", timeStyle:"short" });
+    const w = num("width"), l = num("length"), h = num("height");
+    const dimText = (w || l || h) ? `${w || "-"} × ${l || "-"} × ${h || "-"} ซม.` : "-";
+    const sDiscount = discountType === "ไม่มี" ? "ไม่มีส่วนลด"
+      : discountType === "เปอร์เซ็นต์" ? `ลด ${discountValue}%` : `ลด ${money(discountValue)} บาท`;
+    const image = opt.image || productImage;
+
+    // ชิ้นส่วนของตัวเลือกที่สั่ง (option_parts)
+    const parts = opt.parts.filter(p => p.title.trim() || p.sub.trim());
+    const partLine = p => `${p.title.trim() || "-"}: ${p.sub.trim() || "-"}`;
+
+    // ตัวเลือกอื่นที่มีราคาแล้ว (ไว้แสดงท้ายรายงาน)
+    const otherOpts = options
+      .map((o, i) => ({ o, i }))
+      .filter(({ o, i }) => i !== idx && (parseFloat(o.price) || 0) > 0);
+
+    /* ----- DESCRIPTION สำหรับใบเสนอราคา ----- */
+    const quoteDesc = [
+      `<b>${esc($("brand").value || "-")}${$("collection").value ? " — " + esc($("collection").value) : ""}</b>`,
+      $("name").value ? esc($("name").value) : "",
+      `ตัวเลือก: <b class="hl">${esc(optName(opt, idx))}</b>`,
+      ...parts.map(p => `&nbsp;&nbsp;• ${esc(partLine(p))}`),
+      `ขนาด (กว้าง × ยาว × สูง): ${dimText}`,
+      $("category").value ? `หมวดหมู่: ${esc($("category").value)}${$("subcategory").value ? " / " + esc($("subcategory").value) : ""}` : "",
+      `ประเภทสินค้า: ${orderType}`,
+    ].filter(Boolean).join("<br>");
+
+    /* ----- DESCRIPTION สำหรับใบยืนยันการสั่งซื้อ -----
+       ข้อความล้วน + <br> เท่านั้น (ไม่มี span/div/class ที่พึ่ง CSS)
+       เพื่อให้คัดลอกลง Excel แล้วได้ขึ้นบรรทัดใหม่ในเซลล์ตามเดิม */
+    const ocDesc = [
+      `${esc($("brand").value || "-")}${$("collection").value ? " — " + esc($("collection").value) : ""}`,
+      $("name").value ? esc($("name").value) : "",
+      `ตัวเลือก: ${esc(optName(opt, idx))}`,
+      ...(parts.length ? parts.map(p => esc(partLine(p))) : ["ชิ้นส่วน: -"]),
+      `ขนาด (กว้าง × ยาว × สูง): ${dimText}`,
+      $("category").value ? `หมวดหมู่: ${esc($("category").value)}` : "",
+      $("subcategory").value ? `หมวดหมู่ย่อย: ${esc($("subcategory").value)}` : "",
+      `ประเภทสินค้า: ${orderType} ${orderType === "Indent" ? "(สั่งผลิต/รอสินค้า)" : "(มีของพร้อมส่ง)"}`,
+      `หมายเหตุ: ${esc(remark) || "-"}`,
+    ].filter(Boolean).join("<br>");
+
+    // เก็บไว้ให้ปุ่ม Export CSV — 1 แถว = 1 รายการ, 1 คอลัมน์ = 1 ค่า
+    lastRow = {
+      "วันที่": now,
+      "SKU": sku,
+      "ชื่อสินค้า": $("name").value.trim(),
+      "แบรนด์": $("brand").value.trim(),
+      "คอลเลกชัน": $("collection").value.trim(),
+      "หมวดหมู่": $("category").value.trim(),
+      "หมวดหมู่ย่อย": $("subcategory").value.trim(),
+      "กว้าง (ซม.)": w || "",
+      "ยาว (ซม.)": l || "",
+      "สูง (ซม.)": h || "",
+      "ตัวเลือก": optName(opt, idx),
+      "ชิ้นส่วน": parts.map(partLine).join(" | "),
+      "ประเภทสินค้า": orderType,
+      "หน่วย": qtyUnit,
+      "จำนวน": qty,
+      "ราคาต่อหน่วย": unitPrice.toFixed(2),
+      "ยอดรวมก่อนลด": priceBeforeDiscount.toFixed(2),
+      "ส่วนลด": discountAmount.toFixed(2),
+      "ยอดก่อนภาษี": netPrice.toFixed(2),
+      "VAT 7%": vat.toFixed(2),
+      "ยอดสุทธิ": grandTotal.toFixed(2),
+      "หมายเหตุ": remark,
+    };
+
+    result.innerHTML = `
+      <div class="card">
+        <div class="rep-head">
+          <div>
+            <div class="t">ใบเสนอราคาเฟอร์นิเจอร์</div>
+            <div class="date">${now}</div>
+          </div>
+          <div class="acts">
+            <button type="button" onclick="exportCSV()">⬇ Export CSV</button>
+            <button type="button" onclick="window.print()">🖨 พิมพ์</button>
+          </div>
+        </div>
+
+        <div class="rep-sec">
+          <h3>ข้อมูลสินค้า</h3>
+          ${image ? `<img class="rep-img" src="${esc(image)}" alt="รูปสินค้า">` : ""}
+          <div class="rep-grid">
+            <div class="rep-item"><div class="lbl">SKU</div><div class="val">${esc(sku)}</div></div>
+            <div class="rep-item"><div class="lbl">ชื่อสินค้า</div><div class="val">${esc($("name").value) || "-"}</div></div>
+            <div class="rep-item"><div class="lbl">แบรนด์</div><div class="val">${esc($("brand").value) || "-"}</div></div>
+            <div class="rep-item"><div class="lbl">คอลเลกชัน</div><div class="val">${esc($("collection").value) || "-"}</div></div>
+            <div class="rep-item"><div class="lbl">หมวดหมู่</div><div class="val">${esc($("category").value) || "-"}</div></div>
+            <div class="rep-item"><div class="lbl">หมวดหมู่ย่อย</div><div class="val">${esc($("subcategory").value) || "-"}</div></div>
+            <div class="rep-item"><div class="lbl">ขนาด (ก × ย × ส)</div><div class="val">${dimText}</div></div>
+            <div class="rep-item"><div class="lbl">ประเภทสินค้า</div><div class="val">${orderType}</div></div>
+            <div class="rep-item"><div class="lbl">ส่วนลด</div><div class="val">${sDiscount}</div></div>
+          </div>
+          ${$("description").value.trim() ? `<div class="remark" style="margin-top:14px">${esc($("description").value.trim())}</div>` : ""}
+        </div>
+
+        <div class="rep-sec">
+          <h3>ตัวเลือกที่สั่ง — ${esc(optName(opt, idx))}</h3>
+          <table class="res">
+            ${parts.length
+              ? parts.map(p => `<tr><td>${esc(p.title.trim() || "-")}</td><td>${esc(p.sub.trim() || "-")}</td></tr>`).join("")
+              : `<tr><td colspan="2">ไม่ได้ระบุชิ้นส่วน</td></tr>`}
+          </table>
+        </div>
+
+        <div class="rep-sec">
+          <h3>สรุปจำนวนและราคา</h3>
+          <div class="stats">
+            <div class="stat"><div class="n">${qty.toLocaleString()}</div><div class="u">${qtyUnit}</div></div>
+            <div class="stat"><div class="n">${money(unitPrice)}</div><div class="u">บาท / ${qtyUnit}</div></div>
+            <div class="stat"><div class="n">${money(discountAmount)}</div><div class="u">ส่วนลด (บาท)</div></div>
+            <div class="stat"><div class="n">${money(netPrice)}</div><div class="u">ยอดก่อนภาษี (บาท)</div></div>
+          </div>
+        </div>
+
+        <div class="rep-total">
+          <div class="lbl">ยอดสุทธิ (รวม VAT 7%)</div>
+          <div class="amt">${money(grandTotal)} ฿</div>
+        </div>
+
+        ${otherOpts.length ? `
+        <div class="rep-sec">
+          <h3>ตัวเลือกอื่นของสินค้านี้</h3>
+          <table class="res">
+            ${otherOpts.map(({ o, i }) => `
+              <tr>
+                <td>${esc(optName(o, i))}
+                  <div style="font-size:12px;color:var(--muted);font-weight:400">${
+                    o.parts.filter(p => p.title.trim() || p.sub.trim()).map(p => esc(partLine(p))).join(" · ") || "-"
+                  }</div>
+                </td>
+                <td>${money(parseFloat(o.price) || 0)} ฿</td>
+              </tr>`).join("")}
+          </table>
+        </div>` : ""}
+
+        <div class="rep-sec">
+          <h3>ใบเสนอราคา (Quotation)</h3>
+          <div class="quote-wrap">
+            <table class="quote">
+              <thead>
+                <tr>
+                  <th>NO.</th><th>ITEM No.</th><th>IMAGE</th><th>DESCRIPTION</th>
+                  <th>UNIT</th><th class="right">QTY</th><th class="right">UNIT PRICE<br>(THB)</th>
+                  <th class="right">AMOUNT<br>(THB)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="center">1</td>
+                  <td class="center">${esc(sku)}</td>
+                  <td class="center">${image ? `<img class="q-img" src="${esc(image)}" alt="รูปสินค้า">` : "-"}</td>
+                  <td class="desc">${quoteDesc}</td>
+                  <td class="center">${qtyUnit}</td>
+                  <td class="right">${money(qty)}</td>
+                  <td class="right">${money(unitPrice)}</td>
+                  <td class="right"><b>${money(priceBeforeDiscount)}</b></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="rep-sec">
+          <h3>ใบยืนยันการสั่งซื้อ (Order Confirmation)</h3>
+          <div class="quote-wrap">
+            <table class="oc">
+              <thead>
+                <tr>
+                  <th>NO.</th><th>SKU</th><th>IMAGE</th><th>DESCRIPTION</th>
+                  <th>UNIT</th><th class="right">QTY</th><th class="right">UNIT PRICE<br>(THB)</th>
+                  <th class="right">DISCOUNT<br>(THB)</th><th class="right">AMOUNT<br>(THB)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="center">1</td>
+                  <td class="center">${esc(sku)}</td>
+                  <td class="center">${image ? `<img src="${esc(image)}" alt="รูปสินค้า" width="100">` : "-"}</td>
+                  <td class="desc">${ocDesc}</td>
+                  <td class="center">${qtyUnit}</td>
+                  <td class="right">${money(qty)}</td>
+                  <td class="right">${money(unitPrice)}</td>
+                  <td class="right">${money(discountAmount)}</td>
+                  <td class="right">${money(netPrice)}</td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr><td colspan="8" class="right">ยอดรวม (Subtotal)</td><td class="right">${money(priceBeforeDiscount)}</td></tr>
+                <tr><td colspan="8" class="right">ส่วนลด (Discount)</td><td class="right">-${money(discountAmount)}</td></tr>
+                <tr><td colspan="8" class="right">ยอดก่อนภาษี (Pre-VAT)</td><td class="right">${money(netPrice)}</td></tr>
+                <tr><td colspan="8" class="right">ภาษีมูลค่าเพิ่ม 7% (VAT)</td><td class="right">${money(vat)}</td></tr>
+                <tr><td colspan="8" class="right"><b>ยอดสุทธิ (Grand Total)</b></td><td class="right"><b>${money(grandTotal)}</b></td></tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>`;
+    result.scrollIntoView({ behavior:"smooth", block:"nearest" });
+  }
+
+  /* ---------- Export CSV สำหรับ Excel ----------
+     1 แถว = 1 รายการ, 1 คอลัมน์ = 1 ค่า, ไม่มี merged cell
+     ใส่ BOM เพื่อให้ Excel อ่านภาษาไทยเป็น UTF-8 ถูกต้อง */
+  function exportCSV() {
+    if (!lastRow) return;
+    const cell = v => {
+      const s = String(v ?? "");
+      return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+    const headers = Object.keys(lastRow);
+    const csv = [
+      headers.map(cell).join(","),
+      headers.map(h => cell(lastRow[h])).join(","),
+    ].join("\r\n");
+
+    const blob = new Blob(["﻿" + csv], { type:"text/csv;charset=utf-8;" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `quotation-${lastRow.SKU || "furnishing"}.csv`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  // เติมค่าเริ่มต้นให้ฟอร์มตั้งแต่เปิดหน้า
+  buildSampleOptions();
+  loadSample("coffeeTable");
+</script>
+
+</body>
+</html>
