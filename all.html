@@ -9,12 +9,14 @@
   :root {
     --paper:#f4f6f8; --card:#fff; --ink:#16202b; --muted:#5c6a78; --line:#dde3e9;
     --accent:#0e7c86; --accent-d:#0b636b; --tile:#0e7c86; --furn:#a86a17; --shade:#eef4f5;
-    --need:#c0392b; --need-bg:#fff5f4;
+    --need:#b7791f; --need-bg:#fffbe6;
+    --need-g:#1e7d44; --need-g-bg:#ecfdf3;
   }
   @media (prefers-color-scheme: dark) {
     :root { --paper:#0e141a; --card:#161f28; --ink:#eaf0f4; --muted:#93a1af; --line:#26313c;
       --accent:#37b3bd; --accent-d:#2b98a1; --tile:#37b3bd; --furn:#d69a48; --shade:#182530;
-      --need:#ef9a93; --need-bg:#2b1a19; }
+      --need:#f2c65c; --need-bg:#2b2412;
+      --need-g:#6ddb9a; --need-g-bg:#12271b; }
   }
   body {
     margin:0; background:var(--paper); color:var(--ink);
@@ -68,7 +70,7 @@
     color:#c0392b; border:1px solid var(--line); border-radius:7px; cursor:pointer; }
 
   /* ===== สิทธิ์ผู้ใช้ระดับ Sales =====
-     label.need  = ช่องที่ต้องกรอกใหม่ทุกรอบ (เปลี่ยนตามลูกค้า/ดีล) → แดง
+     label.need  = ช่องที่ต้องกรอกใหม่ทุกรอบ (เปลี่ยนตามลูกค้า/ดีล) → เหลือง
      .locked     = ข้อมูลจากแคตตาล็อก/บริษัท → sales แก้ไม่ได้ */
   label.need { color:var(--need); font-weight:600; }
   label.need::after { content:" ✱"; font-size:10px; }
@@ -77,6 +79,14 @@
   }
   label.need + input:focus, label.need + select:focus, label.need + textarea:focus {
     outline-color:var(--need);
+  }
+  /* label.need.g = ช่องบังคับกรอกที่ไฮไลต์เขียว (เลขที่เอกสาร) */
+  label.need.g { color:var(--need-g); }
+  label.need.g + input, label.need.g + select, label.need.g + textarea {
+    border-color:var(--need-g); background:var(--need-g-bg);
+  }
+  label.need.g + input:focus, label.need.g + select:focus, label.need.g + textarea:focus {
+    outline-color:var(--need-g);
   }
   /* .locked = แค่ทำสีบอกว่าเป็นข้อมูลจากแคตตาล็อก — ยังพิมพ์แก้ได้ตามปกติ */
   .locked { background:var(--shade); color:var(--muted); }
@@ -542,9 +552,9 @@
         </select>
 
         <div class="row">
-          <div><label class="need">Quote No.</label><input id="d_no" type="text" placeholder="A26-11736" oninput="saveProject()"></div>
-          <div><label class="need">Additional No.</label><input id="d_addno" type="text" placeholder="0" oninput="saveProject()"></div>
-          <div><label class="need">Revision No.</label><input id="d_rev" type="text" placeholder="1" oninput="saveProject()"></div>
+          <div><label class="need g">Quote No.</label><input id="d_no" type="text" placeholder="A26-11736" oninput="saveProject()"></div>
+          <div><label class="need g">Additional No.</label><input id="d_addno" type="text" placeholder="0" oninput="saveProject()"></div>
+          <div><label class="need g">Revision No.</label><input id="d_rev" type="text" placeholder="1" oninput="saveProject()"></div>
         </div>
 
         <label class="need">บรรทัดอ้างอิง / ชื่อโปรเจกต์ (แถบใต้หัวเรื่อง)</label>
