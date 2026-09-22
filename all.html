@@ -19,8 +19,8 @@
         --tile: #0e7c86;
         --furn: #a86a17;
         --shade: #eef4f5;
-        --need: #c0392b;
-        --need-bg: #fff5f4;
+        --need: #b7791f;
+        --need-bg: #fffbe6;
         --need-g: #1e7d44;
         --need-g-bg: #ecfdf3;
       }
@@ -36,8 +36,8 @@
           --tile: #37b3bd;
           --furn: #d69a48;
           --shade: #182530;
-          --need: #ef9a93;
-          --need-bg: #2b1a19;
+          --need: #f2c65c;
+          --need-bg: #2b2412;
           --need-g: #6ddb9a;
           --need-g-bg: #12271b;
         }
@@ -226,7 +226,7 @@
       }
 
       /* ===== สิทธิ์ผู้ใช้ระดับ Sales =====
-     label.need  = ช่องที่ต้องกรอกใหม่ทุกรอบ (เปลี่ยนตามลูกค้า/ดีล) → แดง
+     label.need  = ช่องที่ต้องกรอกใหม่ทุกรอบ (เปลี่ยนตามลูกค้า/ดีล) → เหลือง
      .locked     = ข้อมูลจากแคตตาล็อก/บริษัท → sales แก้ไม่ได้ */
       label.need {
         color: var(--need);
@@ -944,7 +944,7 @@
         <div class="legend">
           <span><b>สิทธิ์ผู้ใช้: Sales</b></span>
           <span
-            ><span class="sw need"></span>ช่องสีแดง ✱ = ต้องกรอก/เลือกใหม่ทุกรอบ
+            ><span class="sw need"></span>ช่องสีเหลือง ✱ = ต้องกรอก/เลือกใหม่ทุกรอบ
             (เปลี่ยนตามลูกค้าและดีล)</span
           >
           <span
@@ -1481,7 +1481,7 @@
 
               <div class="row">
                 <div>
-                  <label class="need">Quote No.</label
+                  <label class="need g">Quote No.</label
                   ><input
                     id="d_no"
                     type="text"
@@ -1491,7 +1491,7 @@
                 </div>
                 <!-- id ยังเป็น d_addno ตามเดิม เพื่อไม่ให้โปรเจกต์ที่เซฟไว้แล้วอ่านค่าไม่เจอ -->
                 <div>
-                  <label class="need">Option No.</label
+                  <label class="need g">Option No.</label
                   ><input
                     id="d_addno"
                     type="text"
@@ -1500,7 +1500,7 @@
                   />
                 </div>
                 <div>
-                  <label class="need">Revision No.</label
+                  <label class="need g">Revision No.</label
                   ><input
                     id="d_rev"
                     type="text"
@@ -1551,123 +1551,44 @@
             </div>
           </div>
 
-          <label class="need">ประเภทสินค้า (Stock / Indent)</label>
-          <select id="f_orderType" aria-label="ประเภทสินค้าเฟอร์นิเจอร์">
-            <option value="Stock">Stock — มีของพร้อมส่ง</option>
-            <option value="Indent">Indent — สั่งผลิต/รอสินค้า</option>
-          </select>
-
-          <label class="need">หมายเหตุ</label>
-          <textarea id="f_remark" rows="2" placeholder="เช่น รอสินค้า 60–90 วัน"></textarea>
-        </div>
-      </div>
-
-      <div class="card span2">
-        <h2>ตัวเลือกสินค้า (product_options + option_parts) — จากแคตตาล็อก</h2>
-        <div class="card-body">
-          <p class="lockmsg">🔒 1 ตัวเลือก = 1 รูปแบบสินค้าที่มีราคาเดียว — ตั้งค่าโดย Admin
-            ปกติ sales แค่เลือกที่ช่อง “เลือกตัวเลือกที่ลูกค้าสั่ง”</p>
-          <div id="optionsWrap"></div>
-          <button type="button" class="add-opt" onclick="addOption()">+ เพิ่มตัวเลือกสินค้า</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <button type="button" class="btn" onclick="addToProject()">＋ เพิ่มเข้าโปรเจกต์</button>
-  <div id="addMsg"></div>
-</div>
-
-<!-- ==================== หน้า 2: โปรเจกต์ ==================== -->
-<div class="view" id="view-project">
-  <div class="grid">
-    <div class="card">
-      <h2>ข้อมูลบริษัท (ผู้ขาย) — คงที่</h2>
-      <div class="card-body">
-        <p class="lockmsg">🔒 ข้อมูลบริษัทตั้งค่าโดย Admin — เหมือนกันทุกใบ ไม่ต้องกรอกใหม่</p>
-
-        <label>ชื่อบริษัท</label>
-        <input id="c_name" type="text" class="locked">
-
-        <label>ที่อยู่</label>
-        <textarea id="c_addr" rows="2" class="locked"></textarea>
-
-        <div class="row">
-          <div><label>Tel</label><input id="c_tel" type="text" class="locked"></div>
-          <div><label>Mobile</label><input id="c_mobile" type="text" class="locked"></div>
-        </div>
-        <div class="row">
-          <div><label>Email</label><input id="c_email" type="text" class="locked"></div>
-          <div><label>Tax ID</label><input id="c_taxid" type="text" class="locked"></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>ข้อมูลเอกสาร</h2>
-      <div class="card-body">
-        <label class="need">ประเภทเอกสาร</label>
-        <select id="d_type" aria-label="ประเภทเอกสาร" onchange="saveProject()">
-          <option value="ORDER CONFIRMATION">ORDER CONFIRMATION</option>
-          <option value="QUOTATION">QUOTATION</option>
-          <option value="PROFORMA INVOICE">PROFORMA INVOICE</option>
-        </select>
-
-        <div class="row">
-          <div><label class="need g">Quote No.</label><input id="d_no" type="text" placeholder="A26-11736" oninput="saveProject()"></div>
-          <div><label class="need g">Additional No.</label><input id="d_addno" type="text" placeholder="0" oninput="saveProject()"></div>
-          <div><label class="need g">Revision No.</label><input id="d_rev" type="text" placeholder="1" oninput="saveProject()"></div>
-        </div>
-
-        <label class="need">บรรทัดอ้างอิง / ชื่อโปรเจกต์ (แถบใต้หัวเรื่อง)</label>
-        <input id="d_ref" type="text" placeholder="1A-บริษัท เทอร์ริคอน จำกัด -18/2/2026" oninput="saveProject()">
-
-        <div class="row">
-          <div><label class="need">Date</label><input id="d_date" type="text" placeholder="9 May 2026" oninput="saveProject()"></div>
-          <div><label class="need">Validity</label><input id="d_validity" type="text" placeholder="30 Days" oninput="saveProject()"></div>
-        </div>
-
-        <label class="need">From (ผู้จัดทำ)</label>
-        <input id="d_from" type="text" placeholder="Panumard (Ann)" oninput="saveProject()">
-      </div>
-    </div>
-
-    <div class="card span2">
-      <h2>ข้อมูลลูกค้า</h2>
-      <div class="card-body">
-        <div class="row">
-          <div><label class="need">Customer Code</label><input id="k_code" type="text" placeholder="1A-TE-00160" oninput="saveProject()"></div>
-          <div><label class="need">Customer Name</label><input id="k_name" type="text" placeholder="บริษัท สตาราบิค จำกัด" oninput="saveProject()"></div>
-        </div>
-        <label class="need">ที่อยู่ลูกค้า</label>
-        <textarea id="k_addr" rows="2" placeholder="125 ซอยศาลาธรรมสพน์ 88 ..." oninput="saveProject()"></textarea>
-        <label class="need">Attn (ผู้ติดต่อ)</label>
-        <input id="k_attn" type="text" placeholder="K.ปรีชา" oninput="saveProject()">
-      </div>
-    </div>
-
-    <div class="card span2">
-      <h2>ท้ายเอกสาร — การชำระเงิน / เงื่อนไข / ช่องเซ็น</h2>
-      <div class="card-body">
-        <label>บรรทัด Payment (ชื่อบัญชี / ธนาคาร / เลขบัญชี)</label>
-        <input id="pay_bank" type="text" class="locked">
-
-        <div class="row">
-          <div><label class="need">มัดจำ (%)</label><input id="pay_dep_pct" type="number" min="0" max="100" step="any" placeholder="50" oninput="saveProject()"></div>
-          <div><label>เงื่อนไขมัดจำ</label><input id="pay_dep_note" type="text" class="locked" oninput="saveProject()"></div>
-          <div><label>เงื่อนไขยอดคงเหลือ</label><input id="pay_bal_note" type="text" class="locked" oninput="saveProject()"></div>
-        </div>
-        <p class="hint">ยอดมัดจำและยอดคงเหลือคำนวณจาก Grand Total ให้อัตโนมัติ</p>
-
-        <div class="row">
-          <div>
-            <label>ส่วนลดท้ายบิล (Discount) — sales เป็นคนใส่</label>
-            <select id="bill_discType" aria-label="ประเภทส่วนลดท้ายบิล"
-                    onchange="toggle('bill_discType','bill_discWrap','ไม่มี'); saveProject(); renderProject()">
-              <option value="ไม่มี">ไม่มี</option>
-              <option value="เปอร์เซ็นต์">เปอร์เซ็นต์ (%)</option>
-              <option value="บาท">บาท</option>
-            </select>
+          <div class="card span2">
+            <h2>ข้อมูลลูกค้า</h2>
+            <div class="card-body">
+              <div class="row">
+                <div>
+                  <label class="need">Customer Code</label
+                  ><input
+                    id="k_code"
+                    type="text"
+                    placeholder="1A-TE-00160"
+                    oninput="saveProject()"
+                  />
+                </div>
+                <div>
+                  <label class="need">Customer Name</label
+                  ><input
+                    id="k_name"
+                    type="text"
+                    placeholder="บริษัท สตาราบิค จำกัด"
+                    oninput="saveProject()"
+                  />
+                </div>
+              </div>
+              <label class="need">ที่อยู่ลูกค้า</label>
+              <textarea
+                id="k_addr"
+                rows="2"
+                placeholder="125 ซอยศาลาธรรมสพน์ 88 ..."
+                oninput="saveProject()"
+              ></textarea>
+              <label class="need">Attn (ผู้ติดต่อ)</label>
+              <input
+                id="k_attn"
+                type="text"
+                placeholder="K.ปรีชา"
+                oninput="saveProject()"
+              />
+            </div>
           </div>
 
           <div class="card span2">
