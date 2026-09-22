@@ -1,1487 +1,3234 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="th">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AMO — เพิ่มสินค้าเข้าโปรเจกต์ → ใบยืนยันการสั่งซื้อ (Mockup)</title>
-<style>
-  * { box-sizing: border-box; }
-  :root {
-    --paper:#f4f6f8; --card:#fff; --ink:#16202b; --muted:#5c6a78; --line:#dde3e9;
-    --accent:#0e7c86; --accent-d:#0b636b; --tile:#0e7c86; --furn:#a86a17; --shade:#eef4f5;
-    --need:#c0392b; --need-bg:#fff5f4;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root { --paper:#0e141a; --card:#161f28; --ink:#eaf0f4; --muted:#93a1af; --line:#26313c;
-      --accent:#37b3bd; --accent-d:#2b98a1; --tile:#37b3bd; --furn:#d69a48; --shade:#182530;
-      --need:#ef9a93; --need-bg:#2b1a19; }
-  }
-  body {
-    margin:0; background:var(--paper); color:var(--ink);
-    font-family:"Segoe UI","Sarabun",system-ui,sans-serif; line-height:1.5;
-  }
-  header { background:var(--accent); color:#fff; padding:18px 24px; }
-  header h1 { margin:0; font-size:19px; }
-  header p { margin:4px 0 0; opacity:.9; font-size:13px; }
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AMO — เพิ่มสินค้าเข้าโปรเจกต์ → ใบยืนยันการสั่งซื้อ (Mockup)</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      :root {
+        --paper: #f4f6f8;
+        --card: #fff;
+        --ink: #16202b;
+        --muted: #5c6a78;
+        --line: #dde3e9;
+        --accent: #0e7c86;
+        --accent-d: #0b636b;
+        --tile: #0e7c86;
+        --furn: #a86a17;
+        --shade: #eef4f5;
+        --need: #c0392b;
+        --need-bg: #fff5f4;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --paper: #0e141a;
+          --card: #161f28;
+          --ink: #eaf0f4;
+          --muted: #93a1af;
+          --line: #26313c;
+          --accent: #37b3bd;
+          --accent-d: #2b98a1;
+          --tile: #37b3bd;
+          --furn: #d69a48;
+          --shade: #182530;
+          --need: #ef9a93;
+          --need-bg: #2b1a19;
+        }
+      }
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: 'Segoe UI', 'Sarabun', system-ui, sans-serif;
+        line-height: 1.5;
+      }
+      header {
+        background: var(--accent);
+        color: #fff;
+        padding: 18px 24px;
+      }
+      header h1 {
+        margin: 0;
+        font-size: 19px;
+      }
+      header p {
+        margin: 4px 0 0;
+        opacity: 0.9;
+        font-size: 13px;
+      }
 
-  /* ===== แท็บสลับหน้า ===== */
-  nav.tabs { background:var(--card); border-bottom:1px solid var(--line); padding:0 24px;
-    display:flex; gap:4px; overflow-x:auto; position:sticky; top:0; z-index:5; }
-  nav.tabs button { background:transparent; border:none; border-bottom:3px solid transparent;
-    padding:13px 16px; font-size:14px; font-family:inherit; color:var(--muted);
-    cursor:pointer; white-space:nowrap; }
-  nav.tabs button:hover { color:var(--ink); }
-  nav.tabs button.on { color:var(--accent-d); border-bottom-color:var(--accent); font-weight:600; }
-  nav.tabs .count { display:inline-block; min-width:20px; padding:0 6px; margin-left:6px;
-    background:var(--accent); color:#fff; border-radius:999px; font-size:11px; font-weight:700; }
+      /* ===== แท็บสลับหน้า ===== */
+      nav.tabs {
+        background: var(--card);
+        border-bottom: 1px solid var(--line);
+        padding: 0 24px;
+        display: flex;
+        gap: 4px;
+        overflow-x: auto;
+        position: sticky;
+        top: 0;
+        z-index: 5;
+      }
+      nav.tabs button {
+        background: transparent;
+        border: none;
+        border-bottom: 3px solid transparent;
+        padding: 13px 16px;
+        font-size: 14px;
+        font-family: inherit;
+        color: var(--muted);
+        cursor: pointer;
+        white-space: nowrap;
+      }
+      nav.tabs button:hover {
+        color: var(--ink);
+      }
+      nav.tabs button.on {
+        color: var(--accent-d);
+        border-bottom-color: var(--accent);
+        font-weight: 600;
+      }
+      nav.tabs .count {
+        display: inline-block;
+        min-width: 20px;
+        padding: 0 6px;
+        margin-left: 6px;
+        background: var(--accent);
+        color: #fff;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 700;
+      }
 
-  .wrap { max-width:1000px; margin:0 auto; padding:22px 24px 60px; }
-  .view { display:none; }
-  .view.on { display:block; }
-  .grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; align-items:start; }
-  @media (max-width:760px){ .grid { grid-template-columns:1fr; } }
-  .span2 { grid-column:1 / -1; }
+      .wrap {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 22px 24px 60px;
+      }
+      .view {
+        display: none;
+      }
+      .view.on {
+        display: block;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+        align-items: start;
+      }
+      @media (max-width: 760px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      .span2 {
+        grid-column: 1 / -1;
+      }
 
-  .card { background:var(--card); border:1px solid var(--line); border-radius:12px;
-    box-shadow:0 1px 3px rgba(0,0,0,.06); overflow:hidden; margin-bottom:18px; }
-  .card h2 { margin:0; font-size:14px; padding:13px 18px; background:var(--shade);
-    border-bottom:1px solid var(--line); color:var(--accent-d); }
-  .card-body { padding:16px 18px; }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+        overflow: hidden;
+        margin-bottom: 18px;
+      }
+      .card h2 {
+        margin: 0;
+        font-size: 14px;
+        padding: 13px 18px;
+        background: var(--shade);
+        border-bottom: 1px solid var(--line);
+        color: var(--accent-d);
+      }
+      .card-body {
+        padding: 16px 18px;
+      }
 
-  label { display:block; font-size:13px; color:var(--muted); margin:12px 0 5px; }
-  label:first-child { margin-top:0; }
-  input, select, textarea {
-    width:100%; padding:9px 11px; font-size:14px; color:var(--ink);
-    border:1px solid var(--line); border-radius:8px; background:var(--card);
-    font-family:inherit; resize:vertical;
-  }
-  input:focus, select:focus, textarea:focus { outline:2px solid var(--accent); border-color:var(--accent); }
-  .row { display:flex; gap:10px; }
-  .row > div { flex:1; min-width:0; }
-  .hidden { display:none; }
-  .dim { display:flex; align-items:center; gap:8px; }
-  .dim input { text-align:center; }
-  .dim span { color:var(--muted); font-size:14px; }
-  .prev { display:none; max-width:100%; max-height:170px; border-radius:8px;
-    margin-top:10px; border:1px solid var(--line); object-fit:contain; }
-  .link-btn { width:auto; margin-top:8px; padding:4px 10px; font-size:12px; background:transparent;
-    color:#c0392b; border:1px solid var(--line); border-radius:7px; cursor:pointer; }
+      label {
+        display: block;
+        font-size: 13px;
+        color: var(--muted);
+        margin: 12px 0 5px;
+      }
+      label:first-child {
+        margin-top: 0;
+      }
+      input,
+      select,
+      textarea {
+        width: 100%;
+        padding: 9px 11px;
+        font-size: 14px;
+        color: var(--ink);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--card);
+        font-family: inherit;
+        resize: vertical;
+      }
+      input:focus,
+      select:focus,
+      textarea:focus {
+        outline: 2px solid var(--accent);
+        border-color: var(--accent);
+      }
+      .row {
+        display: flex;
+        gap: 10px;
+      }
+      .row > div {
+        flex: 1;
+        min-width: 0;
+      }
+      .hidden {
+        display: none;
+      }
+      .dim {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .dim input {
+        text-align: center;
+      }
+      .dim span {
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .prev {
+        display: none;
+        max-width: 100%;
+        max-height: 170px;
+        border-radius: 8px;
+        margin-top: 10px;
+        border: 1px solid var(--line);
+        object-fit: contain;
+      }
+      .link-btn {
+        width: auto;
+        margin-top: 8px;
+        padding: 4px 10px;
+        font-size: 12px;
+        background: transparent;
+        color: #c0392b;
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        cursor: pointer;
+      }
 
-  /* ===== สิทธิ์ผู้ใช้ระดับ Sales =====
+      /* ===== สิทธิ์ผู้ใช้ระดับ Sales =====
      label.need  = ช่องที่ต้องกรอกใหม่ทุกรอบ (เปลี่ยนตามลูกค้า/ดีล) → แดง
      .locked     = ข้อมูลจากแคตตาล็อก/บริษัท → sales แก้ไม่ได้ */
-  label.need { color:var(--need); font-weight:600; }
-  label.need::after { content:" ✱"; font-size:10px; }
-  label.need + input, label.need + select, label.need + textarea {
-    border-color:var(--need); background:var(--need-bg);
-  }
-  label.need + input:focus, label.need + select:focus, label.need + textarea:focus {
-    outline-color:var(--need);
-  }
-  /* .locked = แค่ทำสีบอกว่าเป็นข้อมูลจากแคตตาล็อก — ยังพิมพ์แก้ได้ตามปกติ */
-  .locked { background:var(--shade); color:var(--muted); }
-  .locked:focus { color:var(--ink); }
+      label.need {
+        color: var(--need);
+        font-weight: 600;
+      }
+      label.need::after {
+        content: ' ✱';
+        font-size: 10px;
+      }
+      label.need + input,
+      label.need + select,
+      label.need + textarea {
+        border-color: var(--need);
+        background: var(--need-bg);
+      }
+      label.need + input:focus,
+      label.need + select:focus,
+      label.need + textarea:focus {
+        outline-color: var(--need);
+      }
+      /* .locked = แค่ทำสีบอกว่าเป็นข้อมูลจากแคตตาล็อก — ยังพิมพ์แก้ได้ตามปกติ */
+      .locked {
+        background: var(--shade);
+        color: var(--muted);
+      }
+      .locked:focus {
+        color: var(--ink);
+      }
 
-  .legend { display:flex; gap:8px 20px; flex-wrap:wrap; align-items:center; font-size:12.5px;
-    color:var(--muted); padding:11px 16px; margin-bottom:16px;
-    background:var(--card); border:1px solid var(--line); border-radius:10px; }
-  .legend .sw { display:inline-block; width:11px; height:11px; border-radius:3px;
-    vertical-align:-1px; margin-right:6px; }
-  .legend .sw.need { background:var(--need-bg); border:1.5px solid var(--need); }
-  .legend .sw.lock { background:var(--shade); border:1px solid var(--line); }
-  .lockmsg { font-size:12px; color:var(--muted); margin:0 0 13px; padding:8px 11px;
-    background:var(--shade); border-radius:8px; }
+      .legend {
+        display: flex;
+        gap: 8px 20px;
+        flex-wrap: wrap;
+        align-items: center;
+        font-size: 12.5px;
+        color: var(--muted);
+        padding: 11px 16px;
+        margin-bottom: 16px;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+      }
+      .legend .sw {
+        display: inline-block;
+        width: 11px;
+        height: 11px;
+        border-radius: 3px;
+        vertical-align: -1px;
+        margin-right: 6px;
+      }
+      .legend .sw.need {
+        background: var(--need-bg);
+        border: 1.5px solid var(--need);
+      }
+      .legend .sw.lock {
+        background: var(--shade);
+        border: 1px solid var(--line);
+      }
+      .lockmsg {
+        font-size: 12px;
+        color: var(--muted);
+        margin: 0 0 13px;
+        padding: 8px 11px;
+        background: var(--shade);
+        border-radius: 8px;
+      }
 
-  /* ตัวเลือกสินค้าแบบอ่านอย่างเดียว (sales เลือกได้ แก้ไม่ได้) */
+      /* ตัวเลือกสินค้าแบบอ่านอย่างเดียว (sales เลือกได้ แก้ไม่ได้) */
 
-  .btn { width:100%; margin-top:6px; padding:13px; font-size:16px; font-weight:600;
-    color:#fff; background:var(--accent); border:none; border-radius:9px; cursor:pointer; }
-  .btn:hover { background:var(--accent-d); }
-  .btn.ghost { background:transparent; color:var(--accent); border:1px solid var(--line); }
-  .btn.ghost:hover { background:var(--shade); }
-  .btn.danger { background:transparent; color:#c0392b; border:1px solid var(--line); }
-  .btn-row { display:flex; gap:10px; margin-top:16px; }
-  .btn-row .btn { margin-top:0; }
+      .btn {
+        width: 100%;
+        margin-top: 6px;
+        padding: 13px;
+        font-size: 16px;
+        font-weight: 600;
+        color: #fff;
+        background: var(--accent);
+        border: none;
+        border-radius: 9px;
+        cursor: pointer;
+      }
+      .btn:hover {
+        background: var(--accent-d);
+      }
+      .btn.ghost {
+        background: transparent;
+        color: var(--accent);
+        border: 1px solid var(--line);
+      }
+      .btn.ghost:hover {
+        background: var(--shade);
+      }
+      .btn.danger {
+        background: transparent;
+        color: #c0392b;
+        border: 1px solid var(--line);
+      }
+      .btn-row {
+        display: flex;
+        gap: 10px;
+        margin-top: 16px;
+      }
+      .btn-row .btn {
+        margin-top: 0;
+      }
 
-  /* ===== เลือกประเภทสินค้า ===== */
-  .typepick { display:flex; gap:10px; margin-bottom:18px; }
-  .typepick button { flex:1; padding:14px; border-radius:10px; cursor:pointer; font-family:inherit;
-    font-size:15px; font-weight:600; background:var(--card); color:var(--muted);
-    border:2px solid var(--line); }
-  .typepick button .s { display:block; font-size:12px; font-weight:400; margin-top:2px; }
-  .typepick button.on.tile { border-color:var(--tile); color:var(--tile); }
-  .typepick button.on.furn { border-color:var(--furn); color:var(--furn); }
+      /* ===== เลือกประเภทสินค้า ===== */
+      .typepick {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 18px;
+      }
+      .typepick button {
+        flex: 1;
+        padding: 14px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 15px;
+        font-weight: 600;
+        background: var(--card);
+        color: var(--muted);
+        border: 2px solid var(--line);
+      }
+      .typepick button .s {
+        display: block;
+        font-size: 12px;
+        font-weight: 400;
+        margin-top: 2px;
+      }
+      .typepick button.on.tile {
+        border-color: var(--tile);
+        color: var(--tile);
+      }
+      .typepick button.on.furn {
+        border-color: var(--furn);
+        color: var(--furn);
+      }
 
-  /* ===== ตัวเลือกเฟอร์นิเจอร์ ===== */
-  .opt { border:1px solid var(--line); border-radius:10px; padding:14px; margin-bottom:12px;
-    background:var(--paper); }
-  .opt-head { display:flex; align-items:center; gap:10px; }
-  .opt-head .n { font-size:12px; font-weight:700; color:var(--furn);
-    text-transform:uppercase; letter-spacing:.06em; }
-  .opt-head .del { margin-left:auto; width:auto; padding:4px 10px; font-size:12px;
-    background:transparent; color:#c0392b; border:1px solid var(--line); border-radius:7px; cursor:pointer; }
-  .parts-lbl { font-size:12px; color:var(--muted); margin:14px 0 0;
-    padding-top:10px; border-top:1px dashed var(--line); }
-  .part { display:flex; gap:8px; margin-top:8px; }
-  .part input { flex:1; min-width:0; }
-  .x-btn { flex:0 0 auto; width:34px; padding:0; font-size:15px; line-height:1;
-    background:transparent; color:var(--muted); border:1px solid var(--line);
-    border-radius:8px; cursor:pointer; }
-  .x-btn:hover { color:#c0392b; }
-  .add-btn { width:auto; margin-top:9px; padding:6px 12px; font-size:12.5px;
-    background:transparent; color:var(--furn); border:1px dashed var(--line);
-    border-radius:8px; cursor:pointer; }
-  .add-opt { width:100%; margin-top:4px; padding:10px; font-size:13.5px; font-weight:600;
-    background:transparent; color:var(--furn); border:1px dashed var(--line);
-    border-radius:9px; cursor:pointer; }
-  .hint { font-size:12px; color:var(--muted); margin:0 0 14px; }
+      /* ===== ตัวเลือกเฟอร์นิเจอร์ ===== */
+      .opt {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 14px;
+        margin-bottom: 12px;
+        background: var(--paper);
+      }
+      .opt-head {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .opt-head .n {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--furn);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+      .opt-head .del {
+        margin-left: auto;
+        width: auto;
+        padding: 4px 10px;
+        font-size: 12px;
+        background: transparent;
+        color: #c0392b;
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        cursor: pointer;
+      }
+      .parts-lbl {
+        font-size: 12px;
+        color: var(--muted);
+        margin: 14px 0 0;
+        padding-top: 10px;
+        border-top: 1px dashed var(--line);
+      }
+      .part {
+        display: flex;
+        gap: 8px;
+        margin-top: 8px;
+      }
+      .part input {
+        flex: 1;
+        min-width: 0;
+      }
+      .x-btn {
+        flex: 0 0 auto;
+        width: 34px;
+        padding: 0;
+        font-size: 15px;
+        line-height: 1;
+        background: transparent;
+        color: var(--muted);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        cursor: pointer;
+      }
+      .x-btn:hover {
+        color: #c0392b;
+      }
+      .add-btn {
+        width: auto;
+        margin-top: 9px;
+        padding: 6px 12px;
+        font-size: 12.5px;
+        background: transparent;
+        color: var(--furn);
+        border: 1px dashed var(--line);
+        border-radius: 8px;
+        cursor: pointer;
+      }
+      .add-opt {
+        width: 100%;
+        margin-top: 4px;
+        padding: 10px;
+        font-size: 13.5px;
+        font-weight: 600;
+        background: transparent;
+        color: var(--furn);
+        border: 1px dashed var(--line);
+        border-radius: 9px;
+        cursor: pointer;
+      }
+      .hint {
+        font-size: 12px;
+        color: var(--muted);
+        margin: 0 0 14px;
+      }
 
-  /* ===== ข้อความแจ้ง ===== */
-  .msg { margin-top:14px; padding:12px 16px; border-radius:10px; font-size:14px;
-    display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
-  .msg.ok  { background:var(--shade); color:var(--accent-d); border:1px solid var(--line); }
-  .msg.err { background:#fdecea; color:#c0392b; border:1px solid #f5c6c0; }
-  @media (prefers-color-scheme: dark) { .msg.err { background:#3a1f1d; border-color:#5c2f2b; color:#ef9a93; } }
-  .msg button { width:auto; margin:0; padding:6px 12px; font-size:13px; cursor:pointer;
-    background:var(--accent); color:#fff; border:none; border-radius:7px; }
+      /* ===== ข้อความแจ้ง ===== */
+      .msg {
+        margin-top: 14px;
+        padding: 12px 16px;
+        border-radius: 10px;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .msg.ok {
+        background: var(--shade);
+        color: var(--accent-d);
+        border: 1px solid var(--line);
+      }
+      .msg.err {
+        background: #fdecea;
+        color: #c0392b;
+        border: 1px solid #f5c6c0;
+      }
+      @media (prefers-color-scheme: dark) {
+        .msg.err {
+          background: #3a1f1d;
+          border-color: #5c2f2b;
+          color: #ef9a93;
+        }
+      }
+      .msg button {
+        width: auto;
+        margin: 0;
+        padding: 6px 12px;
+        font-size: 13px;
+        cursor: pointer;
+        background: var(--accent);
+        color: #fff;
+        border: none;
+        border-radius: 7px;
+      }
 
-  /* ===== รายการในโปรเจกต์ ===== */
-  .item { display:flex; gap:14px; padding:14px 18px; border-bottom:1px solid var(--line); }
-  .item:last-child { border-bottom:none; }
-  .item img { width:78px; height:78px; object-fit:contain; border-radius:8px;
-    border:1px solid var(--line); flex:0 0 auto; background:var(--paper); }
-  .item .no-img { width:78px; height:78px; border-radius:8px; border:1px dashed var(--line);
-    flex:0 0 auto; display:flex; align-items:center; justify-content:center;
-    color:var(--muted); font-size:11px; }
-  .item .body { flex:1; min-width:0; }
-  .item .top { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
-  .item .sku { font-weight:700; font-size:14px; }
-  .badge { font-size:10.5px; font-weight:700; padding:2px 8px; border-radius:999px;
-    border:1px solid currentColor; }
-  .badge.tile { color:var(--tile); }
-  .badge.furn { color:var(--furn); }
-  .badge.plain { color:var(--muted); font-weight:500; }
-  .item .lines { font-size:12.5px; color:var(--muted); margin-top:5px; line-height:1.65; }
-  .item .money { text-align:right; flex:0 0 auto; }
-  .item .money .amt { font-size:16px; font-weight:700; font-variant-numeric:tabular-nums; }
-  .item .money .qty { font-size:12px; color:var(--muted); }
-  .item .money button { width:auto; margin-top:8px; padding:3px 9px; font-size:11.5px;
-    background:transparent; color:#c0392b; border:1px solid var(--line);
-    border-radius:6px; cursor:pointer; }
-  .empty { padding:44px 18px; text-align:center; color:var(--muted); font-size:14px; }
+      /* ===== รายการในโปรเจกต์ ===== */
+      .item {
+        display: flex;
+        gap: 14px;
+        padding: 14px 18px;
+        border-bottom: 1px solid var(--line);
+      }
+      .item:last-child {
+        border-bottom: none;
+      }
+      .item img {
+        width: 78px;
+        height: 78px;
+        object-fit: contain;
+        border-radius: 8px;
+        border: 1px solid var(--line);
+        flex: 0 0 auto;
+        background: var(--paper);
+      }
+      .item .no-img {
+        width: 78px;
+        height: 78px;
+        border-radius: 8px;
+        border: 1px dashed var(--line);
+        flex: 0 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--muted);
+        font-size: 11px;
+      }
+      .item .body {
+        flex: 1;
+        min-width: 0;
+      }
+      .item .top {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .item .sku {
+        font-weight: 700;
+        font-size: 14px;
+      }
+      .badge {
+        font-size: 10.5px;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 999px;
+        border: 1px solid currentColor;
+      }
+      .badge.tile {
+        color: var(--tile);
+      }
+      .badge.furn {
+        color: var(--furn);
+      }
+      .badge.plain {
+        color: var(--muted);
+        font-weight: 500;
+      }
+      .item .lines {
+        font-size: 12.5px;
+        color: var(--muted);
+        margin-top: 5px;
+        line-height: 1.65;
+      }
+      .item .money {
+        text-align: right;
+        flex: 0 0 auto;
+      }
+      .item .money .amt {
+        font-size: 16px;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+      }
+      .item .money .qty {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .item .money button {
+        width: auto;
+        margin-top: 8px;
+        padding: 3px 9px;
+        font-size: 11.5px;
+        background: transparent;
+        color: #c0392b;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        cursor: pointer;
+      }
+      .empty {
+        padding: 44px 18px;
+        text-align: center;
+        color: var(--muted);
+        font-size: 14px;
+      }
 
-  /* ===== แถบ "แทรกรูปตรงนี้" ระหว่างรายการ ===== */
-  .ins { display:flex; align-items:center; gap:10px; padding:5px 18px; }
-  .ins .line { flex:1; height:1px; background:var(--line); }
-  .ins button { width:auto; padding:4px 13px; font-size:12px; font-family:inherit;
-    color:var(--muted); background:transparent; border:1px dashed var(--line);
-    border-radius:999px; cursor:pointer; white-space:nowrap; }
-  .ins button:hover { color:var(--accent); border-color:var(--accent); }
+      /* ===== แถบ "แทรกรูปตรงนี้" ระหว่างรายการ ===== */
+      .ins {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 5px 18px;
+      }
+      .ins .line {
+        flex: 1;
+        height: 1px;
+        background: var(--line);
+      }
+      .ins button {
+        width: auto;
+        padding: 4px 13px;
+        font-size: 12px;
+        font-family: inherit;
+        color: var(--muted);
+        background: transparent;
+        border: 1px dashed var(--line);
+        border-radius: 999px;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+      .ins button:hover {
+        color: var(--accent);
+        border-color: var(--accent);
+      }
 
-  /* ===== รูปที่แทรกไว้ระหว่างสินค้า ===== */
-  .imgitem { padding:14px 18px; border-bottom:1px solid var(--line); background:var(--paper); }
-  .imgitem img { max-width:100%; max-height:270px; border-radius:8px;
-    border:1px solid var(--line); display:block; }
-  .imgitem .cap { margin-top:9px; }
-  .imgitem .tools { display:flex; gap:8px; margin-top:9px; flex-wrap:wrap; }
-  .imgitem .tools button { width:auto; padding:4px 11px; font-size:12px; font-family:inherit;
-    background:transparent; color:var(--muted); border:1px solid var(--line);
-    border-radius:7px; cursor:pointer; }
-  .imgitem .tools button.del { color:#c0392b; }
-  .imgitem .tools button:disabled { opacity:.4; cursor:default; }
+      /* ===== รูปที่แทรกไว้ระหว่างสินค้า ===== */
+      .imgitem {
+        padding: 14px 18px;
+        border-bottom: 1px solid var(--line);
+        background: var(--paper);
+      }
+      .imgitem img {
+        max-width: 100%;
+        max-height: 270px;
+        border-radius: 8px;
+        border: 1px solid var(--line);
+        display: block;
+      }
+      .imgitem .cap {
+        margin-top: 9px;
+      }
+      .imgitem .tools {
+        display: flex;
+        gap: 8px;
+        margin-top: 9px;
+        flex-wrap: wrap;
+      }
+      .imgitem .tools button {
+        width: auto;
+        padding: 4px 11px;
+        font-size: 12px;
+        font-family: inherit;
+        background: transparent;
+        color: var(--muted);
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        cursor: pointer;
+      }
+      .imgitem .tools button.del {
+        color: #c0392b;
+      }
+      .imgitem .tools button:disabled {
+        opacity: 0.4;
+        cursor: default;
+      }
 
-  table.sum { width:100%; border-collapse:collapse; font-size:14px; }
-  table.sum td { padding:9px 18px; border-bottom:1px solid var(--line); }
-  table.sum td:last-child { text-align:right; font-variant-numeric:tabular-nums; font-weight:600; }
-  table.sum tr.grand td { font-size:19px; color:var(--accent-d); font-weight:800;
-    border-bottom:none; padding-top:14px; }
+      table.sum {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+      }
+      table.sum td {
+        padding: 9px 18px;
+        border-bottom: 1px solid var(--line);
+      }
+      table.sum td:last-child {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+        font-weight: 600;
+      }
+      table.sum tr.grand td {
+        font-size: 19px;
+        color: var(--accent-d);
+        font-weight: 800;
+        border-bottom: none;
+        padding-top: 14px;
+      }
 
-  /* ===== ใบยืนยันการสั่งซื้อ (Order Confirmation) =====
+      /* ===== ใบยืนยันการสั่งซื้อ (Order Confirmation) =====
      ตั้งใจใช้ CSS พื้นฐานเท่านั้น: เส้นตาราง + การจัดชิด + ขาว/ดำคงที่
      ห้ามใส่สีธีม, ไล่เฉด, มุมโค้ง, badge, CSS variable, color-mix, object-fit
      เพราะตารางนี้ต้องคัดลอกไปวางใน Excel ได้ตรง ๆ (Excel อ่าน CSS พวกนั้นไม่ได้) */
-  .oc-wrap { overflow-x:auto; }
+      .oc-wrap {
+        overflow-x: auto;
+      }
 
-  /* หัวเอกสาร — ตารางล้วนเช่นกัน (สีพื้นทึบใช้ได้ เพราะ Excel มี fill สีเหมือนกัน) */
-  table.ochead { border-collapse:collapse; width:100%; min-width:900px; font-size:12px;
-    background:#fff; color:#000; table-layout:fixed; }
-  table.ochead td { border:1px solid #000; padding:5px 8px; vertical-align:top;
-    background:#fff; color:#000; font-weight:400; text-align:left; }
-  table.ochead td.lbl    { font-weight:700; }
-  table.ochead td.right  { text-align:right; font-weight:700; }
-  table.ochead td.coname { font-size:20px; font-weight:700; padding-bottom:0; }
-  table.ochead td.co     { font-size:11px; }
-  table.ochead td.title  { text-align:center; font-size:17px; font-weight:700; padding:9px; }
-  table.ochead td.band   { text-align:center; font-weight:700; background:#fff2cc; }
-  table.ochead td.hi     { background:#ffff00; font-weight:700; }
-  table.ochead td.blank  { border:none; }
+      /* หัวเอกสาร — ตารางล้วนเช่นกัน (สีพื้นทึบใช้ได้ เพราะ Excel มี fill สีเหมือนกัน) */
+      table.ochead {
+        border-collapse: collapse;
+        width: 100%;
+        min-width: 900px;
+        font-size: 12px;
+        background: #fff;
+        color: #000;
+        table-layout: fixed;
+      }
+      table.ochead td {
+        border: 1px solid #000;
+        padding: 5px 8px;
+        vertical-align: top;
+        background: #fff;
+        color: #000;
+        font-weight: 400;
+        text-align: left;
+      }
+      table.ochead td.lbl {
+        font-weight: 700;
+      }
+      table.ochead td.right {
+        text-align: right;
+        font-weight: 700;
+      }
+      table.ochead td.coname {
+        font-size: 20px;
+        font-weight: 700;
+        padding-bottom: 0;
+      }
+      table.ochead td.co {
+        font-size: 11px;
+      }
+      table.ochead td.title {
+        text-align: center;
+        font-size: 17px;
+        font-weight: 700;
+        padding: 9px;
+      }
+      table.ochead td.band {
+        text-align: center;
+        font-weight: 700;
+        background: #fff2cc;
+      }
+      table.ochead td.hi {
+        background: #ffff00;
+        font-weight: 700;
+      }
+      table.ochead td.blank {
+        border: none;
+      }
 
-  /* ท้ายเอกสาร: Payment + ยอดรวม, Terms & Conditions, ช่องเซ็น — ตารางล้วนเช่นกัน */
-  table.ocfoot { border-collapse:collapse; width:100%; min-width:900px; font-size:12px;
-    background:#fff; color:#000; table-layout:fixed; }
-  table.ocfoot td { border:1px solid #000; padding:5px 8px; vertical-align:top;
-    background:#fff; color:#000; font-weight:400; text-align:left; }
-  table.ocfoot td.right  { text-align:right; font-weight:700; }
-  table.ocfoot td.center { text-align:center; }
-  table.ocfoot td.amt    { text-align:right; font-weight:700; }
-  table.ocfoot td.pay    { color:#0070c0; font-weight:700; font-size:13px; }
-  table.ocfoot td.red    { color:#ff0000; font-weight:700; text-align:right; }
-  table.ocfoot td.grand  { background:#fbd5b5; font-weight:700; }
-  table.ocfoot td.terms  { font-size:10.5px; padding:2px 8px; border:none; }
-  table.ocfoot td.termshd{ font-size:11px; font-weight:700; padding:6px 8px 2px; border:none; }
-  table.ocfoot td.sign   { height:58px; }
+      /* ท้ายเอกสาร: Payment + ยอดรวม, Terms & Conditions, ช่องเซ็น — ตารางล้วนเช่นกัน */
+      table.ocfoot {
+        border-collapse: collapse;
+        width: 100%;
+        min-width: 900px;
+        font-size: 12px;
+        background: #fff;
+        color: #000;
+        table-layout: fixed;
+      }
+      table.ocfoot td {
+        border: 1px solid #000;
+        padding: 5px 8px;
+        vertical-align: top;
+        background: #fff;
+        color: #000;
+        font-weight: 400;
+        text-align: left;
+      }
+      table.ocfoot td.right {
+        text-align: right;
+        font-weight: 700;
+      }
+      table.ocfoot td.center {
+        text-align: center;
+      }
+      table.ocfoot td.amt {
+        text-align: right;
+        font-weight: 700;
+      }
+      table.ocfoot td.pay {
+        color: #0070c0;
+        font-weight: 700;
+        font-size: 13px;
+      }
+      table.ocfoot td.red {
+        color: #ff0000;
+        font-weight: 700;
+        text-align: right;
+      }
+      table.ocfoot td.grand {
+        background: #fbd5b5;
+        font-weight: 700;
+      }
+      table.ocfoot td.terms {
+        font-size: 10.5px;
+        padding: 2px 8px;
+        border: none;
+      }
+      table.ocfoot td.termshd {
+        font-size: 11px;
+        font-weight: 700;
+        padding: 6px 8px 2px;
+        border: none;
+      }
+      table.ocfoot td.sign {
+        height: 58px;
+      }
 
-  table.oc { border-collapse:collapse; width:100%; min-width:900px; font-size:12px;
-    background:#fff; color:#000; }
-  table.oc th, table.oc td { border:1px solid #000; padding:6px 8px; vertical-align:top;
-    background:#fff; color:#000; font-weight:400; text-align:left; }
-  table.oc th { font-weight:700; text-align:center; }
-  table.oc th.right, table.oc td.right { text-align:right; }
-  table.oc td.center { text-align:center; }
-  table.oc td.desc { min-width:290px; line-height:1.6; }
+      table.oc {
+        border-collapse: collapse;
+        width: 100%;
+        min-width: 900px;
+        font-size: 12px;
+        background: #fff;
+        color: #000;
+      }
+      table.oc th,
+      table.oc td {
+        border: 1px solid #000;
+        padding: 6px 8px;
+        vertical-align: top;
+        background: #fff;
+        color: #000;
+        font-weight: 400;
+        text-align: left;
+      }
+      table.oc th {
+        font-weight: 700;
+        text-align: center;
+      }
+      table.oc th.right,
+      table.oc td.right {
+        text-align: right;
+      }
+      table.oc td.center {
+        text-align: center;
+      }
+      table.oc td.desc {
+        min-width: 290px;
+        line-height: 1.6;
+      }
 
-  .doc-head { display:flex; justify-content:space-between; align-items:flex-end;
-    flex-wrap:wrap; gap:12px; padding:18px 22px; background:var(--accent); color:#fff; }
-  .doc-head .t { font-size:18px; font-weight:700; }
-  .doc-head .meta { font-size:12.5px; opacity:.92; margin-top:3px; line-height:1.6; }
-  .doc-head .acts { display:flex; gap:8px; }
-  .doc-head button { background:rgba(255,255,255,.18); color:#fff; border:1px solid rgba(255,255,255,.4);
-    border-radius:7px; padding:7px 13px; font-size:13px; cursor:pointer; }
-  .doc-head button:hover { background:rgba(255,255,255,.3); }
+      .doc-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        flex-wrap: wrap;
+        gap: 12px;
+        padding: 18px 22px;
+        background: var(--accent);
+        color: #fff;
+      }
+      .doc-head .t {
+        font-size: 18px;
+        font-weight: 700;
+      }
+      .doc-head .meta {
+        font-size: 12.5px;
+        opacity: 0.92;
+        margin-top: 3px;
+        line-height: 1.6;
+      }
+      .doc-head .acts {
+        display: flex;
+        gap: 8px;
+      }
+      .doc-head button {
+        background: rgba(255, 255, 255, 0.18);
+        color: #fff;
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        border-radius: 7px;
+        padding: 7px 13px;
+        font-size: 13px;
+        cursor: pointer;
+      }
+      .doc-head button:hover {
+        background: rgba(255, 255, 255, 0.3);
+      }
 
-  @media print {
-    /* ตอนพิมพ์ ให้เริ่มที่หัวเอกสารจริง — ซ่อนแถบสีของแอปทิ้ง */
-    header, nav.tabs, .doc-head, .view:not(.on) { display:none !important; }
-    body { background:#fff; }
-    .wrap { padding:0; max-width:none; }
-    .card { box-shadow:none; border:none; margin:0; }
-  }
-</style>
-</head>
-<body>
+      @media print {
+        /* ตอนพิมพ์ ให้เริ่มที่หัวเอกสารจริง — ซ่อนแถบสีของแอปทิ้ง */
+        header,
+        nav.tabs,
+        .doc-head,
+        .view:not(.on) {
+          display: none !important;
+        }
+        body {
+          background: #fff;
+        }
+        .wrap {
+          padding: 0;
+          max-width: none;
+        }
+        .card {
+          box-shadow: none;
+          border: none;
+          margin: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>AMO — ระบบสินค้า → โปรเจกต์ → ใบยืนยันการสั่งซื้อ</h1>
+      <p>
+        ตัวอย่างการทำงาน (Mockup):
+        เพิ่มได้ทั้งกระเบื้องและเฟอร์นิเจอร์ในโปรเจกต์เดียวกัน
+      </p>
+    </header>
 
-<header>
-  <h1>AMO — ระบบสินค้า → โปรเจกต์ → ใบยืนยันการสั่งซื้อ</h1>
-  <p>ตัวอย่างการทำงาน (Mockup): เพิ่มได้ทั้งกระเบื้องและเฟอร์นิเจอร์ในโปรเจกต์เดียวกัน</p>
-</header>
+    <nav class="tabs">
+      <button type="button" id="tab-add" class="on" onclick="showView('add')">
+        1 · เพิ่มสินค้า
+      </button>
+      <button type="button" id="tab-project" onclick="showView('project')">
+        2 · โปรเจกต์ <span class="count" id="tabCount">0</span>
+      </button>
+      <button type="button" id="tab-oc" onclick="showView('oc')">
+        3 · ใบยืนยันการสั่งซื้อ
+      </button>
+    </nav>
 
-<nav class="tabs">
-  <button type="button" id="tab-add"     class="on" onclick="showView('add')">1 · เพิ่มสินค้า</button>
-  <button type="button" id="tab-project"           onclick="showView('project')">2 · โปรเจกต์ <span class="count" id="tabCount">0</span></button>
-  <button type="button" id="tab-oc"                onclick="showView('oc')">3 · ใบยืนยันการสั่งซื้อ</button>
-</nav>
+    <div class="wrap">
+      <!-- ==================== หน้า 1: เพิ่มสินค้า ==================== -->
+      <div class="view on" id="view-add">
+        <div class="legend">
+          <span><b>สิทธิ์ผู้ใช้: Sales</b></span>
+          <span
+            ><span class="sw need"></span>ช่องสีแดง ✱ = ต้องกรอก/เลือกใหม่ทุกรอบ
+            (เปลี่ยนตามลูกค้าและดีล)</span
+          >
+          <span
+            ><span class="sw lock"></span>ช่องสีเทา 🔒 =
+            ข้อมูลจากแคตตาล็อก/บริษัท ไม่ต้องกรอกใหม่ทุกรอบ</span
+          >
+        </div>
 
-<div class="wrap">
+        <div class="typepick">
+          <button
+            type="button"
+            id="pick-tile"
+            class="on tile"
+            onclick="setType('tile')"
+          >
+            กระเบื้อง (Tile)<span class="s"
+              >คิดจาก ตร.ม. / กล่อง / เผื่อ / ปัดกล่อง</span
+            >
+          </button>
+          <button
+            type="button"
+            id="pick-furn"
+            class="furn"
+            onclick="setType('furniture')"
+          >
+            เฟอร์นิเจอร์ (Furnishing)<span class="s"
+              >ขายเป็นชิ้น · ราคาต่อตัวเลือก</span
+            >
+          </button>
+        </div>
 
-<!-- ==================== หน้า 1: เพิ่มสินค้า ==================== -->
-<div class="view on" id="view-add">
+        <!-- ---------- ฟอร์มกระเบื้อง ---------- -->
+        <div id="form-tile">
+          <div class="grid">
+            <div class="card">
+              <h2>ข้อมูลสินค้า (tile_specs) — จากแคตตาล็อก</h2>
+              <div class="card-body">
+                <label class="need">เลือกสินค้าจากแคตตาล็อก</label>
+                <select
+                  id="t_sample"
+                  aria-label="เลือกกระเบื้องจากแคตตาล็อก"
+                  onchange="loadTileSample(this.value)"
+                ></select>
 
-  <div class="legend">
-    <span><b>สิทธิ์ผู้ใช้: Sales</b></span>
-    <span><span class="sw need"></span>ช่องสีแดง ✱ = ต้องกรอก/เลือกใหม่ทุกรอบ (เปลี่ยนตามลูกค้าและดีล)</span>
-    <span><span class="sw lock"></span>ช่องสีเทา 🔒 = ข้อมูลจากแคตตาล็อก/บริษัท ไม่ต้องกรอกใหม่ทุกรอบ</span>
-  </div>
+                <p class="lockmsg">
+                  🔒 ข้อมูลด้านล่างมาจากแคตตาล็อกสินค้า (ปกติ sales ไม่ต้องแตะ)
+                </p>
 
-  <div class="typepick">
-    <button type="button" id="pick-tile" class="on tile" onclick="setType('tile')">
-      กระเบื้อง (Tile)<span class="s">คิดจาก ตร.ม. / กล่อง / เผื่อ / ปัดกล่อง</span>
-    </button>
-    <button type="button" id="pick-furn" class="furn" onclick="setType('furniture')">
-      เฟอร์นิเจอร์ (Furnishing)<span class="s">ขายเป็นชิ้น · ราคาต่อตัวเลือก</span>
-    </button>
-  </div>
+                <label>SKU</label>
+                <input id="t_sku" type="text" class="locked" />
 
-  <!-- ---------- ฟอร์มกระเบื้อง ---------- -->
-  <div id="form-tile">
-    <div class="grid">
-      <div class="card">
-        <h2>ข้อมูลสินค้า (tile_specs) — จากแคตตาล็อก</h2>
-        <div class="card-body">
-          <label class="need">เลือกสินค้าจากแคตตาล็อก</label>
-          <select id="t_sample" aria-label="เลือกกระเบื้องจากแคตตาล็อก" onchange="loadTileSample(this.value)"></select>
+                <div class="row">
+                  <div>
+                    <label>แบรนด์</label
+                    ><input id="t_brand" type="text" class="locked" />
+                  </div>
+                  <div>
+                    <label>คอลเลกชัน</label
+                    ><input id="t_collection" type="text" class="locked" />
+                  </div>
+                </div>
+                <div class="row">
+                  <div>
+                    <label>หมวดหมู่</label
+                    ><input id="t_category" type="text" class="locked" />
+                  </div>
+                  <div>
+                    <label>หมวดหมู่ย่อย</label
+                    ><input id="t_subcategory" type="text" class="locked" />
+                  </div>
+                </div>
 
-          <p class="lockmsg">🔒 ข้อมูลด้านล่างมาจากแคตตาล็อกสินค้า (ปกติ sales ไม่ต้องแตะ)</p>
+                <label>Item</label>
+                <input id="t_item" type="text" class="locked" />
 
-          <label>SKU</label>
-          <input id="t_sku" type="text" class="locked">
+                <label>รูปสินค้า</label>
+                <input
+                  id="t_imageFile"
+                  type="file"
+                  accept="image/*"
+                  class="locked"
+                  aria-label="รูปกระเบื้อง"
+                  onchange="pickImage('tile', event)"
+                />
+                <img id="t_prev" class="prev" alt="รูปสินค้า" />
+                <button
+                  type="button"
+                  id="t_clearImg"
+                  class="link-btn hidden"
+                  onclick="clearImg('tile')"
+                >
+                  ลบรูป
+                </button>
 
-          <div class="row">
-            <div><label>แบรนด์</label><input id="t_brand" type="text" class="locked"></div>
-            <div><label>คอลเลกชัน</label><input id="t_collection" type="text" class="locked"></div>
-          </div>
-          <div class="row">
-            <div><label>หมวดหมู่</label><input id="t_category" type="text" class="locked"></div>
-            <div><label>หมวดหมู่ย่อย</label><input id="t_subcategory" type="text" class="locked"></div>
-          </div>
+                <label>ขนาดขาย (Sale Size) — กว้าง × ยาว × สูง (ซม.)</label>
+                <div class="dim">
+                  <input
+                    id="t_saleW"
+                    type="number"
+                    min="0"
+                    step="any"
+                    class="locked"
+                    aria-label="ขนาดขาย กว้าง"
+                  /><span>×</span>
+                  <input
+                    id="t_saleL"
+                    type="number"
+                    min="0"
+                    step="any"
+                    class="locked"
+                    aria-label="ขนาดขาย ยาว"
+                  /><span>×</span>
+                  <input
+                    id="t_saleH"
+                    type="number"
+                    min="0"
+                    step="any"
+                    class="locked"
+                    aria-label="ขนาดขาย สูง"
+                  />
+                </div>
 
-          <label>ลุค (Look)</label>
-          <input id="t_look" type="text" class="locked">
+                <label>ขนาดจริง (Working Size) — กว้าง × ยาว × สูง (ซม.)</label>
+                <div class="dim">
+                  <input
+                    id="t_workW"
+                    type="number"
+                    min="0"
+                    step="any"
+                    class="locked"
+                    aria-label="ขนาดจริง กว้าง"
+                  /><span>×</span>
+                  <input
+                    id="t_workL"
+                    type="number"
+                    min="0"
+                    step="any"
+                    class="locked"
+                    aria-label="ขนาดจริง ยาว"
+                  /><span>×</span>
+                  <input
+                    id="t_workH"
+                    type="number"
+                    min="0"
+                    step="any"
+                    class="locked"
+                    aria-label="ขนาดจริง สูง"
+                  />
+                </div>
 
-          <label>รูปสินค้า</label>
-          <input id="t_imageFile" type="file" accept="image/*" class="locked"
-                 aria-label="รูปกระเบื้อง" onchange="pickImage('tile', event)">
-          <img id="t_prev" class="prev" alt="รูปสินค้า">
-          <button type="button" id="t_clearImg" class="link-btn hidden" onclick="clearImg('tile')">ลบรูป</button>
+                <label>หน่วยราคาสินค้า (U.M.)</label>
+                <select
+                  id="t_priceUnit"
+                  class="locked"
+                  aria-label="หน่วยราคาสินค้า"
+                  onchange="
+                    rebuildCustomerUnit();
+                    rebuildSellingMethod();
+                  "
+                >
+                  <option value="ตารางเมตร">ตารางเมตร</option>
+                  <option value="เมตร">เมตร (คิดจากความยาว)</option>
+                  <option value="ชิ้น">ชิ้น</option>
+                  <option value="เซ็ต">เซ็ต (คิดแบบชิ้น)</option>
+                  <option value="กล่อง">กล่อง</option>
+                </select>
 
-          <label>ขนาดขาย (Sale Size) — กว้าง × ยาว × สูง (ซม.)</label>
-          <div class="dim">
-            <input id="t_saleW" type="number" min="0" step="any" class="locked" aria-label="ขนาดขาย กว้าง"><span>×</span>
-            <input id="t_saleL" type="number" min="0" step="any" class="locked" aria-label="ขนาดขาย ยาว"><span>×</span>
-            <input id="t_saleH" type="number" min="0" step="any" class="locked" aria-label="ขนาดขาย สูง">
-          </div>
+                <label>ราคาต่อหน่วย (บาท)</label>
+                <input
+                  id="t_pricePerUnit"
+                  type="number"
+                  min="0"
+                  step="any"
+                  class="locked"
+                />
 
-          <label>ขนาดจริง (Working Size) — กว้าง × ยาว × สูง (ซม.)</label>
-          <div class="dim">
-            <input id="t_workW" type="number" min="0" step="any" class="locked" aria-label="ขนาดจริง กว้าง"><span>×</span>
-            <input id="t_workL" type="number" min="0" step="any" class="locked" aria-label="ขนาดจริง ยาว"><span>×</span>
-            <input id="t_workH" type="number" min="0" step="any" class="locked" aria-label="ขนาดจริง สูง">
-          </div>
+                <div class="row">
+                  <div>
+                    <label>ตร.ม./กล่อง</label
+                    ><input
+                      id="t_sqmPerBox"
+                      type="number"
+                      min="0"
+                      step="any"
+                      class="locked"
+                    />
+                  </div>
+                  <div>
+                    <label>ชิ้น/กล่อง</label
+                    ><input
+                      id="t_piecesPerBox"
+                      type="number"
+                      min="0"
+                      step="any"
+                      class="locked"
+                    />
+                  </div>
+                  <div>
+                    <label>กก./กล่อง</label
+                    ><input
+                      id="t_kgPerBox"
+                      type="number"
+                      min="0"
+                      step="any"
+                      class="locked"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
 
-          <label>หน่วยราคาสินค้า (U.M.)</label>
-          <select id="t_priceUnit" class="locked" aria-label="หน่วยราคาสินค้า"
-                  onchange="rebuildCustomerUnit(); rebuildSellingMethod()">
-            <option value="ตารางเมตร">ตารางเมตร</option>
-            <option value="เมตร">เมตร (คิดจากความยาว)</option>
-            <option value="ชิ้น">ชิ้น</option>
-            <option value="เซ็ต">เซ็ต (คิดแบบชิ้น)</option>
-            <option value="กล่อง">กล่อง</option>
-          </select>
+            <div class="card">
+              <h2>ข้อมูลการขาย</h2>
+              <div class="card-body">
+                <label class="need">ลูกค้าแจ้งจำนวนเป็นหน่วยใด</label>
+                <select
+                  id="t_customerUnit"
+                  aria-label="หน่วยที่ลูกค้าแจ้ง"
+                ></select>
 
-          <label>ราคาต่อหน่วย (บาท)</label>
-          <input id="t_pricePerUnit" type="number" min="0" step="any" class="locked">
+                <label class="need">จำนวนที่ลูกค้าต้องการ</label>
+                <input
+                  id="t_customerQty"
+                  type="number"
+                  min="0"
+                  step="any"
+                  placeholder="เช่น 25"
+                />
 
-          <div class="row">
-            <div><label>ตร.ม./กล่อง</label><input id="t_sqmPerBox" type="number" min="0" step="any" class="locked"></div>
-            <div><label>ชิ้น/กล่อง</label><input id="t_piecesPerBox" type="number" min="0" step="any" class="locked"></div>
-            <div><label>กก./กล่อง</label><input id="t_kgPerBox" type="number" min="0" step="any" class="locked"></div>
+                <label class="need">วิธีเผื่อสินค้า</label>
+                <select
+                  id="t_allowanceType"
+                  aria-label="วิธีเผื่อสินค้า"
+                  onchange="
+                    toggle('t_allowanceType', 't_allowanceWrap', 'ไม่มี')
+                  "
+                >
+                  <option value="ไม่มี">ไม่มี</option>
+                  <option value="เปอร์เซ็นต์">เปอร์เซ็นต์ (%)</option>
+                  <option value="ชิ้น">ชิ้น</option>
+                  <option value="กล่อง">กล่อง</option>
+                </select>
+                <div id="t_allowanceWrap" class="hidden">
+                  <label class="need">จำนวนเผื่อ</label>
+                  <input
+                    id="t_allowanceValue"
+                    type="number"
+                    min="0"
+                    step="any"
+                    placeholder="เช่น 10"
+                  />
+                </div>
+
+                <label class="need">วิธีขาย</label>
+                <select id="t_sellingMethod" aria-label="วิธีขาย"></select>
+
+                <label class="need">ประเภทส่วนลด</label>
+                <select
+                  id="t_discountType"
+                  aria-label="ประเภทส่วนลด"
+                  onchange="toggle('t_discountType', 't_discountWrap', 'ไม่มี')"
+                >
+                  <option value="ไม่มี">ไม่มี</option>
+                  <option value="เปอร์เซ็นต์">เปอร์เซ็นต์ (%)</option>
+                  <option value="บาท">บาท</option>
+                </select>
+                <div id="t_discountWrap" class="hidden">
+                  <label class="need">จำนวนส่วนลด</label>
+                  <input
+                    id="t_discountValue"
+                    type="number"
+                    min="0"
+                    step="any"
+                    placeholder="เช่น 5"
+                  />
+                </div>
+
+                <label class="need">ประเภทสินค้า (Stock / Indent)</label>
+                <select id="t_orderType" aria-label="ประเภทสินค้ากระเบื้อง">
+                  <option value="Stock">Stock — มีของพร้อมส่ง</option>
+                  <option value="Indent">Indent — สั่งผลิต/รอสินค้า</option>
+                </select>
+
+                <label class="need">หมายเหตุ</label>
+                <textarea
+                  id="t_remark"
+                  rows="2"
+                  placeholder="เช่น รอของ 30-45 วัน"
+                ></textarea>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div class="card">
-        <h2>ข้อมูลการขาย</h2>
-        <div class="card-body">
-          <label class="need">ลูกค้าแจ้งจำนวนเป็นหน่วยใด</label>
-          <select id="t_customerUnit" aria-label="หน่วยที่ลูกค้าแจ้ง"></select>
+        <!-- ---------- ฟอร์มเฟอร์นิเจอร์ ---------- -->
+        <div id="form-furn" class="hidden">
+          <div class="grid">
+            <div class="card">
+              <h2>ข้อมูลสินค้า (products) — จากแคตตาล็อก</h2>
+              <div class="card-body">
+                <label class="need">เลือกสินค้าจากแคตตาล็อก</label>
+                <select
+                  id="f_sample"
+                  aria-label="เลือกเฟอร์นิเจอร์จากแคตตาล็อก"
+                  onchange="loadFurnSample(this.value)"
+                ></select>
 
-          <label class="need">จำนวนที่ลูกค้าต้องการ</label>
-          <input id="t_customerQty" type="number" min="0" step="any" placeholder="เช่น 25">
+                <p class="lockmsg">
+                  🔒 ข้อมูลด้านล่างมาจากแคตตาล็อกสินค้า (ปกติ sales ไม่ต้องแตะ)
+                </p>
 
-          <label class="need">วิธีเผื่อสินค้า</label>
-          <select id="t_allowanceType" aria-label="วิธีเผื่อสินค้า" onchange="toggle('t_allowanceType','t_allowanceWrap','ไม่มี')">
-            <option value="ไม่มี">ไม่มี</option>
-            <option value="เปอร์เซ็นต์">เปอร์เซ็นต์ (%)</option>
-            <option value="ชิ้น">ชิ้น</option>
-            <option value="กล่อง">กล่อง</option>
-          </select>
-          <div id="t_allowanceWrap" class="hidden">
-            <label class="need">จำนวนเผื่อ</label>
-            <input id="t_allowanceValue" type="number" min="0" step="any" placeholder="เช่น 10">
+                <label>SKU</label>
+                <input id="f_sku" type="text" class="locked" />
+
+                <label>ชื่อสินค้า</label>
+                <input id="f_name" type="text" class="locked" />
+
+                <div class="row">
+                  <div>
+                    <label>แบรนด์</label
+                    ><input id="f_brand" type="text" class="locked" />
+                  </div>
+                  <div>
+                    <label>คอลเลกชัน</label
+                    ><input id="f_collection" type="text" class="locked" />
+                  </div>
+                </div>
+                <div class="row">
+                  <div>
+                    <label>หมวดหมู่</label
+                    ><input id="f_category" type="text" class="locked" />
+                  </div>
+                  <div>
+                    <label>หมวดหมู่ย่อย</label
+                    ><input id="f_subcategory" type="text" class="locked" />
+                  </div>
+                </div>
+
+                <label>ขนาด กว้าง × ยาว × สูง (ซม.)</label>
+                <div class="dim">
+                  <input
+                    id="f_width"
+                    type="number"
+                    min="0"
+                    step="any"
+                    class="locked"
+                    aria-label="กว้าง"
+                  /><span>×</span>
+                  <input
+                    id="f_length"
+                    type="number"
+                    min="0"
+                    step="any"
+                    class="locked"
+                    aria-label="ยาว"
+                  /><span>×</span>
+                  <input
+                    id="f_height"
+                    type="number"
+                    min="0"
+                    step="any"
+                    class="locked"
+                    aria-label="สูง"
+                  />
+                </div>
+
+                <label>รายละเอียดสินค้า</label>
+                <textarea id="f_description" rows="3" class="locked"></textarea>
+
+                <label>รูปสินค้าหลัก</label>
+                <input
+                  id="f_imageFile"
+                  type="file"
+                  accept="image/*"
+                  class="locked"
+                  aria-label="รูปเฟอร์นิเจอร์"
+                  onchange="pickImage('furniture', event)"
+                />
+                <img id="f_prev" class="prev" alt="รูปสินค้า" />
+                <button
+                  type="button"
+                  id="f_clearImg"
+                  class="link-btn hidden"
+                  onclick="clearImg('furniture')"
+                >
+                  ลบรูป
+                </button>
+              </div>
+            </div>
+
+            <div class="card">
+              <h2>ข้อมูลการขาย</h2>
+              <div class="card-body">
+                <label class="need">เลือกตัวเลือกที่ลูกค้าสั่ง</label>
+                <select
+                  id="f_orderOption"
+                  aria-label="เลือกตัวเลือกที่ลูกค้าสั่ง"
+                ></select>
+
+                <div class="row">
+                  <div>
+                    <label class="need">จำนวน</label
+                    ><input
+                      id="f_qty"
+                      type="number"
+                      step="1"
+                      min="1"
+                      value="1"
+                      aria-label="จำนวน"
+                    />
+                  </div>
+                  <div>
+                    <label class="need">หน่วยขาย</label>
+                    <select id="f_qtyUnit" aria-label="หน่วยขาย">
+                      <option value="ชิ้น">ชิ้น</option>
+                      <option value="ตัว">ตัว</option>
+                      <option value="ชุด">ชุด</option>
+                    </select>
+                  </div>
+                </div>
+
+                <label class="need">ประเภทส่วนลด</label>
+                <select
+                  id="f_discountType"
+                  aria-label="ประเภทส่วนลดเฟอร์นิเจอร์"
+                  onchange="toggle('f_discountType', 'f_discountWrap', 'ไม่มี')"
+                >
+                  <option value="ไม่มี">ไม่มี</option>
+                  <option value="เปอร์เซ็นต์">เปอร์เซ็นต์ (%)</option>
+                  <option value="บาท">บาท</option>
+                </select>
+                <div id="f_discountWrap" class="hidden">
+                  <label class="need">มูลค่าส่วนลด</label>
+                  <input
+                    id="f_discountValue"
+                    type="number"
+                    step="any"
+                    value="0"
+                    aria-label="มูลค่าส่วนลดเฟอร์นิเจอร์"
+                  />
+                </div>
+
+                <label class="need">ประเภทสินค้า (Stock / Indent)</label>
+                <select id="f_orderType" aria-label="ประเภทสินค้าเฟอร์นิเจอร์">
+                  <option value="Stock">Stock — มีของพร้อมส่ง</option>
+                  <option value="Indent">Indent — สั่งผลิต/รอสินค้า</option>
+                </select>
+
+                <label class="need">หมายเหตุ</label>
+                <textarea
+                  id="f_remark"
+                  rows="2"
+                  placeholder="เช่น รอสินค้า 60–90 วัน"
+                ></textarea>
+              </div>
+            </div>
+
+            <div class="card span2">
+              <h2>
+                ตัวเลือกสินค้า (product_options + option_parts) — จากแคตตาล็อก
+              </h2>
+              <div class="card-body">
+                <p class="lockmsg">
+                  🔒 1 ตัวเลือก = 1 รูปแบบสินค้าที่มีราคาเดียว — ตั้งค่าโดย
+                  Admin ปกติ sales แค่เลือกที่ช่อง “เลือกตัวเลือกที่ลูกค้าสั่ง”
+                </p>
+                <div id="optionsWrap"></div>
+                <button type="button" class="add-opt" onclick="addOption()">
+                  + เพิ่มตัวเลือกสินค้า
+                </button>
+              </div>
+            </div>
           </div>
-
-          <label class="need">วิธีขาย</label>
-          <select id="t_sellingMethod" aria-label="วิธีขาย"></select>
-
-          <label class="need">ประเภทส่วนลด</label>
-          <select id="t_discountType" aria-label="ประเภทส่วนลด" onchange="toggle('t_discountType','t_discountWrap','ไม่มี')">
-            <option value="ไม่มี">ไม่มี</option>
-            <option value="เปอร์เซ็นต์">เปอร์เซ็นต์ (%)</option>
-            <option value="บาท">บาท</option>
-          </select>
-          <div id="t_discountWrap" class="hidden">
-            <label class="need">จำนวนส่วนลด</label>
-            <input id="t_discountValue" type="number" min="0" step="any" placeholder="เช่น 5">
-          </div>
-
-          <label class="need">ประเภทสินค้า (Stock / Indent)</label>
-          <select id="t_orderType" aria-label="ประเภทสินค้ากระเบื้อง">
-            <option value="Stock">Stock — มีของพร้อมส่ง</option>
-            <option value="Indent">Indent — สั่งผลิต/รอสินค้า</option>
-          </select>
-
-          <label class="need">หมายเหตุ</label>
-          <textarea id="t_remark" rows="2" placeholder="เช่น รอของ 30-45 วัน"></textarea>
         </div>
-      </div>
-    </div>
-  </div>
 
-  <!-- ---------- ฟอร์มเฟอร์นิเจอร์ ---------- -->
-  <div id="form-furn" class="hidden">
-    <div class="grid">
-      <div class="card">
-        <h2>ข้อมูลสินค้า (products) — จากแคตตาล็อก</h2>
-        <div class="card-body">
-          <label class="need">เลือกสินค้าจากแคตตาล็อก</label>
-          <select id="f_sample" aria-label="เลือกเฟอร์นิเจอร์จากแคตตาล็อก" onchange="loadFurnSample(this.value)"></select>
-
-          <p class="lockmsg">🔒 ข้อมูลด้านล่างมาจากแคตตาล็อกสินค้า (ปกติ sales ไม่ต้องแตะ)</p>
-
-          <label>SKU</label>
-          <input id="f_sku" type="text" class="locked">
-
-          <label>ชื่อสินค้า</label>
-          <input id="f_name" type="text" class="locked">
-
-          <div class="row">
-            <div><label>แบรนด์</label><input id="f_brand" type="text" class="locked"></div>
-            <div><label>คอลเลกชัน</label><input id="f_collection" type="text" class="locked"></div>
-          </div>
-          <div class="row">
-            <div><label>หมวดหมู่</label><input id="f_category" type="text" class="locked"></div>
-            <div><label>หมวดหมู่ย่อย</label><input id="f_subcategory" type="text" class="locked"></div>
-          </div>
-
-          <label>ขนาด กว้าง × ยาว × สูง (ซม.)</label>
-          <div class="dim">
-            <input id="f_width" type="number" min="0" step="any" class="locked" aria-label="กว้าง"><span>×</span>
-            <input id="f_length" type="number" min="0" step="any" class="locked" aria-label="ยาว"><span>×</span>
-            <input id="f_height" type="number" min="0" step="any" class="locked" aria-label="สูง">
-          </div>
-
-          <label>รายละเอียดสินค้า</label>
-          <textarea id="f_description" rows="3" class="locked"></textarea>
-
-          <label>รูปสินค้าหลัก</label>
-          <input id="f_imageFile" type="file" accept="image/*" class="locked"
-                 aria-label="รูปเฟอร์นิเจอร์" onchange="pickImage('furniture', event)">
-          <img id="f_prev" class="prev" alt="รูปสินค้า">
-          <button type="button" id="f_clearImg" class="link-btn hidden" onclick="clearImg('furniture')">ลบรูป</button>
-        </div>
+        <button type="button" class="btn" onclick="addToProject()">
+          ＋ เพิ่มเข้าโปรเจกต์
+        </button>
+        <div id="addMsg"></div>
       </div>
 
-      <div class="card">
-        <h2>ข้อมูลการขาย</h2>
-        <div class="card-body">
-          <label class="need">เลือกตัวเลือกที่ลูกค้าสั่ง</label>
-          <select id="f_orderOption" aria-label="เลือกตัวเลือกที่ลูกค้าสั่ง"></select>
+      <!-- ==================== หน้า 2: โปรเจกต์ ==================== -->
+      <div class="view" id="view-project">
+        <div class="grid">
+          <div class="card">
+            <h2>ข้อมูลบริษัท (ผู้ขาย) — คงที่</h2>
+            <div class="card-body">
+              <p class="lockmsg">
+                🔒 ข้อมูลบริษัทตั้งค่าโดย Admin — เหมือนกันทุกใบ ไม่ต้องกรอกใหม่
+              </p>
 
-          <div class="row">
-            <div><label class="need">จำนวน</label><input id="f_qty" type="number" step="1" min="1" value="1" aria-label="จำนวน"></div>
-            <div>
-              <label class="need">หน่วยขาย</label>
-              <select id="f_qtyUnit" aria-label="หน่วยขาย">
-                <option value="ชิ้น">ชิ้น</option>
-                <option value="ตัว">ตัว</option>
-                <option value="ชุด">ชุด</option>
-              </select>
+              <label>ชื่อบริษัท</label>
+              <input id="c_name" type="text" class="locked" />
+
+              <label>ที่อยู่</label>
+              <textarea id="c_addr" rows="2" class="locked"></textarea>
+
+              <div class="row">
+                <div>
+                  <label>Tel</label
+                  ><input id="c_tel" type="text" class="locked" />
+                </div>
+                <div>
+                  <label>Mobile</label
+                  ><input id="c_mobile" type="text" class="locked" />
+                </div>
+              </div>
+              <div class="row">
+                <div>
+                  <label>Email</label
+                  ><input id="c_email" type="text" class="locked" />
+                </div>
+                <div>
+                  <label>Tax ID</label
+                  ><input id="c_taxid" type="text" class="locked" />
+                </div>
+              </div>
             </div>
           </div>
 
-          <label class="need">ประเภทส่วนลด</label>
-          <select id="f_discountType" aria-label="ประเภทส่วนลดเฟอร์นิเจอร์" onchange="toggle('f_discountType','f_discountWrap','ไม่มี')">
-            <option value="ไม่มี">ไม่มี</option>
-            <option value="เปอร์เซ็นต์">เปอร์เซ็นต์ (%)</option>
-            <option value="บาท">บาท</option>
-          </select>
-          <div id="f_discountWrap" class="hidden">
-            <label class="need">มูลค่าส่วนลด</label>
-            <input id="f_discountValue" type="number" step="any" value="0" aria-label="มูลค่าส่วนลดเฟอร์นิเจอร์">
+          <div class="card">
+            <h2>ข้อมูลเอกสาร</h2>
+            <div class="card-body">
+              <label class="need">ประเภทเอกสาร</label>
+              <select
+                id="d_type"
+                aria-label="ประเภทเอกสาร"
+                onchange="saveProject()"
+              >
+                <option value="ORDER CONFIRMATION">ORDER CONFIRMATION</option>
+                <option value="QUOTATION">QUOTATION</option>
+                <option value="PROFORMA INVOICE">PROFORMA INVOICE</option>
+              </select>
+
+              <div class="row">
+                <div>
+                  <label class="need">Quote No.</label
+                  ><input
+                    id="d_no"
+                    type="text"
+                    placeholder="A26-11736"
+                    oninput="saveProject()"
+                  />
+                </div>
+                <!-- id ยังเป็น d_addno ตามเดิม เพื่อไม่ให้โปรเจกต์ที่เซฟไว้แล้วอ่านค่าไม่เจอ -->
+                <div>
+                  <label class="need">Option No.</label
+                  ><input
+                    id="d_addno"
+                    type="text"
+                    placeholder="0"
+                    oninput="saveProject()"
+                  />
+                </div>
+                <div>
+                  <label class="need">Revision No.</label
+                  ><input
+                    id="d_rev"
+                    type="text"
+                    placeholder="1"
+                    oninput="saveProject()"
+                  />
+                </div>
+              </div>
+
+              <label class="need"
+                >บรรทัดอ้างอิง / ชื่อโปรเจกต์ (แถบใต้หัวเรื่อง)</label
+              >
+              <input
+                id="d_ref"
+                type="text"
+                placeholder="1A-บริษัท เทอร์ริคอน จำกัด -18/2/2026"
+                oninput="saveProject()"
+              />
+
+              <div class="row">
+                <div>
+                  <label class="need">Date</label
+                  ><input
+                    id="d_date"
+                    type="text"
+                    placeholder="9 May 2026"
+                    oninput="saveProject()"
+                  />
+                </div>
+                <div>
+                  <label class="need">Validity</label
+                  ><input
+                    id="d_validity"
+                    type="text"
+                    placeholder="30 Days"
+                    oninput="saveProject()"
+                  />
+                </div>
+              </div>
+
+              <label class="need">From (ผู้จัดทำ)</label>
+              <input
+                id="d_from"
+                type="text"
+                placeholder="Panumard (Ann)"
+                oninput="saveProject()"
+              />
+            </div>
           </div>
 
-          <label class="need">ประเภทสินค้า (Stock / Indent)</label>
-          <select id="f_orderType" aria-label="ประเภทสินค้าเฟอร์นิเจอร์">
-            <option value="Stock">Stock — มีของพร้อมส่ง</option>
-            <option value="Indent">Indent — สั่งผลิต/รอสินค้า</option>
-          </select>
-
-          <label class="need">หมายเหตุ</label>
-          <textarea id="f_remark" rows="2" placeholder="เช่น รอสินค้า 60–90 วัน"></textarea>
-        </div>
-      </div>
-
-      <div class="card span2">
-        <h2>ตัวเลือกสินค้า (product_options + option_parts) — จากแคตตาล็อก</h2>
-        <div class="card-body">
-          <p class="lockmsg">🔒 1 ตัวเลือก = 1 รูปแบบสินค้าที่มีราคาเดียว — ตั้งค่าโดย Admin
-            ปกติ sales แค่เลือกที่ช่อง “เลือกตัวเลือกที่ลูกค้าสั่ง”</p>
-          <div id="optionsWrap"></div>
-          <button type="button" class="add-opt" onclick="addOption()">+ เพิ่มตัวเลือกสินค้า</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <button type="button" class="btn" onclick="addToProject()">＋ เพิ่มเข้าโปรเจกต์</button>
-  <div id="addMsg"></div>
-</div>
-
-<!-- ==================== หน้า 2: โปรเจกต์ ==================== -->
-<div class="view" id="view-project">
-  <div class="grid">
-    <div class="card">
-      <h2>ข้อมูลบริษัท (ผู้ขาย) — คงที่</h2>
-      <div class="card-body">
-        <p class="lockmsg">🔒 ข้อมูลบริษัทตั้งค่าโดย Admin — เหมือนกันทุกใบ ไม่ต้องกรอกใหม่</p>
-
-        <label>ชื่อบริษัท</label>
-        <input id="c_name" type="text" class="locked">
-
-        <label>ที่อยู่</label>
-        <textarea id="c_addr" rows="2" class="locked"></textarea>
-
-        <div class="row">
-          <div><label>Tel</label><input id="c_tel" type="text" class="locked"></div>
-          <div><label>Mobile</label><input id="c_mobile" type="text" class="locked"></div>
-        </div>
-        <div class="row">
-          <div><label>Email</label><input id="c_email" type="text" class="locked"></div>
-          <div><label>Tax ID</label><input id="c_taxid" type="text" class="locked"></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>ข้อมูลเอกสาร</h2>
-      <div class="card-body">
-        <label class="need">ประเภทเอกสาร</label>
-        <select id="d_type" aria-label="ประเภทเอกสาร" onchange="saveProject()">
-          <option value="ORDER CONFIRMATION">ORDER CONFIRMATION</option>
-          <option value="QUOTATION">QUOTATION</option>
-          <option value="PROFORMA INVOICE">PROFORMA INVOICE</option>
-        </select>
-
-        <div class="row">
-          <div><label class="need">Quote No.</label><input id="d_no" type="text" placeholder="A26-11736" oninput="saveProject()"></div>
-          <div><label class="need">Additional No.</label><input id="d_addno" type="text" placeholder="0" oninput="saveProject()"></div>
-          <div><label class="need">Revision No.</label><input id="d_rev" type="text" placeholder="1" oninput="saveProject()"></div>
-        </div>
-
-        <label class="need">บรรทัดอ้างอิง / ชื่อโปรเจกต์ (แถบใต้หัวเรื่อง)</label>
-        <input id="d_ref" type="text" placeholder="1A-บริษัท เทอร์ริคอน จำกัด -18/2/2026" oninput="saveProject()">
-
-        <div class="row">
-          <div><label class="need">Date</label><input id="d_date" type="text" placeholder="9 May 2026" oninput="saveProject()"></div>
-          <div><label class="need">Validity</label><input id="d_validity" type="text" placeholder="30 Days" oninput="saveProject()"></div>
-        </div>
-
-        <label class="need">From (ผู้จัดทำ)</label>
-        <input id="d_from" type="text" placeholder="Panumard (Ann)" oninput="saveProject()">
-      </div>
-    </div>
-
-    <div class="card span2">
-      <h2>ข้อมูลลูกค้า</h2>
-      <div class="card-body">
-        <div class="row">
-          <div><label class="need">Customer Code</label><input id="k_code" type="text" placeholder="1A-TE-00160" oninput="saveProject()"></div>
-          <div><label class="need">Customer Name</label><input id="k_name" type="text" placeholder="บริษัท สตาราบิค จำกัด" oninput="saveProject()"></div>
-        </div>
-        <label class="need">ที่อยู่ลูกค้า</label>
-        <textarea id="k_addr" rows="2" placeholder="125 ซอยศาลาธรรมสพน์ 88 ..." oninput="saveProject()"></textarea>
-        <label class="need">Attn (ผู้ติดต่อ)</label>
-        <input id="k_attn" type="text" placeholder="K.ปรีชา" oninput="saveProject()">
-      </div>
-    </div>
-
-    <div class="card span2">
-      <h2>ท้ายเอกสาร — การชำระเงิน / เงื่อนไข / ช่องเซ็น</h2>
-      <div class="card-body">
-        <label>บรรทัด Payment (ชื่อบัญชี / ธนาคาร / เลขบัญชี)</label>
-        <input id="pay_bank" type="text" class="locked">
-
-        <div class="row">
-          <div><label class="need">มัดจำ (%)</label><input id="pay_dep_pct" type="number" min="0" max="100" step="any" placeholder="50" oninput="saveProject()"></div>
-          <div><label>เงื่อนไขมัดจำ</label><input id="pay_dep_note" type="text" class="locked" oninput="saveProject()"></div>
-          <div><label>เงื่อนไขยอดคงเหลือ</label><input id="pay_bal_note" type="text" class="locked" oninput="saveProject()"></div>
-        </div>
-        <p class="hint">ยอดมัดจำและยอดคงเหลือคำนวณจาก Grand Total ให้อัตโนมัติ</p>
-
-        <div class="row">
-          <div>
-            <label>ส่วนลดท้ายบิล (Discount) — sales เป็นคนใส่</label>
-            <select id="bill_discType" aria-label="ประเภทส่วนลดท้ายบิล"
-                    onchange="toggle('bill_discType','bill_discWrap','ไม่มี'); saveProject(); renderProject()">
-              <option value="ไม่มี">ไม่มี</option>
-              <option value="เปอร์เซ็นต์">เปอร์เซ็นต์ (%)</option>
-              <option value="บาท">บาท</option>
-            </select>
+          <div class="card span2">
+            <h2>ข้อมูลลูกค้า</h2>
+            <div class="card-body">
+              <div class="row">
+                <div>
+                  <label class="need">Customer Code</label
+                  ><input
+                    id="k_code"
+                    type="text"
+                    placeholder="1A-TE-00160"
+                    oninput="saveProject()"
+                  />
+                </div>
+                <div>
+                  <label class="need">Customer Name</label
+                  ><input
+                    id="k_name"
+                    type="text"
+                    placeholder="บริษัท สตาราบิค จำกัด"
+                    oninput="saveProject()"
+                  />
+                </div>
+              </div>
+              <label class="need">ที่อยู่ลูกค้า</label>
+              <textarea
+                id="k_addr"
+                rows="2"
+                placeholder="125 ซอยศาลาธรรมสพน์ 88 ..."
+                oninput="saveProject()"
+              ></textarea>
+              <label class="need">Attn (ผู้ติดต่อ)</label>
+              <input
+                id="k_attn"
+                type="text"
+                placeholder="K.ปรีชา"
+                oninput="saveProject()"
+              />
+            </div>
           </div>
-          <div id="bill_discWrap" class="hidden">
-            <label>จำนวนส่วนลดท้ายบิล</label>
-            <input id="bill_discValue" type="number" min="0" step="any" placeholder="เช่น 5"
-                   oninput="saveProject(); renderProject()">
+
+          <div class="card span2">
+            <h2>ท้ายเอกสาร — การชำระเงิน / เงื่อนไข / ช่องเซ็น</h2>
+            <div class="card-body">
+              <label>บรรทัด Payment (ชื่อบัญชี / ธนาคาร / เลขบัญชี)</label>
+              <input id="pay_bank" type="text" class="locked" />
+
+              <div class="row">
+                <div>
+                  <label class="need">งวดที่ 1 — มัดจำ (%)</label
+                  ><input
+                    id="pay_dep_pct"
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="any"
+                    placeholder="50"
+                    oninput="saveProject()"
+                  />
+                </div>
+                <div>
+                  <label>เงื่อนไขงวดที่ 1</label
+                  ><input
+                    id="pay_dep_note"
+                    type="text"
+                    class="locked"
+                    oninput="saveProject()"
+                  />
+                </div>
+              </div>
+              <div class="row">
+                <div>
+                  <label class="need">งวดที่ 2 — เมื่อสินค้าถึงโกดัง (%)</label
+                  ><input
+                    id="pay_mid_pct"
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="any"
+                    placeholder="40"
+                    oninput="saveProject()"
+                  />
+                </div>
+                <div>
+                  <label>เงื่อนไขงวดที่ 2</label
+                  ><input
+                    id="pay_mid_note"
+                    type="text"
+                    class="locked"
+                    oninput="saveProject()"
+                  />
+                </div>
+              </div>
+              <label>เงื่อนไขงวดสุดท้าย (ส่วนที่เหลือ ก่อนรับสินค้า)</label>
+              <input
+                id="pay_bal_note"
+                type="text"
+                class="locked"
+                oninput="saveProject()"
+              />
+              <p class="hint">
+                ยอดแต่ละงวดคำนวณจาก Grand Total ให้อัตโนมัติ —
+                งวดสุดท้ายคือส่วนที่เหลือหลังหักงวดที่ 1 และ 2 ถ้ากรอกรวมเกิน
+                100% ระบบจะตัดให้ไม่เกินยอดจริง
+              </p>
+
+              <div class="row">
+                <div>
+                  <label>ส่วนลดท้ายบิล (Discount) — sales เป็นคนใส่</label>
+                  <select
+                    id="bill_discType"
+                    aria-label="ประเภทส่วนลดท้ายบิล"
+                    onchange="
+                      toggle('bill_discType', 'bill_discWrap', 'ไม่มี');
+                      saveProject();
+                      renderProject();
+                    "
+                  >
+                    <option value="ไม่มี">ไม่มี</option>
+                    <option value="เปอร์เซ็นต์">เปอร์เซ็นต์ (%)</option>
+                    <option value="บาท">บาท</option>
+                  </select>
+                </div>
+                <div id="bill_discWrap" class="hidden">
+                  <label>จำนวนส่วนลดท้ายบิล</label>
+                  <input
+                    id="bill_discValue"
+                    type="number"
+                    min="0"
+                    step="any"
+                    placeholder="เช่น 5"
+                    oninput="
+                      saveProject();
+                      renderProject();
+                    "
+                  />
+                </div>
+              </div>
+              <p class="hint">
+                ช่อง Discount ในท้ายเอกสารมาจากตรงนี้ — เป็นส่วนลดที่ sales
+                ให้ตอนปิดการขาย คิดจากยอดรวมรายการ (Total)
+                ที่หักส่วนลดรายชิ้นไปแล้ว ไม่ใช่ผลรวมของส่วนลดรายชิ้น
+              </p>
+
+              <label>ค่าใช้จ่ายอื่น (บาท) — บวกเพิ่มหลัง Sub Total</label>
+              <div class="row">
+                <div>
+                  <label>ค่าตัดกระเบื้อง</label
+                  ><input
+                    id="fee_cut"
+                    type="number"
+                    min="0"
+                    step="any"
+                    placeholder="0"
+                    oninput="
+                      saveProject();
+                      renderProject();
+                    "
+                  />
+                </div>
+                <div>
+                  <label>ค่า Pickup</label
+                  ><input
+                    id="fee_pickup"
+                    type="number"
+                    min="0"
+                    step="any"
+                    placeholder="0"
+                    oninput="
+                      saveProject();
+                      renderProject();
+                    "
+                  />
+                </div>
+              </div>
+              <div class="row">
+                <div>
+                  <label>ค่าขนส่งต่างจังหวัด</label
+                  ><input
+                    id="fee_upcountry"
+                    type="number"
+                    min="0"
+                    step="any"
+                    placeholder="0"
+                    oninput="
+                      saveProject();
+                      renderProject();
+                    "
+                  />
+                </div>
+                <div>
+                  <label>ค่าพาเลท (ซื้อแผ่นใหญ่ไม่เต็มพาเลท)</label
+                  ><input
+                    id="fee_pallet"
+                    type="number"
+                    min="0"
+                    step="any"
+                    placeholder="0"
+                    oninput="
+                      saveProject();
+                      renderProject();
+                    "
+                  />
+                </div>
+              </div>
+              <p class="hint">
+                ใส่เฉพาะรายการที่เก็บเงินจริง — ช่องที่เป็น 0
+                หรือเว้นว่างจะไม่ขึ้นในเอกสาร ค่าใช้จ่ายเหล่านี้บวกหลัง Sub
+                Total และคิดภาษีรวมด้วย
+              </p>
+
+              <div class="row">
+                <div>
+                  <label>ภาษีมูลค่าเพิ่ม (%)</label
+                  ><input
+                    id="vat_pct"
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="any"
+                    placeholder="7"
+                    oninput="
+                      saveProject();
+                      renderProject();
+                    "
+                  />
+                </div>
+                <div>
+                  <p class="hint">
+                    ปกติ 7% — ใส่ 0 ถ้าดีลนี้ไม่คิด VAT
+                    บรรทัดภาษีในเอกสารจะเปลี่ยนตามเลขที่กรอก
+                  </p>
+                </div>
+              </div>
+
+              <label
+                >Terms &amp; Conditions (ข้อความมาตรฐาน —
+                แก้เฉพาะเมื่อดีลนี้ตกลงต่างจากปกติ)</label
+              >
+              <textarea id="terms" rows="14" oninput="saveProject()"></textarea>
+
+              <div class="row">
+                <div>
+                  <label class="need">ช่องเซ็นซ้าย — Sales</label
+                  ><input
+                    id="s_sales"
+                    type="text"
+                    placeholder="Panumard (Ann) 081-868-6941"
+                    oninput="saveProject()"
+                  />
+                </div>
+                <div>
+                  <label>ช่องเซ็นกลาง — ชื่อบริษัท</label
+                  ><input id="s_company" type="text" class="locked" />
+                </div>
+              </div>
+              <div class="row">
+                <div>
+                  <label>ตำแหน่งผู้อนุมัติ</label
+                  ><input id="s_mgr_title" type="text" class="locked" />
+                </div>
+                <div>
+                  <label>ชื่อผู้อนุมัติ</label
+                  ><input id="s_mgr_name" type="text" class="locked" />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-        <p class="hint">ช่อง Discount ในท้ายเอกสารมาจากตรงนี้ — เป็นส่วนลดที่ sales ให้ตอนปิดการขาย
-          คิดจากยอดรวมรายการ (Total) ที่หักส่วนลดรายชิ้นไปแล้ว ไม่ใช่ผลรวมของส่วนลดรายชิ้น</p>
 
-        <label>Terms &amp; Conditions (ข้อความมาตรฐาน — แก้เฉพาะเมื่อดีลนี้ตกลงต่างจากปกติ)</label>
-        <textarea id="terms" rows="14" oninput="saveProject()"></textarea>
-
-        <div class="row">
-          <div><label class="need">ช่องเซ็นซ้าย — Sales</label><input id="s_sales" type="text" placeholder="Panumard (Ann) 081-868-6941" oninput="saveProject()"></div>
-          <div><label>ช่องเซ็นกลาง — ชื่อบริษัท</label><input id="s_company" type="text" class="locked"></div>
+        <div class="card">
+          <h2>รายการสินค้าในโปรเจกต์</h2>
+          <div id="itemList"></div>
+          <!-- ช่องเลือกไฟล์ตัวเดียว ใช้ร่วมกันทุกจุดที่กด "แทรกรูปตรงนี้" -->
+          <input
+            type="file"
+            id="insertImgFile"
+            accept="image/*"
+            class="hidden"
+            aria-label="เลือกรูปที่จะแทรกในรายการ"
+            onchange="insertImageFile(event)"
+          />
         </div>
-        <div class="row">
-          <div><label>ตำแหน่งผู้อนุมัติ</label><input id="s_mgr_title" type="text" class="locked"></div>
-          <div><label>ชื่อผู้อนุมัติ</label><input id="s_mgr_name" type="text" class="locked"></div>
+
+        <div id="saveWarn"></div>
+
+        <div class="card">
+          <h2>สรุปยอด</h2>
+          <table class="sum" id="projectSummary"></table>
+        </div>
+
+        <div class="btn-row">
+          <button type="button" class="btn ghost" onclick="showView('add')">
+            ＋ เพิ่มสินค้าอีก
+          </button>
+          <button type="button" class="btn" onclick="showView('oc')">
+            ไปที่ใบยืนยันการสั่งซื้อ →
+          </button>
+        </div>
+        <div class="btn-row">
+          <button type="button" class="btn danger" onclick="clearProject()">
+            ล้างโปรเจกต์ทั้งหมด
+          </button>
+        </div>
+      </div>
+
+      <!-- ==================== หน้า 3: ใบยืนยันการสั่งซื้อ ==================== -->
+      <div class="view" id="view-oc">
+        <div class="card">
+          <div class="doc-head">
+            <div>
+              <div class="t">ใบยืนยันการสั่งซื้อ (Order Confirmation)</div>
+              <div class="meta" id="ocMeta"></div>
+            </div>
+            <div class="acts">
+              <button type="button" onclick="exportCSV()">⬇ Export CSV</button>
+              <button type="button" onclick="window.print()">🖨 พิมพ์</button>
+            </div>
+          </div>
+          <div id="ocBody"></div>
         </div>
       </div>
     </div>
-  </div>
+    <!-- /wrap -->
 
-  <div class="card">
-    <h2>รายการสินค้าในโปรเจกต์</h2>
-    <div id="itemList"></div>
-    <!-- ช่องเลือกไฟล์ตัวเดียว ใช้ร่วมกันทุกจุดที่กด "แทรกรูปตรงนี้" -->
-    <input type="file" id="insertImgFile" accept="image/*" class="hidden"
-           aria-label="เลือกรูปที่จะแทรกในรายการ" onchange="insertImageFile(event)">
-  </div>
+    <script>
+      /* ================= helpers ================= */
+      const $ = (id) => document.getElementById(id);
+      const val = (id) => $(id).value;
+      const num = (id) => parseFloat($(id).value) || 0;
+      const money = (v) =>
+        v.toLocaleString('en-US', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        });
+      const esc = (s) =>
+        String(s ?? '').replace(
+          /[&<>"]/g,
+          (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c],
+        );
+      // ตัดเลข 0 ท้ายทศนิยมออก เหมือน format_number() ใน data.py
+      const fmt = (v, d = 2) => {
+        let s = (v || 0).toLocaleString('en-US', {
+          minimumFractionDigits: d,
+          maximumFractionDigits: d,
+        });
+        if (s.includes('.')) s = s.replace(/0+$/, '').replace(/\.$/, '');
+        return s;
+      };
+      function toggle(selectId, wrapId, hideValue) {
+        $(wrapId).classList.toggle('hidden', $(selectId).value === hideValue);
+      }
 
-  <div id="saveWarn"></div>
+      // รูปเริ่มต้นของสินค้าตัวอย่าง — แยกตามประเภทสินค้า
+      const SAMPLE_IMAGE = { tile: 'image.png', furniture: 'fur.png' };
+      const VAT_RATE = 0.07;
 
-  <div class="card">
-    <h2>สรุปยอด</h2>
-    <table class="sum" id="projectSummary"></table>
-  </div>
+      /* ================= สลับหน้า ================= */
+      function showView(name) {
+        ['add', 'project', 'oc'].forEach((v) => {
+          $('view-' + v).classList.toggle('on', v === name);
+          $('tab-' + v).classList.toggle('on', v === name);
+        });
+        if (name === 'project') renderProject();
+        if (name === 'oc') renderOC();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
 
-  <div class="btn-row">
-    <button type="button" class="btn ghost" onclick="showView('add')">＋ เพิ่มสินค้าอีก</button>
-    <button type="button" class="btn" onclick="showView('oc')">ไปที่ใบยืนยันการสั่งซื้อ →</button>
-  </div>
-  <div class="btn-row">
-    <button type="button" class="btn danger" onclick="clearProject()">ล้างโปรเจกต์ทั้งหมด</button>
-  </div>
-</div>
+      /* ================= สลับประเภทสินค้า ================= */
+      let productType = 'tile';
+      function setType(t) {
+        productType = t;
+        $('form-tile').classList.toggle('hidden', t !== 'tile');
+        $('form-furn').classList.toggle('hidden', t !== 'furniture');
+        $('pick-tile').classList.toggle('on', t === 'tile');
+        $('pick-furn').classList.toggle('on', t === 'furniture');
+        $('addMsg').innerHTML = '';
+      }
 
-<!-- ==================== หน้า 3: ใบยืนยันการสั่งซื้อ ==================== -->
-<div class="view" id="view-oc">
-  <div class="card">
-    <div class="doc-head">
-      <div>
-        <div class="t">ใบยืนยันการสั่งซื้อ (Order Confirmation)</div>
-        <div class="meta" id="ocMeta"></div>
-      </div>
-      <div class="acts">
-        <button type="button" onclick="exportCSV()">⬇ Export CSV</button>
-        <button type="button" onclick="window.print()">🖨 พิมพ์</button>
-      </div>
-    </div>
-    <div id="ocBody"></div>
-  </div>
-</div>
+      /* ================= รูปสินค้า ================= */
+      const images = { tile: '', furniture: '' };
+      const imgIds = {
+        tile: { file: 't_imageFile', prev: 't_prev', clear: 't_clearImg' },
+        furniture: { file: 'f_imageFile', prev: 'f_prev', clear: 'f_clearImg' },
+      };
 
-</div><!-- /wrap -->
+      function pickImage(type, e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          images[type] = ev.target.result;
+          showImg(type);
+        };
+        reader.readAsDataURL(file);
+      }
+      function showImg(type) {
+        const ids = imgIds[type];
+        $(ids.prev).src = images[type];
+        $(ids.prev).style.display = 'block';
+        $(ids.clear).classList.remove('hidden');
+      }
+      function clearImg(type) {
+        images[type] = '';
+        $(imgIds[type].file).value = '';
+        $(imgIds[type].prev).style.display = 'none';
+        $(imgIds[type].prev).src = '';
+        $(imgIds[type].clear).classList.add('hidden');
+      }
+      // สินค้าตัวอย่างใช้รูปเริ่มต้น image.png (ผู้ใช้อัปโหลดทับได้)
+      function useSampleImage(type) {
+        images[type] = SAMPLE_IMAGE[type];
+        $(imgIds[type].file).value = '';
+        showImg(type);
+      }
 
-<script>
-  /* ================= helpers ================= */
-  const $ = id => document.getElementById(id);
-  const val = id => $(id).value;
-  const num = id => parseFloat($(id).value) || 0;
-  const money = v => v.toLocaleString("en-US", { minimumFractionDigits:2, maximumFractionDigits:2 });
-  const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
-  // ตัดเลข 0 ท้ายทศนิยมออก เหมือน format_number() ใน data.py
-  const fmt = (v, d = 2) => {
-    let s = (v || 0).toLocaleString("en-US", { minimumFractionDigits:d, maximumFractionDigits:d });
-    if (s.includes(".")) s = s.replace(/0+$/, "").replace(/\.$/, "");
-    return s;
-  };
-  function toggle(selectId, wrapId, hideValue) {
-    $(wrapId).classList.toggle("hidden", $(selectId).value === hideValue);
-  }
+      /* ================= กระเบื้อง: dropdown ที่ผูกกับ U.M. ================= */
+      const customerUnitOptions = [
+        ['ตารางเมตร', 'ตารางเมตร'],
+        ['เมตร', 'เมตร'],
+        ['ชิ้น', 'ชิ้น'],
+        ['เซ็ต', 'เซ็ต'],
+        ['กล่อง', 'กล่อง'],
+      ];
+      const allowedCustomerUnits = {
+        เมตร: ['เมตร', 'ชิ้น'], // U.M. เมตร → แจ้งได้แค่ เมตร/ชิ้น
+        เซ็ต: ['ตารางเมตร', 'เซ็ต'], // U.M. เซ็ต → แจ้งได้ ตร.ม./เซ็ต
+      };
+      function rebuildCustomerUnit() {
+        const allow =
+          allowedCustomerUnits[val('t_priceUnit')] ||
+          customerUnitOptions.map((o) => o[0]);
+        const sel = $('t_customerUnit'),
+          prev = sel.value;
+        sel.innerHTML = '';
+        customerUnitOptions
+          .filter((o) => allow.includes(o[0]))
+          .forEach(([v, label]) => {
+            const opt = document.createElement('option');
+            opt.value = v;
+            opt.textContent = label;
+            sel.appendChild(opt);
+          });
+        sel.value = allow.includes(prev) ? prev : allow[0];
+      }
 
-  // รูปเริ่มต้นของสินค้าตัวอย่าง — แยกตามประเภทสินค้า
-  const SAMPLE_IMAGE = { tile:"image.png", furniture:"fur.png" };
-  const VAT_RATE = 0.07;
+      // หน่วยในเอกสารเขียนตามหน่วยที่ลูกค้าแจ้งมาในใบสั่งซื้อเสมอ
+      const UNIT_ABBR = {
+        ตารางเมตร: 'sqm',
+        เมตร: 'm',
+        กล่อง: 'boxes',
+        ชิ้น: 'pcs',
+        เซ็ต: 'sets',
+      };
 
-  /* ================= สลับหน้า ================= */
-  function showView(name) {
-    ["add","project","oc"].forEach(v => {
-      $("view-" + v).classList.toggle("on", v === name);
-      $("tab-" + v).classList.toggle("on", v === name);
-    });
-    if (name === "project") renderProject();
-    if (name === "oc")      renderOC();
-    window.scrollTo({ top:0, behavior:"smooth" });
-  }
+      const sellingMethodOptions = [
+        ['กล่อง', 'ขายเป็นกล่อง (ปัดขึ้นเต็มกล่อง)'],
+        ['ชิ้น', 'ขายเป็นชิ้น'],
+        ['เซ็ต', 'ขายเป็นเซ็ต (ปัดลงเต็มเซ็ต)'],
+      ];
+      const allowedSellingMethods = { เซ็ต: ['เซ็ต'] }; // U.M. เซ็ต → ขายได้แค่เป็นเซ็ต
+      function rebuildSellingMethod() {
+        const allow = allowedSellingMethods[val('t_priceUnit')] || [
+          'กล่อง',
+          'ชิ้น',
+        ];
+        const sel = $('t_sellingMethod'),
+          prev = sel.value;
+        sel.innerHTML = '';
+        sellingMethodOptions
+          .filter((o) => allow.includes(o[0]))
+          .forEach(([v, label]) => {
+            const opt = document.createElement('option');
+            opt.value = v;
+            opt.textContent = label;
+            sel.appendChild(opt);
+          });
+        sel.value = allow.includes(prev) ? prev : allow[0];
+      }
 
-  /* ================= สลับประเภทสินค้า ================= */
-  let productType = "tile";
-  function setType(t) {
-    productType = t;
-    $("form-tile").classList.toggle("hidden", t !== "tile");
-    $("form-furn").classList.toggle("hidden", t !== "furniture");
-    $("pick-tile").classList.toggle("on", t === "tile");
-    $("pick-furn").classList.toggle("on", t === "furniture");
-    $("addMsg").innerHTML = "";
-  }
+      /* ================= เฟอร์นิเจอร์: ตัวเลือกสินค้า ================= */
+      let options = []; // ตัวเลือกของสินค้าที่เลือกจากแคตตาล็อก
+      const blankOption = () => ({
+        price: '',
+        parts: [{ title: '', sub: '' }],
+      });
+      // ตัวเลือกอ้างด้วยลำดับอย่างเดียว — ไม่มีชื่อตัวเลือก (label) ทั้งในฟอร์มและในใบ OC
+      const optName = (i) => `ตัวเลือกที่ ${i + 1}`;
 
-  /* ================= รูปสินค้า ================= */
-  const images = { tile:"", furniture:"" };
-  const imgIds = { tile:{ file:"t_imageFile", prev:"t_prev", clear:"t_clearImg" },
-                   furniture:{ file:"f_imageFile", prev:"f_prev", clear:"f_clearImg" } };
-
-  function pickImage(type, e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = ev => { images[type] = ev.target.result; showImg(type); };
-    reader.readAsDataURL(file);
-  }
-  function showImg(type) {
-    const ids = imgIds[type];
-    $(ids.prev).src = images[type];
-    $(ids.prev).style.display = "block";
-    $(ids.clear).classList.remove("hidden");
-  }
-  function clearImg(type) {
-    images[type] = "";
-    $(imgIds[type].file).value = "";
-    $(imgIds[type].prev).style.display = "none";
-    $(imgIds[type].prev).src = "";
-    $(imgIds[type].clear).classList.add("hidden");
-  }
-  // สินค้าตัวอย่างใช้รูปเริ่มต้น image.png (ผู้ใช้อัปโหลดทับได้)
-  function useSampleImage(type) {
-    images[type] = SAMPLE_IMAGE[type];
-    $(imgIds[type].file).value = "";
-    showImg(type);
-  }
-
-  /* ================= กระเบื้อง: dropdown ที่ผูกกับ U.M. ================= */
-  const customerUnitOptions = [
-    ["ตารางเมตร","ตารางเมตร"], ["เมตร","เมตร"], ["ชิ้น","ชิ้น"], ["เซ็ต","เซ็ต"], ["กล่อง","กล่อง"],
-  ];
-  const allowedCustomerUnits = {
-    "เมตร": ["เมตร","ชิ้น"],        // U.M. เมตร → แจ้งได้แค่ เมตร/ชิ้น
-    "เซ็ต": ["ตารางเมตร","เซ็ต"],   // U.M. เซ็ต → แจ้งได้ ตร.ม./เซ็ต
-  };
-  function rebuildCustomerUnit() {
-    const allow = allowedCustomerUnits[val("t_priceUnit")] || customerUnitOptions.map(o => o[0]);
-    const sel = $("t_customerUnit"), prev = sel.value;
-    sel.innerHTML = "";
-    customerUnitOptions.filter(o => allow.includes(o[0])).forEach(([v, label]) => {
-      const opt = document.createElement("option");
-      opt.value = v; opt.textContent = label;
-      sel.appendChild(opt);
-    });
-    sel.value = allow.includes(prev) ? prev : allow[0];
-  }
-
-  const sellingMethodOptions = [
-    ["กล่อง","ขายเป็นกล่อง (ปัดขึ้นเต็มกล่อง)"], ["ชิ้น","ขายเป็นชิ้น"], ["เซ็ต","ขายเป็นเซ็ต (ปัดลงเต็มเซ็ต)"],
-  ];
-  const allowedSellingMethods = { "เซ็ต": ["เซ็ต"] };  // U.M. เซ็ต → ขายได้แค่เป็นเซ็ต
-  function rebuildSellingMethod() {
-    const allow = allowedSellingMethods[val("t_priceUnit")] || ["กล่อง","ชิ้น"];
-    const sel = $("t_sellingMethod"), prev = sel.value;
-    sel.innerHTML = "";
-    sellingMethodOptions.filter(o => allow.includes(o[0])).forEach(([v, label]) => {
-      const opt = document.createElement("option");
-      opt.value = v; opt.textContent = label;
-      sel.appendChild(opt);
-    });
-    sel.value = allow.includes(prev) ? prev : allow[0];
-  }
-
-  /* ================= เฟอร์นิเจอร์: ตัวเลือกสินค้า ================= */
-  let options = [];   // ตัวเลือกของสินค้าที่เลือกจากแคตตาล็อก
-  const blankOption = () => ({ label:"", price:"", parts:[{ title:"", sub:"" }] });
-  const optName = (o, i) => String(o.label).trim() || `ตัวเลือกที่ ${i + 1}`;
-
-  // วาดใหม่เฉพาะตอนเพิ่ม/ลบ เพื่อไม่ให้ช่องที่กำลังพิมพ์เสีย focus
-  function renderOptions() {
-    $("optionsWrap").innerHTML = options.map((o, i) => `
+      // วาดใหม่เฉพาะตอนเพิ่ม/ลบ เพื่อไม่ให้ช่องที่กำลังพิมพ์เสีย focus
+      function renderOptions() {
+        $('optionsWrap').innerHTML = options
+          .map(
+            (o, i) => `
       <div class="opt">
         <div class="opt-head">
           <span class="n">ตัวเลือกที่ ${i + 1}</span>
-          ${options.length > 1 ? `<button type="button" class="del" onclick="removeOption(${i})">ลบตัวเลือกนี้</button>` : ""}
+          ${options.length > 1 ? `<button type="button" class="del" onclick="removeOption(${i})">ลบตัวเลือกนี้</button>` : ''}
         </div>
-        <div class="row">
-          <div>
-            <label>ชื่อตัวเลือก (label)</label>
-            <input type="text" class="locked" value="${esc(o.label)}" placeholder="เช่น Grey"
-                   oninput="setOpt(${i},'label',this.value)" onchange="refreshOptionSelect()">
-          </div>
-          <div>
-            <label>ราคา (บาท) — ทั้งชุดของตัวเลือกนี้</label>
-            <input type="number" min="0" step="any" class="locked" value="${esc(o.price)}" placeholder="0.00"
-                   oninput="setOpt(${i},'price',this.value)" onchange="refreshOptionSelect()">
-          </div>
-        </div>
+        <label>ราคา (บาท) — ทั้งชุดของตัวเลือกนี้</label>
+        <input type="number" min="0" step="any" class="locked" value="${esc(o.price)}" placeholder="0.00"
+               oninput="setOpt(${i},'price',this.value)" onchange="refreshOptionSelect()">
         <p class="parts-lbl">ชิ้นส่วนภายในตัวเลือก (option_parts) — หัวข้อ + วัสดุ</p>
-        ${o.parts.map((p, j) => `
+        ${o.parts
+          .map(
+            (p, j) => `
           <div class="part">
             <input type="text" class="locked" value="${esc(p.title)}" placeholder="หัวข้อ เช่น Top"
                    oninput="setPart(${i},${j},'title',this.value)">
             <input type="text" class="locked" value="${esc(p.sub)}" placeholder="รายละเอียด/วัสดุ เช่น GreyWood"
                    oninput="setPart(${i},${j},'sub',this.value)">
             <button type="button" class="x-btn" title="ลบชิ้นส่วนนี้" onclick="removePart(${i},${j})">✕</button>
-          </div>`).join("")}
+          </div>`,
+          )
+          .join('')}
         <button type="button" class="add-btn" onclick="addPart(${i})">+ เพิ่มชิ้นส่วน</button>
-      </div>`).join("");
-    refreshOptionSelect();
-  }
-  function setOpt(i, f, v)      { options[i][f] = v; }
-  function setPart(i, j, f, v)  { options[i].parts[j][f] = v; }
-  function addOption()          { options.push(blankOption()); renderOptions(); }
-  function removeOption(i)      { options.splice(i,1); if (!options.length) options.push(blankOption()); renderOptions(); }
-  function addPart(i)           { options[i].parts.push({ title:"", sub:"" }); renderOptions(); }
-  function removePart(i, j) {
-    options[i].parts.splice(j,1);
-    if (!options[i].parts.length) options[i].parts.push({ title:"", sub:"" });
-    renderOptions();
-  }
-  function refreshOptionSelect() {
-    const sel = $("f_orderOption"), keep = sel.value;
-    sel.innerHTML = "";
-    options.forEach((o, i) => {
-      const price = parseFloat(o.price) || 0;
-      const opt = document.createElement("option");
-      opt.value = i;
-      opt.textContent = `${optName(o,i)} — ${price ? money(price) + " บาท" : "ยังไม่ใส่ราคา"}`;
-      sel.appendChild(opt);
-    });
-    if (keep !== "" && options[keep]) sel.value = keep;
-  }
+      </div>`,
+          )
+          .join('');
+        refreshOptionSelect();
+      }
+      function setOpt(i, f, v) {
+        options[i][f] = v;
+      }
+      function setPart(i, j, f, v) {
+        options[i].parts[j][f] = v;
+      }
+      function addOption() {
+        options.push(blankOption());
+        renderOptions();
+      }
+      function removeOption(i) {
+        options.splice(i, 1);
+        if (!options.length) options.push(blankOption());
+        renderOptions();
+      }
+      function addPart(i) {
+        options[i].parts.push({ title: '', sub: '' });
+        renderOptions();
+      }
+      function removePart(i, j) {
+        options[i].parts.splice(j, 1);
+        if (!options[i].parts.length)
+          options[i].parts.push({ title: '', sub: '' });
+        renderOptions();
+      }
+      function refreshOptionSelect() {
+        const sel = $('f_orderOption'),
+          keep = sel.value;
+        sel.innerHTML = '';
+        options.forEach((o, i) => {
+          const price = parseFloat(o.price) || 0;
+          const opt = document.createElement('option');
+          opt.value = i;
+          opt.textContent = `${optName(i)} — ${price ? money(price) + ' บาท' : 'ยังไม่ใส่ราคา'}`;
+          sel.appendChild(opt);
+        });
+        if (keep !== '' && options[keep]) sel.value = keep;
+      }
 
-  /* ================= ข้อมูลตัวอย่าง ================= */
-  const tileSamples = {
-    floor6060: { label:"กระเบื้องพื้น 60×60 (ขาย ตร.ม.)",
-      sku:"TILE-6060-GRY", brand:"Cotto", collection:"Stone", category:"Tile", subcategory:"Floor Tile", look:"Stone",
-      saleW:60, saleL:60, saleH:0.9, workW:59.5, workL:59.5, workH:0.9,
-      priceUnit:"ตารางเมตร", pricePerUnit:2100, sqmPerBox:1.08, piecesPerBox:3, kgPerBox:21.23,
-      customerUnit:"ตารางเมตร", customerQty:25, allowanceType:"เปอร์เซ็นต์", allowanceValue:10,
-      sellingMethod:"กล่อง", discountType:"ไม่มี", discountValue:0, orderType:"Stock", remark:"" },
-    wall3060: { label:"กระเบื้องผนัง 30×60 (ขาย ตร.ม.)",
-      sku:"TILE-3060-WHT", brand:"Duragres", collection:"Pure", category:"Tile", subcategory:"Wall Tile", look:"Plain",
-      saleW:30, saleL:60, saleH:0.85, workW:29.7, workL:59.7, workH:0.85,
-      priceUnit:"ตารางเมตร", pricePerUnit:850, sqmPerBox:1.44, piecesPerBox:8, kgPerBox:19.5,
-      customerUnit:"ตารางเมตร", customerQty:18.5, allowanceType:"เปอร์เซ็นต์", allowanceValue:5,
-      sellingMethod:"กล่อง", discountType:"เปอร์เซ็นต์", discountValue:3, orderType:"Stock", remark:"" },
-    granite8080: { label:"แกรนิตโต้ขัดเงา 80×80 (ขาย ตร.ม.)",
-      sku:"GRA-8080-BLK", brand:"Cotto", collection:"Luxe", category:"Tile", subcategory:"Floor Tile", look:"Marble",
-      saleW:80, saleL:80, saleH:1.05, workW:79.6, workL:79.6, workH:1.05,
-      priceUnit:"ตารางเมตร", pricePerUnit:3600, sqmPerBox:1.28, piecesPerBox:2, kgPerBox:33,
-      customerUnit:"ตารางเมตร", customerQty:42, allowanceType:"เปอร์เซ็นต์", allowanceValue:7,
-      sellingMethod:"กล่อง", discountType:"บาท", discountValue:5000, orderType:"Indent", remark:"รอสินค้า 30–45 วัน" },
-    trimMeter: { label:"กระเบื้องบัว/คิ้ว (ขายเป็นเมตร)",
-      sku:"TRIM-60-GRY", brand:"Sosuco", collection:"Line", category:"Tile", subcategory:"Trim", look:"Stone",
-      saleW:6, saleL:60, saleH:0.9, workW:6, workL:60, workH:0.9,
-      priceUnit:"เมตร", pricePerUnit:180, sqmPerBox:0.36, piecesPerBox:10, kgPerBox:8,
-      customerUnit:"เมตร", customerQty:24, allowanceType:"ไม่มี", allowanceValue:0,
-      sellingMethod:"ชิ้น", discountType:"ไม่มี", discountValue:0, orderType:"Stock", remark:"" },
-    decorPiece: { label:"กระเบื้องลาย (ขายเป็นชิ้น)",
-      sku:"DEC-3030-ART", brand:"Campana", collection:"Art", category:"Tile", subcategory:"Decor", look:"Pattern",
-      saleW:30, saleL:30, saleH:0.8, workW:29.7, workL:29.7, workH:0.8,
-      priceUnit:"ชิ้น", pricePerUnit:120, sqmPerBox:0.99, piecesPerBox:11, kgPerBox:14,
-      customerUnit:"ชิ้น", customerQty:15, allowanceType:"ชิ้น", allowanceValue:2,
-      sellingMethod:"ชิ้น", discountType:"ไม่มี", discountValue:0, orderType:"Stock", remark:"" },
-  };
+      /* ================= ข้อมูลตัวอย่าง ================= */
+      const tileSamples = {
+        floor6060: {
+          label: 'กระเบื้องพื้น 60×60 (ขาย ตร.ม.)',
+          sku: 'TILE-6060-GRY',
+          brand: 'Cotto',
+          collection: 'Stone',
+          category: 'Tile',
+          subcategory: 'Floor Tile',
+          item: 'Stone',
+          saleW: 60,
+          saleL: 60,
+          saleH: 0.9,
+          workW: 59.5,
+          workL: 59.5,
+          workH: 0.9,
+          priceUnit: 'ตารางเมตร',
+          pricePerUnit: 2100,
+          sqmPerBox: 1.08,
+          piecesPerBox: 3,
+          kgPerBox: 21.23,
+          customerUnit: 'ตารางเมตร',
+          customerQty: 25,
+          allowanceType: 'เปอร์เซ็นต์',
+          allowanceValue: 10,
+          sellingMethod: 'กล่อง',
+          discountType: 'ไม่มี',
+          discountValue: 0,
+          orderType: 'Stock',
+          remark: '',
+        },
+        wall3060: {
+          label: 'กระเบื้องผนัง 30×60 (ขาย ตร.ม.)',
+          sku: 'TILE-3060-WHT',
+          brand: 'Duragres',
+          collection: 'Pure',
+          category: 'Tile',
+          subcategory: 'Wall Tile',
+          item: 'Plain',
+          saleW: 30,
+          saleL: 60,
+          saleH: 0.85,
+          workW: 29.7,
+          workL: 59.7,
+          workH: 0.85,
+          priceUnit: 'ตารางเมตร',
+          pricePerUnit: 850,
+          sqmPerBox: 1.44,
+          piecesPerBox: 8,
+          kgPerBox: 19.5,
+          customerUnit: 'ตารางเมตร',
+          customerQty: 18.5,
+          allowanceType: 'เปอร์เซ็นต์',
+          allowanceValue: 5,
+          sellingMethod: 'กล่อง',
+          discountType: 'เปอร์เซ็นต์',
+          discountValue: 3,
+          orderType: 'Stock',
+          remark: '',
+        },
+        granite8080: {
+          label: 'แกรนิตโต้ขัดเงา 80×80 (ขาย ตร.ม.)',
+          sku: 'GRA-8080-BLK',
+          brand: 'Cotto',
+          collection: 'Luxe',
+          category: 'Tile',
+          subcategory: 'Floor Tile',
+          item: 'Marble',
+          saleW: 80,
+          saleL: 80,
+          saleH: 1.05,
+          workW: 79.6,
+          workL: 79.6,
+          workH: 1.05,
+          priceUnit: 'ตารางเมตร',
+          pricePerUnit: 3600,
+          sqmPerBox: 1.28,
+          piecesPerBox: 2,
+          kgPerBox: 33,
+          customerUnit: 'ตารางเมตร',
+          customerQty: 42,
+          allowanceType: 'เปอร์เซ็นต์',
+          allowanceValue: 7,
+          sellingMethod: 'กล่อง',
+          discountType: 'บาท',
+          discountValue: 5000,
+          orderType: 'Indent',
+          remark: 'รอสินค้า 30–45 วัน',
+        },
+        trimMeter: {
+          label: 'กระเบื้องบัว/คิ้ว (ขายเป็นเมตร)',
+          sku: 'TRIM-60-GRY',
+          brand: 'Sosuco',
+          collection: 'Line',
+          category: 'Tile',
+          subcategory: 'Trim',
+          item: 'Stone',
+          saleW: 6,
+          saleL: 60,
+          saleH: 0.9,
+          workW: 6,
+          workL: 60,
+          workH: 0.9,
+          priceUnit: 'เมตร',
+          pricePerUnit: 180,
+          sqmPerBox: 0.36,
+          piecesPerBox: 10,
+          kgPerBox: 8,
+          customerUnit: 'เมตร',
+          customerQty: 24,
+          allowanceType: 'ไม่มี',
+          allowanceValue: 0,
+          sellingMethod: 'ชิ้น',
+          discountType: 'ไม่มี',
+          discountValue: 0,
+          orderType: 'Stock',
+          remark: '',
+        },
+        decorPiece: {
+          label: 'กระเบื้องลาย (ขายเป็นชิ้น)',
+          sku: 'DEC-3030-ART',
+          brand: 'Campana',
+          collection: 'Art',
+          category: 'Tile',
+          subcategory: 'Decor',
+          item: 'Pattern',
+          saleW: 30,
+          saleL: 30,
+          saleH: 0.8,
+          workW: 29.7,
+          workL: 29.7,
+          workH: 0.8,
+          priceUnit: 'ชิ้น',
+          pricePerUnit: 120,
+          sqmPerBox: 0.99,
+          piecesPerBox: 11,
+          kgPerBox: 14,
+          customerUnit: 'ชิ้น',
+          customerQty: 15,
+          allowanceType: 'ชิ้น',
+          allowanceValue: 2,
+          sellingMethod: 'ชิ้น',
+          discountType: 'ไม่มี',
+          discountValue: 0,
+          orderType: 'Stock',
+          remark: '',
+        },
+      };
 
-  const furnSamples = {
-    coffeeTable: { label:"โต๊ะกลาง Coffee Table (2 ตัวเลือก)",
-      sku:"FUR-TBL-001", name:"Coffee Table Nordic", brand:"Botempi", collection:"Core",
-      category:"Table", subcategory:"Coffee Table", width:120, length:60, height:42,
-      description:"โต๊ะกลางไม้จริง ท็อปหนา 25 มม. ขาเหล็กพ่นสีฝุ่น รับน้ำหนักได้ 80 กก.",
-      qtyUnit:"ตัว", qty:2, discountType:"เปอร์เซ็นต์", discountValue:5, orderType:"Stock", remark:"",
-      options:[
-        { label:"Grey", price:24500, parts:[{ title:"Top", sub:"GreyWood ผิวเมลามีน" },{ title:"Base", sub:"เหล็กพ่นสีดำด้าน" }] },
-        { label:"Black Wood", price:27800, parts:[{ title:"Top", sub:"Black Oak Veneer" },{ title:"Base", sub:"เหล็กพ่นสีดำด้าน" },{ title:"Legs", sub:"ปลายขาไม้โอ๊คแท้" }] },
-      ] },
-    sofa3: { label:"โซฟา 3 ที่นั่ง (3 ตัวเลือกผ้า)",
-      sku:"FUR-SOF-003", name:"Sofa Milano 3 Seater", brand:"Natuzzi", collection:"Editions",
-      category:"Sofa", subcategory:"3 Seater", width:210, length:92, height:85,
-      description:"โซฟา 3 ที่นั่ง โครงไม้ยางพารา เบาะฟองน้ำอัดความหนาแน่นสูง",
-      qtyUnit:"ชุด", qty:1, discountType:"บาท", discountValue:8000, orderType:"Indent",
-      remark:"สั่งผลิต รอสินค้า 60–90 วัน",
-      options:[
-        { label:"Fabric Beige", price:89000, parts:[{ title:"Upholstery", sub:"ผ้า Linen สี Beige" },{ title:"Frame", sub:"ไม้ยางพาราอบแห้ง" },{ title:"Legs", sub:"ไม้วอลนัท" }] },
-        { label:"Leather Black", price:145000, parts:[{ title:"Upholstery", sub:"หนังแท้ Full Grain สีดำ" },{ title:"Frame", sub:"ไม้ยางพาราอบแห้ง" },{ title:"Legs", sub:"สแตนเลสเงา" }] },
-        { label:"Velvet Green", price:98000, parts:[{ title:"Upholstery", sub:"ผ้ากำมะหยี่สีเขียว" },{ title:"Frame", sub:"ไม้ยางพาราอบแห้ง" },{ title:"Legs", sub:"ทองเหลืองรมดำ" }] },
-      ] },
-    chair: { label:"เก้าอี้ทานอาหาร (ขายเป็นชิ้น)",
-      sku:"FUR-CHR-012", name:"Dining Chair Oslo", brand:"Hay", collection:"Basic",
-      category:"Chair", subcategory:"Dining Chair", width:46, length:52, height:81,
-      description:"เก้าอี้ทานอาหาร เบาะหุ้มผ้า ขาไม้บีชแท้ ซ้อนเก็บได้",
-      qtyUnit:"ชิ้น", qty:6, discountType:"ไม่มี", discountValue:0, orderType:"Stock", remark:"",
-      options:[
-        { label:"Natural", price:4900, parts:[{ title:"Seat", sub:"ผ้าสีครีม" },{ title:"Legs", sub:"ไม้บีชสีธรรมชาติ" }] },
-        { label:"Walnut", price:5400, parts:[{ title:"Seat", sub:"ผ้าสีเทาเข้ม" },{ title:"Legs", sub:"ไม้บีชย้อมสีวอลนัท" }] },
-      ] },
-  };
+      const furnSamples = {
+        coffeeTable: {
+          label: 'โต๊ะกลาง Coffee Table (2 ตัวเลือก)',
+          sku: 'FUR-TBL-001',
+          name: 'Coffee Table Nordic',
+          brand: 'Botempi',
+          collection: 'Core',
+          category: 'Table',
+          subcategory: 'Coffee Table',
+          width: 120,
+          length: 60,
+          height: 42,
+          description:
+            'โต๊ะกลางไม้จริง ท็อปหนา 25 มม. ขาเหล็กพ่นสีฝุ่น รับน้ำหนักได้ 80 กก.',
+          qtyUnit: 'ตัว',
+          qty: 2,
+          discountType: 'เปอร์เซ็นต์',
+          discountValue: 5,
+          orderType: 'Stock',
+          remark: '',
+          options: [
+            {
+              price: 24500,
+              parts: [
+                { title: 'Top', sub: 'GreyWood ผิวเมลามีน' },
+                { title: 'Base', sub: 'เหล็กพ่นสีดำด้าน' },
+              ],
+            },
+            {
+              price: 27800,
+              parts: [
+                { title: 'Top', sub: 'Black Oak Veneer' },
+                { title: 'Base', sub: 'เหล็กพ่นสีดำด้าน' },
+                { title: 'Legs', sub: 'ปลายขาไม้โอ๊คแท้' },
+              ],
+            },
+          ],
+        },
+        sofa3: {
+          label: 'โซฟา 3 ที่นั่ง (3 ตัวเลือกผ้า)',
+          sku: 'FUR-SOF-003',
+          name: 'Sofa Milano 3 Seater',
+          brand: 'Natuzzi',
+          collection: 'Editions',
+          category: 'Sofa',
+          subcategory: '3 Seater',
+          width: 210,
+          length: 92,
+          height: 85,
+          description:
+            'โซฟา 3 ที่นั่ง โครงไม้ยางพารา เบาะฟองน้ำอัดความหนาแน่นสูง',
+          qtyUnit: 'ชุด',
+          qty: 1,
+          discountType: 'บาท',
+          discountValue: 8000,
+          orderType: 'Indent',
+          remark: 'สั่งผลิต รอสินค้า 60–90 วัน',
+          options: [
+            {
+              price: 89000,
+              parts: [
+                { title: 'Upholstery', sub: 'ผ้า Linen สี Beige' },
+                { title: 'Frame', sub: 'ไม้ยางพาราอบแห้ง' },
+                { title: 'Legs', sub: 'ไม้วอลนัท' },
+              ],
+            },
+            {
+              price: 145000,
+              parts: [
+                { title: 'Upholstery', sub: 'หนังแท้ Full Grain สีดำ' },
+                { title: 'Frame', sub: 'ไม้ยางพาราอบแห้ง' },
+                { title: 'Legs', sub: 'สแตนเลสเงา' },
+              ],
+            },
+            {
+              price: 98000,
+              parts: [
+                { title: 'Upholstery', sub: 'ผ้ากำมะหยี่สีเขียว' },
+                { title: 'Frame', sub: 'ไม้ยางพาราอบแห้ง' },
+                { title: 'Legs', sub: 'ทองเหลืองรมดำ' },
+              ],
+            },
+          ],
+        },
+        chair: {
+          label: 'เก้าอี้ทานอาหาร (ขายเป็นชิ้น)',
+          sku: 'FUR-CHR-012',
+          name: 'Dining Chair Oslo',
+          brand: 'Hay',
+          collection: 'Basic',
+          category: 'Chair',
+          subcategory: 'Dining Chair',
+          width: 46,
+          length: 52,
+          height: 81,
+          description: 'เก้าอี้ทานอาหาร เบาะหุ้มผ้า ขาไม้บีชแท้ ซ้อนเก็บได้',
+          qtyUnit: 'ชิ้น',
+          qty: 6,
+          discountType: 'ไม่มี',
+          discountValue: 0,
+          orderType: 'Stock',
+          remark: '',
+          options: [
+            {
+              price: 4900,
+              parts: [
+                { title: 'Seat', sub: 'ผ้าสีครีม' },
+                { title: 'Legs', sub: 'ไม้บีชสีธรรมชาติ' },
+              ],
+            },
+            {
+              price: 5400,
+              parts: [
+                { title: 'Seat', sub: 'ผ้าสีเทาเข้ม' },
+                { title: 'Legs', sub: 'ไม้บีชย้อมสีวอลนัท' },
+              ],
+            },
+          ],
+        },
+      };
 
-  function buildSampleSelect(selId, samples, onLoad) {
-    const sel = $(selId);
-    sel.innerHTML = "";
-    Object.entries(samples).forEach(([key, s]) => {
-      const opt = document.createElement("option");
-      opt.value = key; opt.textContent = s.label;
-      sel.appendChild(opt);
-    });
-  }
+      function buildSampleSelect(selId, samples, onLoad) {
+        const sel = $(selId);
+        sel.innerHTML = '';
+        Object.entries(samples).forEach(([key, s]) => {
+          const opt = document.createElement('option');
+          opt.value = key;
+          opt.textContent = s.label;
+          sel.appendChild(opt);
+        });
+      }
 
-  function loadTileSample(key) {
-    const s = tileSamples[key] || tileSamples.floor6060;
-    const set = (id, v) => { $(id).value = (v == null ? "" : v); };
-    ["sku","brand","collection","category","subcategory","look",
-     "saleW","saleL","saleH","workW","workL","workH",
-     "pricePerUnit","sqmPerBox","piecesPerBox","kgPerBox"].forEach(id => set("t_" + id, s[id]));
+      function loadTileSample(key) {
+        const s = tileSamples[key] || tileSamples.floor6060;
+        const set = (id, v) => {
+          $(id).value = v == null ? '' : v;
+        };
+        [
+          'sku',
+          'brand',
+          'collection',
+          'category',
+          'subcategory',
+          'item',
+          'saleW',
+          'saleL',
+          'saleH',
+          'workW',
+          'workL',
+          'workH',
+          'pricePerUnit',
+          'sqmPerBox',
+          'piecesPerBox',
+          'kgPerBox',
+        ].forEach((id) => set('t_' + id, s[id]));
 
-    set("t_priceUnit", s.priceUnit);
-    rebuildCustomerUnit();
-    rebuildSellingMethod();
+        set('t_priceUnit', s.priceUnit);
+        rebuildCustomerUnit();
+        rebuildSellingMethod();
 
-    ["customerUnit","customerQty","sellingMethod","allowanceType","allowanceValue",
-     "discountType","discountValue","orderType","remark"].forEach(id => set("t_" + id, s[id]));
-    toggle("t_allowanceType","t_allowanceWrap","ไม่มี");
-    toggle("t_discountType","t_discountWrap","ไม่มี");
-    useSampleImage("tile");
-  }
+        [
+          'customerUnit',
+          'customerQty',
+          'sellingMethod',
+          'allowanceType',
+          'allowanceValue',
+          'discountType',
+          'discountValue',
+          'orderType',
+          'remark',
+        ].forEach((id) => set('t_' + id, s[id]));
+        toggle('t_allowanceType', 't_allowanceWrap', 'ไม่มี');
+        toggle('t_discountType', 't_discountWrap', 'ไม่มี');
+        useSampleImage('tile');
+      }
 
-  function loadFurnSample(key) {
-    const s = furnSamples[key] || furnSamples.coffeeTable;
-    const set = (id, v) => { $(id).value = (v == null ? "" : v); };
-    ["sku","name","brand","collection","category","subcategory",
-     "width","length","height","description"].forEach(id => set("f_" + id, s[id]));
+      function loadFurnSample(key) {
+        const s = furnSamples[key] || furnSamples.coffeeTable;
+        const set = (id, v) => {
+          $(id).value = v == null ? '' : v;
+        };
+        [
+          'sku',
+          'name',
+          'brand',
+          'collection',
+          'category',
+          'subcategory',
+          'width',
+          'length',
+          'height',
+          'description',
+        ].forEach((id) => set('f_' + id, s[id]));
 
-    // คัดลอกออกมา เพื่อไม่ให้แก้ทับข้อมูลตัวอย่างต้นฉบับ
-    options = s.options.map(o => ({
-      label:o.label, price:o.price,
-      parts:o.parts.map(p => ({ title:p.title, sub:p.sub })),
-    }));
-    renderOptions();
+        // คัดลอกออกมา เพื่อไม่ให้แก้ทับข้อมูลตัวอย่างต้นฉบับ
+        options = s.options.map((o) => ({
+          price: o.price,
+          parts: o.parts.map((p) => ({ title: p.title, sub: p.sub })),
+        }));
+        renderOptions();
 
-    ["qty","qtyUnit","discountType","discountValue","orderType","remark"].forEach(id => set("f_" + id, s[id]));
-    toggle("f_discountType","f_discountWrap","ไม่มี");
-    $("f_orderOption").value = 0;
-    useSampleImage("furniture");
-  }
+        [
+          'qty',
+          'qtyUnit',
+          'discountType',
+          'discountValue',
+          'orderType',
+          'remark',
+        ].forEach((id) => set('f_' + id, s[id]));
+        toggle('f_discountType', 'f_discountWrap', 'ไม่มี');
+        $('f_orderOption').value = 0;
+        useSampleImage('furniture');
+      }
 
-  /* ================= สร้างรายการกระเบื้อง =================
+      /* ================= สร้างรายการกระเบื้อง =================
      คณิตศาสตร์แปลงตรงจาก calculate_sale() เดิม (ตร.ม./กล่อง, เผื่อ, ปัดกล่อง) */
-  function buildTileItem() {
-    const priceUnit    = val("t_priceUnit");
-    const pricePerUnit = num("t_pricePerUnit");
-    const sqmPerBox    = num("t_sqmPerBox");
-    const piecesPerBox = num("t_piecesPerBox");
-    const kgPerBox     = num("t_kgPerBox");
-    const saleLen      = num("t_saleL");
+      function buildTileItem() {
+        const priceUnit = val('t_priceUnit');
+        const pricePerUnit = num('t_pricePerUnit');
+        const sqmPerBox = num('t_sqmPerBox');
+        const piecesPerBox = num('t_piecesPerBox');
+        const kgPerBox = num('t_kgPerBox');
+        const saleLen = num('t_saleL');
 
-    const customerUnit   = val("t_customerUnit");
-    const customerQty    = num("t_customerQty");
-    const allowanceType  = val("t_allowanceType");
-    const allowanceValue = allowanceType === "ไม่มี" ? 0 : num("t_allowanceValue");
-    const sellingMethod  = val("t_sellingMethod");
-    const discountType   = val("t_discountType");
-    const discountValue  = discountType === "ไม่มี" ? 0 : num("t_discountValue");
+        const customerUnit = val('t_customerUnit');
+        const customerQty = num('t_customerQty');
+        const allowanceType = val('t_allowanceType');
+        const allowanceValue =
+          allowanceType === 'ไม่มี' ? 0 : num('t_allowanceValue');
+        const sellingMethod = val('t_sellingMethod');
+        const discountType = val('t_discountType');
+        const discountValue =
+          discountType === 'ไม่มี' ? 0 : num('t_discountValue');
 
-    if (!(pricePerUnit > 0)) throw "กรุณากรอกราคาต่อหน่วยให้มากกว่า 0";
-    if (!(sqmPerBox > 0))    throw "ตารางเมตรต่อกล่องต้องมากกว่า 0";
-    if (!(piecesPerBox > 0)) throw "จำนวนชิ้นต่อกล่องต้องมากกว่า 0";
-    if (!(customerQty > 0))  throw "กรุณากรอกจำนวนที่ลูกค้าต้องการให้มากกว่า 0";
+        if (!(pricePerUnit > 0)) throw 'กรุณากรอกราคาต่อหน่วยให้มากกว่า 0';
+        if (!(sqmPerBox > 0)) throw 'ตารางเมตรต่อกล่องต้องมากกว่า 0';
+        if (!(piecesPerBox > 0)) throw 'จำนวนชิ้นต่อกล่องต้องมากกว่า 0';
+        if (!(customerQty > 0))
+          throw 'กรุณากรอกจำนวนที่ลูกค้าต้องการให้มากกว่า 0';
 
-    const usesMeter = (customerUnit === "เมตร" || priceUnit === "เมตร");
-    if (usesMeter && !(saleLen > 0)) throw "กรุณากรอกความยาว Sale Size (L) ก่อน เพื่อคำนวณแบบเมตร";
+        const usesMeter = customerUnit === 'เมตร' || priceUnit === 'เมตร';
+        if (usesMeter && !(saleLen > 0))
+          throw 'กรุณากรอกความยาว Sale Size (L) ก่อน เพื่อคำนวณแบบเมตร';
 
-    const pieceUnits     = ["ชิ้น","เซ็ต"];
-    const sqmPerPiece    = sqmPerBox / piecesPerBox;
-    const lengthPerPiece = saleLen > 0 ? saleLen / 100 : 0;
+        const pieceUnits = ['ชิ้น', 'เซ็ต'];
+        const sqmPerPiece = sqmPerBox / piecesPerBox;
+        const lengthPerPiece = saleLen > 0 ? saleLen / 100 : 0;
 
-    // 1) แปลงจำนวนที่ลูกค้าแจ้งเป็นจำนวนชิ้น
-    let initialPieces;
-    if (customerUnit === "ตารางเมตร")           initialPieces = customerQty / sqmPerPiece;
-    else if (customerUnit === "เมตร")           initialPieces = customerQty / lengthPerPiece;
-    else if (pieceUnits.includes(customerUnit)) initialPieces = customerQty;
-    else                                        initialPieces = customerQty * piecesPerBox;
+        // 1) แปลงจำนวนที่ลูกค้าแจ้งเป็นจำนวนชิ้น
+        let initialPieces;
+        if (customerUnit === 'ตารางเมตร')
+          initialPieces = customerQty / sqmPerPiece;
+        else if (customerUnit === 'เมตร')
+          initialPieces = customerQty / lengthPerPiece;
+        else if (pieceUnits.includes(customerUnit)) initialPieces = customerQty;
+        else initialPieces = customerQty * piecesPerBox;
 
-    // 2) จำนวนเผื่อ (ชิ้น)
-    let allowancePieces = 0;
-    if (allowanceType === "เปอร์เซ็นต์") allowancePieces = initialPieces * allowanceValue / 100;
-    else if (allowanceType === "ชิ้น")   allowancePieces = allowanceValue;
-    else if (allowanceType === "กล่อง")  allowancePieces = allowanceValue * piecesPerBox;
+        // 2) จำนวนเผื่อ (ชิ้น)
+        let allowancePieces = 0;
+        if (allowanceType === 'เปอร์เซ็นต์')
+          allowancePieces = (initialPieces * allowanceValue) / 100;
+        else if (allowanceType === 'ชิ้น') allowancePieces = allowanceValue;
+        else if (allowanceType === 'กล่อง')
+          allowancePieces = allowanceValue * piecesPerBox;
 
-    const totalRequired = initialPieces + allowancePieces;
+        const totalRequired = initialPieces + allowancePieces;
 
-    // 3) จำนวนที่ขายจริง
-    let actualBoxes, actualPieces;
-    if (sellingMethod === "กล่อง") {
-      actualBoxes  = Math.ceil(totalRequired / piecesPerBox);
-      actualPieces = actualBoxes * piecesPerBox;
-    } else if (sellingMethod === "เซ็ต") {
-      actualPieces = Math.floor(totalRequired);   // ขายเป็นเซ็ต → ปัดลง
-      actualBoxes  = actualPieces / piecesPerBox;
-    } else {
-      actualPieces = Math.ceil(totalRequired);    // ขายเป็นชิ้น → ปัดขึ้น
-      actualBoxes  = actualPieces / piecesPerBox;
-    }
-    const actualSqm    = actualPieces * sqmPerPiece;
-    const actualMeters = actualPieces * lengthPerPiece;
-    const hasWeight    = kgPerBox > 0;
-    const totalWeight  = hasWeight ? actualPieces * (kgPerBox / piecesPerBox) : 0;
+        // 3) จำนวนที่ขายจริง
+        let actualBoxes, actualPieces;
+        if (sellingMethod === 'กล่อง') {
+          actualBoxes = Math.ceil(totalRequired / piecesPerBox);
+          actualPieces = actualBoxes * piecesPerBox;
+        } else if (sellingMethod === 'เซ็ต') {
+          actualPieces = Math.floor(totalRequired); // ขายเป็นเซ็ต → ปัดลง
+          actualBoxes = actualPieces / piecesPerBox;
+        } else {
+          actualPieces = Math.ceil(totalRequired); // ขายเป็นชิ้น → ปัดขึ้น
+          actualBoxes = actualPieces / piecesPerBox;
+        }
+        const actualSqm = actualPieces * sqmPerPiece;
+        const actualMeters = actualPieces * lengthPerPiece;
+        const hasWeight = kgPerBox > 0;
+        const totalWeight = hasWeight
+          ? actualPieces * (kgPerBox / piecesPerBox)
+          : 0;
 
-    // 4) ราคาก่อนลด ตามหน่วยราคาสินค้า
-    let gross;
-    if (priceUnit === "ตารางเมตร")           gross = actualSqm    * pricePerUnit;
-    else if (priceUnit === "เมตร")           gross = actualMeters * pricePerUnit;
-    else if (pieceUnits.includes(priceUnit)) gross = actualPieces * pricePerUnit;
-    else                                     gross = actualBoxes  * pricePerUnit;
+        // 4) ราคาก่อนลด ตามหน่วยราคาสินค้า
+        let gross;
+        if (priceUnit === 'ตารางเมตร') gross = actualSqm * pricePerUnit;
+        else if (priceUnit === 'เมตร') gross = actualMeters * pricePerUnit;
+        else if (pieceUnits.includes(priceUnit))
+          gross = actualPieces * pricePerUnit;
+        else gross = actualBoxes * pricePerUnit;
 
-    // 5) ส่วนลด
-    let discountAmount = 0;
-    if (discountType === "เปอร์เซ็นต์") discountAmount = gross * discountValue / 100;
-    else if (discountType === "บาท")    discountAmount = discountValue;
-    if (discountAmount > gross) discountAmount = gross;
+        // 5) ส่วนลด
+        let discountAmount = 0;
+        if (discountType === 'เปอร์เซ็นต์')
+          discountAmount = (gross * discountValue) / 100;
+        else if (discountType === 'บาท') discountAmount = discountValue;
+        if (discountAmount > gross) discountAmount = gross;
 
-    const isSet = sellingMethod === "เซ็ต";
-    // จำนวนที่คิดเงิน + หน่วย ตามหน่วยราคา
-    const billedQty = priceUnit === "ตารางเมตร" ? actualSqm
-      : priceUnit === "เมตร" ? actualMeters
-      : priceUnit === "กล่อง" ? actualBoxes : actualPieces;
-    const unit = priceUnit === "ตารางเมตร" ? "sqm"
-      : priceUnit === "เมตร" ? "m"
-      : priceUnit === "กล่อง" ? "boxes" : (isSet ? "sets" : "pcs");
-    const actualUse = priceUnit === "ตารางเมตร" ? initialPieces * sqmPerPiece
-      : priceUnit === "เมตร" ? initialPieces * lengthPerPiece
-      : priceUnit === "กล่อง" ? initialPieces / piecesPerBox : initialPieces;
+        const isSet = sellingMethod === 'เซ็ต';
+        // จำนวน + หน่วยในเอกสาร ต้องตรงกับที่ลูกค้าแจ้งในใบสั่งซื้อ — ลูกค้าแจ้งเป็นชิ้น เอกสารก็เป็นชิ้น
+        // ยอดเงินยังคิดจากหน่วยราคาสินค้า (U.M.) เหมือนเดิม ราคาต่อหน่วยจึงถอดกลับจากยอดรวม
+        // เพื่อให้ จำนวน × ราคาต่อหน่วย = ยอดรวม เสมอ ไม่ว่าลูกค้าจะแจ้งมาเป็นหน่วยไหน
+        const inCustomerUnit = (pieces) =>
+          customerUnit === 'ตารางเมตร'
+            ? pieces * sqmPerPiece
+            : customerUnit === 'เมตร'
+              ? pieces * lengthPerPiece
+              : customerUnit === 'กล่อง'
+                ? pieces / piecesPerBox
+                : pieces; // ชิ้น / เซ็ต — นับเป็นชิ้นอยู่แล้ว
+        const billedQty = inCustomerUnit(actualPieces);
+        const actualUse = inCustomerUnit(initialPieces);
+        const unit = UNIT_ABBR[customerUnit] || customerUnit;
+        const unitPriceDoc = billedQty > 0 ? gross / billedQty : 0;
 
-    const wkW = num("t_workW") * 10, wkL = num("t_workL") * 10;
-    const workMm = (wkW > 0 && wkL > 0) ? `${fmt(wkW)}x${fmt(wkL)} mm` : "-";
-    const sw = [num("t_saleW"), num("t_saleL"), num("t_saleH")];
-    const saleDim = [sw[0]>0?`W ${fmt(sw[0])}`:null, sw[1]>0?`D ${fmt(sw[1])}`:null, sw[2]>0?`H ${fmt(sw[2])}`:null]
-      .filter(Boolean).join(" | ");
-    const orderType = val("t_orderType");
-    const remark    = val("t_remark").trim();
+        const wkW = num('t_workW') * 10,
+          wkL = num('t_workL') * 10;
+        const workMm = wkW > 0 && wkL > 0 ? `${fmt(wkW)}x${fmt(wkL)} mm` : '-';
+        const sw = [num('t_saleW'), num('t_saleL'), num('t_saleH')];
+        const saleDim = [
+          sw[0] > 0 ? `W ${fmt(sw[0])}` : null,
+          sw[1] > 0 ? `D ${fmt(sw[1])}` : null,
+          sw[2] > 0 ? `H ${fmt(sw[2])}` : null,
+        ]
+          .filter(Boolean)
+          .join(' | ');
+        const orderType = val('t_orderType');
+        const remark = val('t_remark').trim();
 
-    // บรรทัดใน DESCRIPTION — ข้อความล้วน ไม่มี HTML/CSS (คัดลอกลง Excel ได้)
-    const descLines = [
-      [val("t_brand"), val("t_collection")].filter(Boolean).join(" — ") || "-",
-      val("t_look") ? "Look: " + val("t_look") : "",
-      saleDim ? "ขนาดขาย: " + saleDim : "",
-      `Working Size (ขนาดจริง): ${workMm}`,
-      `U.M.: ${priceUnit}`,
-      `${fmt(sqmPerBox)} ตร.ม./กล่อง`,
-      `${fmt(piecesPerBox)} แผ่น/กล่อง`,
-      hasWeight ? `${fmt(kgPerBox)} กก./กล่อง` : "",
-      `จำนวนใช้จริง: ${fmt(actualUse)} ${unit}`,
-      `จำนวนเผื่อ: ${fmt(billedQty - actualUse)} ${unit}`,
-      isSet ? "" : `กล่องทั้งหมด: ${fmt(actualBoxes)} กล่อง`,
-      hasWeight ? `น้ำหนักรวม: ${fmt(totalWeight)} กก.` : "",
-      `ประเภทสินค้า: ${orderType} ${orderType === "Indent" ? "(สั่งผลิต/รอสินค้า)" : "(มีของพร้อมส่ง)"}`,
-      `หมายเหตุ: ${remark || "-"}`,
-    ].filter(Boolean);
+        // สเปกต่อกล่อง รวมไว้บรรทัดเดียว — ข้ามค่าที่ไม่ได้กรอก
+        const perBox = [
+          `${fmt(sqmPerBox)} ตร.ม./กล่อง`,
+          `${fmt(piecesPerBox)} แผ่น/กล่อง`,
+          hasWeight ? `${fmt(kgPerBox)} กก./กล่อง` : '',
+        ]
+          .filter(Boolean)
+          .join('  |  ');
 
-    return {
-      id: Date.now() + "-" + Math.random().toString(36).slice(2,7),
-      type: "tile",
-      sku: val("t_sku").trim() || "-",
-      name: "",
-      brand: val("t_brand").trim(), collection: val("t_collection").trim(),
-      category: val("t_category").trim(), subcategory: val("t_subcategory").trim(),
-      variant: val("t_look").trim(),        // ลุค ใช้ช่องเดียวกับ "ตัวเลือก" ของเฟอร์นิเจอร์
-      image: images.tile,
-      orderType, remark,
-      unit, qty: billedQty, unitPrice: pricePerUnit,
-      gross, discountAmount, net: gross - discountAmount,
-      descLines,
-      // ข้อมูลเสริมไว้โชว์ในหน้าโปรเจกต์
-      extra: { boxes: actualBoxes, pieces: actualPieces, sqm: actualSqm, weight: totalWeight, isSet },
-    };
-  }
+        // บรรทัดใน DESCRIPTION — ข้อความล้วน ไม่มี HTML/CSS (คัดลอกลง Excel ได้)
+        const descLines = [
+          [val('t_brand'), val('t_collection')].filter(Boolean).join(' — ') ||
+            '-',
+          val('t_item') ? 'Item: ' + val('t_item') : '',
+          saleDim ? 'ขนาดขาย: ' + saleDim : '',
+          `Working Size (ขนาดจริง): ${workMm}`,
+          `U.M.: ${priceUnit}`,
+          customerUnit !== priceUnit
+            ? `ราคาตาม U.M.: ${money(pricePerUnit)} บาท/${priceUnit}`
+            : '',
+          perBox,
+          `จำนวนใช้จริง: ${fmt(actualUse)} ${unit}`,
+          `จำนวนเผื่อ: ${fmt(billedQty - actualUse)} ${unit}`,
+          isSet ? '' : `กล่องทั้งหมด: ${fmt(actualBoxes)} กล่อง`,
+          hasWeight ? `น้ำหนักรวม: ${fmt(totalWeight)} กก.` : '',
+          `ประเภทสินค้า: ${orderType} ${orderType === 'Indent' ? '(สั่งผลิต/รอสินค้า)' : '(มีของพร้อมส่ง)'}`,
+          `หมายเหตุ: ${remark || '-'}`,
+        ].filter(Boolean);
 
-  /* ================= สร้างรายการเฟอร์นิเจอร์ =================
+        return {
+          id: Date.now() + '-' + Math.random().toString(36).slice(2, 7),
+          type: 'tile',
+          sku: val('t_sku').trim() || '-',
+          name: '',
+          brand: val('t_brand').trim(),
+          collection: val('t_collection').trim(),
+          category: val('t_category').trim(),
+          subcategory: val('t_subcategory').trim(),
+          variant: val('t_item').trim(), // Item ใช้ช่องเดียวกับ "ตัวเลือก" ของเฟอร์นิเจอร์
+          image: images.tile,
+          orderType,
+          remark,
+          unit,
+          qty: billedQty,
+          unitPrice: unitPriceDoc,
+          priceUnit,
+          catalogUnitPrice: pricePerUnit,
+          gross,
+          discountAmount,
+          net: gross - discountAmount,
+          descLines,
+          // ข้อมูลเสริมไว้โชว์ในหน้าโปรเจกต์
+          extra: {
+            boxes: actualBoxes,
+            pieces: actualPieces,
+            sqm: actualSqm,
+            weight: totalWeight,
+            isSet,
+          },
+        };
+      }
+
+      /* ================= สร้างรายการเฟอร์นิเจอร์ =================
      ขายเป็นชิ้น: ยอดรวม = ราคาตัวเลือก × จำนวน (ไม่มีการแปลงหน่วย/เผื่อ/ปัดกล่อง) */
-  function buildFurnItem() {
-    const idx = parseInt(val("f_orderOption"), 10);
-    const opt = options[idx];
-    if (!opt) throw "ยังไม่ได้เลือกตัวเลือกสินค้า";
+      function buildFurnItem() {
+        const idx = parseInt(val('f_orderOption'), 10);
+        const opt = options[idx];
+        if (!opt) throw 'ยังไม่ได้เลือกตัวเลือกสินค้า';
 
-    const unitPrice = parseFloat(opt.price) || 0;
-    if (!(unitPrice > 0)) throw `ตัวเลือก "${optName(opt, idx)}" ยังไม่ได้ใส่ราคา`;
+        const unitPrice = parseFloat(opt.price) || 0;
+        if (!(unitPrice > 0)) throw `${optName(idx)} ยังไม่ได้ใส่ราคา`;
 
-    const qty = num("f_qty");
-    if (!(qty > 0)) throw "จำนวนต้องมากกว่า 0";
+        const qty = num('f_qty');
+        if (!(qty > 0)) throw 'จำนวนต้องมากกว่า 0';
 
-    const discountType  = val("f_discountType");
-    const discountValue = discountType === "ไม่มี" ? 0 : num("f_discountValue");
-    const gross = unitPrice * qty;
+        const discountType = val('f_discountType');
+        const discountValue =
+          discountType === 'ไม่มี' ? 0 : num('f_discountValue');
+        const gross = unitPrice * qty;
 
-    let discountAmount = 0;
-    if (discountType === "เปอร์เซ็นต์") discountAmount = gross * discountValue / 100;
-    else if (discountType === "บาท")    discountAmount = discountValue;
-    if (discountAmount > gross) discountAmount = gross;
+        let discountAmount = 0;
+        if (discountType === 'เปอร์เซ็นต์')
+          discountAmount = (gross * discountValue) / 100;
+        else if (discountType === 'บาท') discountAmount = discountValue;
+        if (discountAmount > gross) discountAmount = gross;
 
-    const w = num("f_width"), l = num("f_length"), h = num("f_height");
-    const dimText = (w || l || h) ? `${w || "-"} × ${l || "-"} × ${h || "-"} ซม.` : "-";
-    const parts = opt.parts.filter(p => p.title.trim() || p.sub.trim());
-    const orderType = val("f_orderType");
-    const remark    = val("f_remark").trim();
+        const w = num('f_width'),
+          l = num('f_length'),
+          h = num('f_height');
+        const dimText =
+          w || l || h ? `${w || '-'} × ${l || '-'} × ${h || '-'} ซม.` : '-';
+        const parts = opt.parts.filter((p) => p.title.trim() || p.sub.trim());
+        const orderType = val('f_orderType');
+        const remark = val('f_remark').trim();
 
-    const descLines = [
-      [val("f_brand"), val("f_collection")].filter(Boolean).join(" — ") || "-",
-      val("f_name").trim(),
-      `ตัวเลือก: ${optName(opt, idx)}`,
-      ...(parts.length ? parts.map(p => `${p.title.trim() || "-"}: ${p.sub.trim() || "-"}`) : ["ชิ้นส่วน: -"]),
-      `ขนาด (กว้าง × ยาว × สูง): ${dimText}`,
-      `ประเภทสินค้า: ${orderType} ${orderType === "Indent" ? "(สั่งผลิต/รอสินค้า)" : "(มีของพร้อมส่ง)"}`,
-      `หมายเหตุ: ${remark || "-"}`,
-    ].filter(Boolean);
+        const descLines = [
+          [val('f_brand'), val('f_collection')].filter(Boolean).join(' — ') ||
+            '-',
+          val('f_name').trim(),
+          ...(parts.length
+            ? parts.map(
+                (p) => `${p.title.trim() || '-'}: ${p.sub.trim() || '-'}`,
+              )
+            : ['ชิ้นส่วน: -']),
+          `ขนาด (กว้าง × ยาว × สูง): ${dimText}`,
+          `ประเภทสินค้า: ${orderType} ${orderType === 'Indent' ? '(สั่งผลิต/รอสินค้า)' : '(มีของพร้อมส่ง)'}`,
+          `หมายเหตุ: ${remark || '-'}`,
+        ].filter(Boolean);
 
-    return {
-      id: Date.now() + "-" + Math.random().toString(36).slice(2,7),
-      type: "furniture",
-      sku: val("f_sku").trim() || "-",
-      name: val("f_name").trim(),
-      brand: val("f_brand").trim(), collection: val("f_collection").trim(),
-      category: val("f_category").trim(), subcategory: val("f_subcategory").trim(),
-      variant: optName(opt, idx),
-      image: images.furniture,
-      orderType, remark,
-      unit: val("f_qtyUnit"), qty, unitPrice,
-      gross, discountAmount, net: gross - discountAmount,
-      descLines,
-      extra: { parts: parts.map(p => `${p.title.trim() || "-"}: ${p.sub.trim() || "-"}`), dim: dimText },
-    };
-  }
+        return {
+          id: Date.now() + '-' + Math.random().toString(36).slice(2, 7),
+          type: 'furniture',
+          sku: val('f_sku').trim() || '-',
+          name: val('f_name').trim(),
+          brand: val('f_brand').trim(),
+          collection: val('f_collection').trim(),
+          category: val('f_category').trim(),
+          subcategory: val('f_subcategory').trim(),
+          variant: '', // เฟอร์นิเจอร์ไม่มีชื่อตัวเลือกแล้ว — ระบุด้วยชิ้นส่วนใน descLines
+          image: images.furniture,
+          orderType,
+          remark,
+          unit: val('f_qtyUnit'),
+          qty,
+          unitPrice,
+          priceUnit: val('f_qtyUnit'),
+          catalogUnitPrice: unitPrice,
+          gross,
+          discountAmount,
+          net: gross - discountAmount,
+          descLines,
+          extra: {
+            parts: parts.map(
+              (p) => `${p.title.trim() || '-'}: ${p.sub.trim() || '-'}`,
+            ),
+            dim: dimText,
+          },
+        };
+      }
 
-  /* ================= โปรเจกต์ (เก็บใน localStorage) ================= */
-  const STORE_KEY = "amo-project-mockup";
+      /* ================= โปรเจกต์ (เก็บใน localStorage) ================= */
+      const STORE_KEY = 'amo-project-mockup';
 
-  // ช่องในหัวเอกสาร: id ของ input → key ที่เก็บ
-  const HEAD_FIELDS = [
-    "c_name","c_addr","c_tel","c_mobile","c_email","c_taxid",
-    "d_type","d_no","d_addno","d_rev","d_ref","d_date","d_validity","d_from",
-    "k_code","k_name","k_addr","k_attn",
-    "pay_bank","pay_dep_pct","pay_dep_note","pay_bal_note",
-    "bill_discType","bill_discValue","terms",
-    "s_sales","s_company","s_mgr_title","s_mgr_name",
-  ];
+      // ค่าใช้จ่ายอื่นที่บวกเพิ่มหลัง Sub Total — th = ชื่อในฟอร์ม/CSV, en = ชื่อที่พิมพ์ในใบ OC
+      const EXTRA_FEES = [
+        { id: 'fee_cut', th: 'ค่าตัดกระเบื้อง', en: 'Tile Cutting' },
+        { id: 'fee_pickup', th: 'ค่า Pickup', en: 'Pickup Charge' },
+        {
+          id: 'fee_upcountry',
+          th: 'ค่าขนส่งต่างจังหวัด',
+          en: 'Upcountry Delivery',
+        },
+        {
+          id: 'fee_pallet',
+          th: 'ค่าพาเลท (ซื้อแผ่นใหญ่ไม่เต็มพาเลท)',
+          en: 'Pallet Charge',
+        },
+      ];
 
-  // Terms & Conditions ตั้งต้น — แก้ได้ทั้งหมดในหน้าโปรเจกต์
-  const TERMS_DEFAULT = [
-    "Remark :",
-    "1) Lead time is considered 60-90 days upon deposit payment and material approval (August holidays excluded).",
-    "2) Delivery in Bangkok without extra charge, to other provinces quoted upon request.",
-    "3) Installation NOT included.",
-    "4) Storage will be charged after 30days of the goods arrival and balance payment will be required.",
-    "5) Payment Term : 50% deposit upon order confirmation and balance before delivery.",
-    "Cautions for tiles installation :",
-    "1) 2mm joint and using spacer is strongly recommended.",
-    "2) 1/2 staggered pattern is not recommended. For long format, for example 20x120, staggered 1/4 pattern is recommended",
-    "3) Calibre or working size (mm) should be considered in case of having different collections or brands in the same area.",
-    "4) For large format, using leveller is advised for the good outcome.",
-    "5) Tiles with anti-slip rate R10 or R11 must be considered for the wet areas; shower, pool deck, steps, etc.",
-    "6) Minor misalignments in the continuity of the veins between graphic is not considered as defects but is normal for Bookmatch or Endless patterns.",
-  ].join("\n");
-  // ค่าเริ่มต้นของหัวเอกสาร (ตัวอย่างตามฟอร์มจริง — แก้ได้ในหน้าโปรเจกต์)
-  const HEAD_DEFAULTS = {
-    c_name:"AMO Co., Ltd",
-    c_addr:"37 Srinakarin 45 Pravet Bangkok 10250",
-    c_tel:"+662.056.0610", c_mobile:"+091.718.1150",
-    c_email:"info@amo.co.th", c_taxid:"0105555028724",
-    d_type:"ORDER CONFIRMATION", d_no:"A26-11736", d_addno:"0", d_rev:"1",
-    d_ref:"", d_date:"", d_validity:"30 Days", d_from:"",
-    k_code:"", k_name:"", k_addr:"", k_attn:"",
-    pay_bank:"Amo Co.,Ltd, Krungthai Bank, xxx-x-xxxxx-x",
-    pay_dep_pct:"50", pay_dep_note:"upon order confirmation", pay_bal_note:"before delivery",
-    bill_discType:"ไม่มี", bill_discValue:"0",
-    terms: TERMS_DEFAULT,
-    s_sales:"", s_company:"AMO Co., Ltd", s_mgr_title:"Sales Manager",
-    s_mgr_name:"Panumard (Ann) Manadamrongtham 081.8686.941",
-  };
+      // ช่องในหัวเอกสาร: id ของ input → key ที่เก็บ
+      const HEAD_FIELDS = [
+        'c_name',
+        'c_addr',
+        'c_tel',
+        'c_mobile',
+        'c_email',
+        'c_taxid',
+        'd_type',
+        'd_no',
+        'd_addno',
+        'd_rev',
+        'd_ref',
+        'd_date',
+        'd_validity',
+        'd_from',
+        'k_code',
+        'k_name',
+        'k_addr',
+        'k_attn',
+        'pay_bank',
+        'pay_dep_pct',
+        'pay_dep_note',
+        'pay_mid_pct',
+        'pay_mid_note',
+        'pay_bal_note',
+        'bill_discType',
+        'bill_discValue',
+        ...EXTRA_FEES.map((f) => f.id),
+        'vat_pct',
+        'terms',
+        's_sales',
+        's_company',
+        's_mgr_title',
+        's_mgr_name',
+      ];
 
-  let project = { head:{}, items:[] };
+      // Terms & Conditions ตั้งต้น — แก้ได้ทั้งหมดในหน้าโปรเจกต์
+      const TERMS_DEFAULT = [
+        'Remark :',
+        '1) Lead time is considered 60-90 days upon deposit payment and material approval (August holidays excluded).',
+        '2) Delivery in Bangkok without extra charge, to other provinces quoted upon request.',
+        '3) Installation NOT included.',
+        '4) Storage will be charged after 30days of the goods arrival and balance payment will be required.',
+        '5) Payment Term : 50% deposit upon order confirmation, 40% upon arrival of goods at warehouse and balance before delivery.',
+        'Cautions for tiles installation :',
+        '1) 2mm joint and using spacer is strongly recommended.',
+        '2) 1/2 staggered pattern is not recommended. For long format, for example 20x120, staggered 1/4 pattern is recommended',
+        '3) Calibre or working size (mm) should be considered in case of having different collections or brands in the same area.',
+        '4) For large format, using leveller is advised for the good outcome.',
+        '5) Tiles with anti-slip rate R10 or R11 must be considered for the wet areas; shower, pool deck, steps, etc.',
+        '6) Minor misalignments in the continuity of the veins between graphic is not considered as defects but is normal for Bookmatch or Endless patterns.',
+      ].join('\n');
+      // ค่าเริ่มต้นของหัวเอกสาร (ตัวอย่างตามฟอร์มจริง — แก้ได้ในหน้าโปรเจกต์)
+      const HEAD_DEFAULTS = {
+        c_name: 'AMO Co., Ltd',
+        c_addr: '37 Srinakarin 45 Pravet Bangkok 10250',
+        c_tel: '+662.056.0610',
+        c_mobile: '+091.718.1150',
+        c_email: 'info@amo.co.th',
+        c_taxid: '0105555028724',
+        d_type: 'ORDER CONFIRMATION',
+        d_no: 'A26-11736',
+        d_addno: '0',
+        d_rev: '1',
+        d_ref: '',
+        d_date: '',
+        d_validity: '30 Days',
+        d_from: '',
+        k_code: '',
+        k_name: '',
+        k_addr: '',
+        k_attn: '',
+        pay_bank: 'Amo Co.,Ltd, Krungthai Bank, xxx-x-xxxxx-x',
+        pay_dep_pct: '50',
+        pay_dep_note: 'upon order confirmation',
+        pay_mid_pct: '40',
+        pay_mid_note: 'upon arrival of goods at warehouse',
+        pay_bal_note: 'before delivery',
+        bill_discType: 'ไม่มี',
+        bill_discValue: '0',
+        fee_cut: '0',
+        fee_pickup: '0',
+        fee_upcountry: '0',
+        fee_pallet: '0',
+        vat_pct: '7',
+        terms: TERMS_DEFAULT,
+        s_sales: '',
+        s_company: 'AMO Co., Ltd',
+        s_mgr_title: 'Sales Manager',
+        s_mgr_name: 'Panumard (Ann) Manadamrongtham 081.8686.941',
+      };
 
-  function saveProject() {
-    HEAD_FIELDS.forEach(id => { project.head[id] = val(id); });
-    try {
-      localStorage.setItem(STORE_KEY, JSON.stringify(project));
-      $("saveWarn").innerHTML = "";
-    } catch (e) {
-      // รูปเก็บเป็น data URL — ใส่รูปใหญ่หลายรูปแล้วชนโควตา localStorage (~5MB)
-      $("saveWarn").innerHTML = `<div class="msg err">⚠ เซฟลงเครื่องไม่สำเร็จ
+      let project = { head: {}, items: [] };
+
+      function saveProject() {
+        HEAD_FIELDS.forEach((id) => {
+          project.head[id] = val(id);
+        });
+        try {
+          localStorage.setItem(STORE_KEY, JSON.stringify(project));
+          $('saveWarn').innerHTML = '';
+        } catch (e) {
+          // รูปเก็บเป็น data URL — ใส่รูปใหญ่หลายรูปแล้วชนโควตา localStorage (~5MB)
+          $('saveWarn').innerHTML =
+            `<div class="msg err">⚠ เซฟลงเครื่องไม่สำเร็จ
         (พื้นที่เก็บเต็ม — รูปที่อัปโหลดกินที่มาก) ข้อมูลยังใช้งานได้ปกติ
         แต่จะหายเมื่อรีโหลดหน้า — ลองลบรูปบางรูปออก</div>`;
-    }
-  }
-  function loadProject() {
-    try {
-      const raw = localStorage.getItem(STORE_KEY);
-      if (raw) {
-        const saved = JSON.parse(raw);
-        project.items = saved.items || [];
-        project.head  = saved.head  || {};
-        // รองรับข้อมูลที่เซฟไว้ด้วยโครงเดิม
-        if (saved.docno)    project.head.d_no   ??= saved.docno;
-        if (saved.customer) project.head.k_name ??= saved.customer;
-        if (saved.sales)    project.head.d_from ??= saved.sales;
-        if (saved.name)     project.head.d_ref  ??= saved.name;
+        }
       }
-    } catch (e) { /* ข้อมูลเสีย — ใช้ค่าเริ่มต้น */ }
+      function loadProject() {
+        try {
+          const raw = localStorage.getItem(STORE_KEY);
+          if (raw) {
+            const saved = JSON.parse(raw);
+            project.items = saved.items || [];
+            project.head = saved.head || {};
+            // รายการที่เพิ่มไว้ก่อนเปลี่ยนชื่อหัวข้อ เก็บบรรทัด "Look:" ไว้ในตัว — แปลงให้เป็น "Item:"
+            project.items.forEach((i) => {
+              if (Array.isArray(i.descLines))
+                i.descLines = i.descLines.map((l) =>
+                  l.replace(/^Look: /, 'Item: '),
+                );
+            });
+            // รองรับข้อมูลที่เซฟไว้ด้วยโครงเดิม
+            if (saved.docno) project.head.d_no ??= saved.docno;
+            if (saved.customer) project.head.k_name ??= saved.customer;
+            if (saved.sales) project.head.d_from ??= saved.sales;
+            if (saved.name) project.head.d_ref ??= saved.name;
+          }
+        } catch (e) {
+          /* ข้อมูลเสีย — ใช้ค่าเริ่มต้น */
+        }
 
-    const today = new Date().toLocaleDateString("en-GB", { day:"numeric", month:"long", year:"numeric" });
-    HEAD_FIELDS.forEach(id => {
-      const v = project.head[id] ?? (id === "d_date" ? today : HEAD_DEFAULTS[id]) ?? "";
-      $(id).value = v;
-      project.head[id] = v;
-    });
-    toggle("bill_discType", "bill_discWrap", "ไม่มี");
-    updateCount();
-  }
-  const head = id => (project.head[id] || "").trim();
-  function updateCount() { $("tabCount").textContent = products().length; }
+        const today = new Date().toLocaleDateString('en-GB', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        });
+        HEAD_FIELDS.forEach((id) => {
+          const v =
+            project.head[id] ??
+            (id === 'd_date' ? today : HEAD_DEFAULTS[id]) ??
+            '';
+          $(id).value = v;
+          project.head[id] = v;
+        });
+        toggle('bill_discType', 'bill_discWrap', 'ไม่มี');
+        updateCount();
+      }
+      const head = (id) => (project.head[id] || '').trim();
+      function updateCount() {
+        $('tabCount').textContent = products().length;
+      }
 
-  function addToProject() {
-    const box = $("addMsg");
-    let item;
-    try {
-      item = productType === "tile" ? buildTileItem() : buildFurnItem();
-    } catch (msg) {
-      box.innerHTML = `<div class="msg err">⚠ ${esc(msg)}</div>`;
-      return;
-    }
-    project.items.push(item);
-    saveProject();
-    updateCount();
-    box.innerHTML = `
+      function addToProject() {
+        const box = $('addMsg');
+        let item;
+        try {
+          item = productType === 'tile' ? buildTileItem() : buildFurnItem();
+        } catch (msg) {
+          box.innerHTML = `<div class="msg err">⚠ ${esc(msg)}</div>`;
+          return;
+        }
+        project.items.push(item);
+        saveProject();
+        updateCount();
+        box.innerHTML = `
       <div class="msg ok">
-        <span>✓ เพิ่ม <b>${esc(item.sku)}</b>${item.variant ? " (" + esc(item.variant) + ")" : ""}
+        <span>✓ เพิ่ม <b>${esc(item.sku)}</b>${item.variant ? ' (' + esc(item.variant) + ')' : ''}
           ${fmt(item.qty)} ${esc(item.unit)} — ${money(item.net)} บาท เข้าโปรเจกต์แล้ว
           (ตอนนี้มี ${products().length} รายการ)</span>
         <button type="button" onclick="showView('project')">ดูโปรเจกต์ →</button>
       </div>`;
-  }
+      }
 
-  function removeItem(id) {
-    project.items = project.items.filter(i => i.id !== id);
-    saveProject(); updateCount(); renderProject();
-  }
-  function clearProject() {
-    if (!project.items.length) return;
-    if (!confirm("ลบสินค้าทั้งหมดในโปรเจกต์?")) return;
-    project.items = [];
-    saveProject(); updateCount(); renderProject();
-  }
+      function removeItem(id) {
+        project.items = project.items.filter((i) => i.id !== id);
+        saveProject();
+        updateCount();
+        renderProject();
+      }
+      function clearProject() {
+        if (!project.items.length) return;
+        if (!confirm('ลบสินค้าทั้งหมดในโปรเจกต์?')) return;
+        project.items = [];
+        saveProject();
+        updateCount();
+        renderProject();
+      }
 
-  /* ---------- รูปที่แทรกระหว่างสินค้า ----------
+      /* ---------- รูปที่แทรกระหว่างสินค้า ----------
      เก็บปนใน project.items เพื่อคุมลำดับได้ แต่ไม่คิดเงิน (kind = "image") */
-  const isImage  = i => i.kind === "image";
-  const products = () => project.items.filter(i => !isImage(i));
+      const isImage = (i) => i.kind === 'image';
+      const products = () => project.items.filter((i) => !isImage(i));
 
-  let insertAt = 0;   // ตำแหน่งที่จะแทรกรูป (index ใน project.items)
+      let insertAt = 0; // ตำแหน่งที่จะแทรกรูป (index ใน project.items)
 
-  function askInsertImage(index) {
-    insertAt = index;
-    $("insertImgFile").click();
-  }
-  function insertImageFile(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = ev => {
-      project.items.splice(insertAt, 0, {
-        id: Date.now() + "-" + Math.random().toString(36).slice(2,7),
-        kind: "image", image: ev.target.result, caption: "",
-      });
-      e.target.value = "";      // เลือกไฟล์เดิมซ้ำได้
-      saveProject(); updateCount(); renderProject();
-    };
-    reader.readAsDataURL(file);
-  }
-  function setCaption(id, text) {
-    const it = project.items.find(i => i.id === id);
-    if (it) { it.caption = text; saveProject(); }
-  }
-  function moveItem(id, dir) {
-    const n = project.items.findIndex(i => i.id === id);
-    const to = n + dir;
-    if (n < 0 || to < 0 || to >= project.items.length) return;
-    [project.items[n], project.items[to]] = [project.items[to], project.items[n]];
-    saveProject(); renderProject();
-  }
+      function askInsertImage(index) {
+        insertAt = index;
+        $('insertImgFile').click();
+      }
+      function insertImageFile(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          project.items.splice(insertAt, 0, {
+            id: Date.now() + '-' + Math.random().toString(36).slice(2, 7),
+            kind: 'image',
+            image: ev.target.result,
+            caption: '',
+          });
+          e.target.value = ''; // เลือกไฟล์เดิมซ้ำได้
+          saveProject();
+          updateCount();
+          renderProject();
+        };
+        reader.readAsDataURL(file);
+      }
+      function setCaption(id, text) {
+        const it = project.items.find((i) => i.id === id);
+        if (it) {
+          it.caption = text;
+          saveProject();
+        }
+      }
+      function moveItem(id, dir) {
+        const n = project.items.findIndex((i) => i.id === id);
+        const to = n + dir;
+        if (n < 0 || to < 0 || to >= project.items.length) return;
+        [project.items[n], project.items[to]] = [
+          project.items[to],
+          project.items[n],
+        ];
+        saveProject();
+        renderProject();
+      }
 
-  // ยอดรวมทั้งโปรเจกต์ (นับเฉพาะสินค้า ไม่นับรูปที่แทรก)
-  // ส่วนลดมี 2 ชั้น แยกกันคนละเรื่อง:
-  //   1) ส่วนลดรายชิ้น — หักอยู่ในราคาของแต่ละรายการแล้ว (คอลัมน์ DISCOUNT ในตารางสินค้า)
-  //   2) ส่วนลดท้ายบิล — sales ใส่ตอนปิดการขาย คือช่อง Discount ท้ายเอกสาร
-  //      คิดจาก Total (ยอดที่หักส่วนลดรายชิ้นแล้ว) ไม่ใช่ผลรวมของส่วนลดรายชิ้น
-  function totals() {
-    const gross        = products().reduce((s, i) => s + i.gross, 0);
-    const itemDiscount = products().reduce((s, i) => s + i.discountAmount, 0);
-    const lineTotal    = gross - itemDiscount;   // = ผลรวมคอลัมน์ AMOUNT = Total ท้ายเอกสาร
+      // ยอดรวมทั้งโปรเจกต์ (นับเฉพาะสินค้า ไม่นับรูปที่แทรก)
+      // ส่วนลดมี 2 ชั้น แยกกันคนละเรื่อง:
+      //   1) ส่วนลดรายชิ้น — หักอยู่ในราคาของแต่ละรายการแล้ว (คอลัมน์ DISCOUNT ในตารางสินค้า)
+      //   2) ส่วนลดท้ายบิล — sales ใส่ตอนปิดการขาย คือช่อง Discount ท้ายเอกสาร
+      //      คิดจาก Total (ยอดที่หักส่วนลดรายชิ้นแล้ว) ไม่ใช่ผลรวมของส่วนลดรายชิ้น
+      function totals() {
+        const gross = products().reduce((s, i) => s + i.gross, 0);
+        const itemDiscount = products().reduce(
+          (s, i) => s + i.discountAmount,
+          0,
+        );
+        const lineTotal = gross - itemDiscount; // = ผลรวมคอลัมน์ AMOUNT = Total ท้ายเอกสาร
 
-    const dType  = head("bill_discType");
-    const dValue = parseFloat(head("bill_discValue")) || 0;
-    let billDiscount = 0;
-    if (dType === "เปอร์เซ็นต์") billDiscount = lineTotal * dValue / 100;
-    else if (dType === "บาท")    billDiscount = dValue;
-    billDiscount = Math.min(Math.max(billDiscount, 0), lineTotal);
+        const dType = head('bill_discType');
+        const dValue = parseFloat(head('bill_discValue')) || 0;
+        let billDiscount = 0;
+        if (dType === 'เปอร์เซ็นต์') billDiscount = (lineTotal * dValue) / 100;
+        else if (dType === 'บาท') billDiscount = dValue;
+        billDiscount = Math.min(Math.max(billDiscount, 0), lineTotal);
 
-    const net = lineTotal - billDiscount;
-    const vat = net * VAT_RATE;
-    return { gross, itemDiscount, lineTotal, billDiscount, net, vat, grand: net + vat };
-  }
+        const net = lineTotal - billDiscount;
 
-  function renderProject() {
-    const list = $("itemList");
-    // แถบ "แทรกรูปตรงนี้" คั่นทุกตำแหน่ง
-    const insBar = (index, label = "＋ แทรกรูปตรงนี้") =>
-      `<div class="ins"><span class="line"></span>
+        // ค่าใช้จ่ายอื่น (ตัดกระเบื้อง / pickup / ขนส่ง ตจว. / พาเลท) บวกหลัง Sub Total
+        // แล้วค่อยคิด VAT จากยอดรวม เพราะเป็นค่าบริการที่ต้องเสียภาษีเหมือนกัน
+        const extra = EXTRA_FEES.map((f) => ({
+          ...f,
+          amount: Math.max(parseFloat(head(f.id)) || 0, 0),
+        })).filter((f) => f.amount > 0);
+        const extraTotal = extra.reduce((s, f) => s + f.amount, 0);
+
+        // อัตราภาษีแก้ได้ในหน้าโปรเจกต์ — ยังไม่เคยกรอกให้ใช้ 7% ตามค่ามาตรฐาน
+        const rawVat = head('vat_pct');
+        const vatPct = Math.min(
+          Math.max(rawVat === '' ? VAT_RATE * 100 : parseFloat(rawVat) || 0, 0),
+          100,
+        );
+
+        const taxBase = net + extraTotal;
+        const vat = (taxBase * vatPct) / 100;
+        return {
+          gross,
+          itemDiscount,
+          lineTotal,
+          billDiscount,
+          net,
+          extra,
+          extraTotal,
+          taxBase,
+          vatPct,
+          vat,
+          grand: taxBase + vat,
+        };
+      }
+
+      function renderProject() {
+        const list = $('itemList');
+        // แถบ "แทรกรูปตรงนี้" คั่นทุกตำแหน่ง
+        const insBar = (index, label = '＋ แทรกรูปตรงนี้') =>
+          `<div class="ins"><span class="line"></span>
          <button type="button" onclick="askInsertImage(${index})">${label}</button>
          <span class="line"></span></div>`;
 
-    if (!project.items.length) {
-      list.innerHTML = `<div class="empty">ยังไม่มีสินค้าในโปรเจกต์<br>กลับไปหน้า "เพิ่มสินค้า" เพื่อเพิ่มกระเบื้องหรือเฟอร์นิเจอร์</div>`
-        + insBar(0, "＋ แทรกรูปเข้าโปรเจกต์");
-    } else {
-      let no = 0;   // ลำดับสินค้า — รูปที่แทรกไม่นับลำดับ
-      list.innerHTML = project.items.map((i, n) => {
-        const bar = insBar(n);
-        if (isImage(i)) {
-          return bar + `
+        if (!project.items.length) {
+          list.innerHTML =
+            `<div class="empty">ยังไม่มีสินค้าในโปรเจกต์<br>กลับไปหน้า "เพิ่มสินค้า" เพื่อเพิ่มกระเบื้องหรือเฟอร์นิเจอร์</div>` +
+            insBar(0, '＋ แทรกรูปเข้าโปรเจกต์');
+        } else {
+          let no = 0; // ลำดับสินค้า — รูปที่แทรกไม่นับลำดับ
+          list.innerHTML =
+            project.items
+              .map((i, n) => {
+                const bar = insBar(n);
+                if (isImage(i)) {
+                  return (
+                    bar +
+                    `
             <div class="imgitem">
               <img src="${esc(i.image)}" alt="รูปที่แทรก">
               <input class="cap" type="text" value="${esc(i.caption)}" placeholder="คำบรรยายใต้รูป (ไม่ใส่ก็ได้)"
                      aria-label="คำบรรยายรูป" oninput="setCaption('${i.id}', this.value)">
               <div class="tools">
-                <button type="button" onclick="moveItem('${i.id}',-1)" ${n === 0 ? "disabled" : ""}>↑ เลื่อนขึ้น</button>
-                <button type="button" onclick="moveItem('${i.id}',1)" ${n === project.items.length - 1 ? "disabled" : ""}>↓ เลื่อนลง</button>
+                <button type="button" onclick="moveItem('${i.id}',-1)" ${n === 0 ? 'disabled' : ''}>↑ เลื่อนขึ้น</button>
+                <button type="button" onclick="moveItem('${i.id}',1)" ${n === project.items.length - 1 ? 'disabled' : ''}>↓ เลื่อนลง</button>
                 <button type="button" class="del" onclick="removeItem('${i.id}')">ลบรูป</button>
               </div>
-            </div>`;
-        }
-        no++;
-        return bar + `
+            </div>`
+                  );
+                }
+                no++;
+                return (
+                  bar +
+                  `
           <div class="item">
             ${i.image ? `<img src="${esc(i.image)}" alt="รูปสินค้า">` : `<div class="no-img">ไม่มีรูป</div>`}
             <div class="body">
               <div class="top">
-                <span class="badge ${i.type === "tile" ? "tile" : "furn"}">${i.type === "tile" ? "กระเบื้อง" : "เฟอร์นิเจอร์"}</span>
+                <span class="badge ${i.type === 'tile' ? 'tile' : 'furn'}">${i.type === 'tile' ? 'กระเบื้อง' : 'เฟอร์นิเจอร์'}</span>
                 <span class="sku">${no}. ${esc(i.sku)}</span>
-                ${i.variant ? `<span class="badge plain">${esc(i.variant)}</span>` : ""}
+                ${i.variant ? `<span class="badge plain">${esc(i.variant)}</span>` : ''}
                 <span class="badge plain">${esc(i.orderType)}</span>
               </div>
-              <div class="lines">${i.descLines.slice(0, 6).map(esc).join("<br>")}</div>
+              <div class="lines">${i.descLines.slice(0, 6).map(esc).join('<br>')}</div>
             </div>
             <div class="money">
               <div class="amt">${money(i.net)}</div>
               <div class="qty">${fmt(i.qty)} ${esc(i.unit)} × ${money(i.unitPrice)}</div>
-              ${i.discountAmount > 0 ? `<div class="qty">ลด ${money(i.discountAmount)}</div>` : ""}
+              ${i.discountAmount > 0 ? `<div class="qty">ลด ${money(i.discountAmount)}</div>` : ''}
               <button type="button" onclick="removeItem('${i.id}')">ลบ</button>
             </div>
-          </div>`;
-      }).join("") + insBar(project.items.length, "＋ แทรกรูปท้ายรายการ");
-    }
+          </div>`
+                );
+              })
+              .join('') + insBar(project.items.length, '＋ แทรกรูปท้ายรายการ');
+        }
 
-    const t = totals();
-    const imgCount = project.items.length - products().length;
-    $("projectSummary").innerHTML = `
-      <tr><td>จำนวนรายการ</td><td>${products().length} รายการ${imgCount ? ` (+ รูปแทรก ${imgCount} รูป)` : ""}</td></tr>
+        const t = totals();
+        const imgCount = project.items.length - products().length;
+        $('projectSummary').innerHTML = `
+      <tr><td>จำนวนรายการ</td><td>${products().length} รายการ${imgCount ? ` (+ รูปแทรก ${imgCount} รูป)` : ''}</td></tr>
       <tr><td>ยอดรวมก่อนลด (Subtotal)</td><td>${money(t.gross)}</td></tr>
       <tr><td>ส่วนลดรายชิ้นรวม</td><td>-${money(t.itemDiscount)}</td></tr>
       <tr><td>ยอดรวมรายการ (Total)</td><td>${money(t.lineTotal)}</td></tr>
       <tr><td>ส่วนลดท้ายบิล (Discount)</td><td>-${money(t.billDiscount)}</td></tr>
       <tr><td>ยอดก่อนภาษี (Sub Total)</td><td>${money(t.net)}</td></tr>
-      <tr><td>ภาษีมูลค่าเพิ่ม 7% (VAT)</td><td>${money(t.vat)}</td></tr>
+      ${t.extra.map((f) => `<tr><td>${f.th}</td><td>+${money(f.amount)}</td></tr>`).join('')}
+      <tr><td>ภาษีมูลค่าเพิ่ม ${fmt(t.vatPct)}% (VAT)</td><td>${money(t.vat)}</td></tr>
       <tr class="grand"><td>ยอดสุทธิ (Grand Total)</td><td>${money(t.grand)} ฿</td></tr>`;
-  }
+      }
 
-  /* ================= ใบยืนยันการสั่งซื้อ ================= */
-  // หัวเอกสาร — ตารางล้วน 4 คอลัมน์ วางเลย์เอาต์ตามฟอร์มจริง
-  function ocHeader() {
-    const nl = s => esc(s).replace(/\n/g, "<br>");
-    // บรรทัดติดต่อของบริษัท รวมเป็นบรรทัดเดียว แสดงเฉพาะช่องที่กรอก
-    const contact = [
-      head("c_tel")    ? "Tel: "    + esc(head("c_tel"))    : "",
-      head("c_mobile") ? "Mobile: " + esc(head("c_mobile")) : "",
-      head("c_email")  ? "Email: "  + esc(head("c_email"))  : "",
-    ].filter(Boolean).join(" &nbsp; ");
+      /* ================= ใบยืนยันการสั่งซื้อ ================= */
+      // หัวเอกสาร — ตารางล้วน 4 คอลัมน์ วางเลย์เอาต์ตามฟอร์มจริง
+      function ocHeader() {
+        const nl = (s) => esc(s).replace(/\n/g, '<br>');
+        // บรรทัดติดต่อของบริษัท รวมเป็นบรรทัดเดียว แสดงเฉพาะช่องที่กรอก
+        const contact = [
+          head('c_tel') ? 'Tel: ' + esc(head('c_tel')) : '',
+          head('c_mobile') ? 'Mobile: ' + esc(head('c_mobile')) : '',
+          head('c_email') ? 'Email: ' + esc(head('c_email')) : '',
+        ]
+          .filter(Boolean)
+          .join(' &nbsp; ');
 
-    return `
+        return `
       <table class="ochead">
         <colgroup><col style="width:16%"><col style="width:44%"><col style="width:18%"><col style="width:22%"></colgroup>
         <tbody>
           <tr>
-            <td class="coname" colspan="2">${esc(head("c_name")) || "&nbsp;"}</td>
+            <td class="coname" colspan="2">${esc(head('c_name')) || '&nbsp;'}</td>
             <td class="right">Quote No.</td>
-            <td class="hi">${esc(head("d_no")) || "&nbsp;"}</td>
+            <td class="hi">${esc(head('d_no')) || '&nbsp;'}</td>
           </tr>
           <tr>
-            <td class="co" colspan="2">${nl(head("c_addr")) || "&nbsp;"}</td>
-            <td class="right">Additional No.</td>
-            <td>${esc(head("d_addno")) || "&nbsp;"}</td>
+            <td class="co" colspan="2">${nl(head('c_addr')) || '&nbsp;'}</td>
+            <td class="right">Option No.</td>
+            <td>${esc(head('d_addno')) || '&nbsp;'}</td>
           </tr>
           <tr>
-            <td class="co" colspan="2">${contact || "&nbsp;"}</td>
+            <td class="co" colspan="2">${contact || '&nbsp;'}</td>
             <td class="right">Revision No.</td>
-            <td>${esc(head("d_rev")) || "&nbsp;"}</td>
+            <td>${esc(head('d_rev')) || '&nbsp;'}</td>
           </tr>
           <tr>
-            <td class="co" colspan="2">${head("c_taxid") ? "Tax ID: " + esc(head("c_taxid")) : "&nbsp;"}</td>
+            <td class="co" colspan="2">${head('c_taxid') ? 'Tax ID: ' + esc(head('c_taxid')) : '&nbsp;'}</td>
             <td colspan="2">&nbsp;</td>
           </tr>
-          <tr><td class="title" colspan="4">${esc(head("d_type")) || "ORDER CONFIRMATION"}</td></tr>
-          ${head("d_ref") ? `<tr><td class="band" colspan="4">${esc(head("d_ref"))}</td></tr>` : ""}
+          <tr><td class="title" colspan="4">${esc(head('d_type')) || 'ORDER CONFIRMATION'}</td></tr>
+          ${head('d_ref') ? `<tr><td class="band" colspan="4">${esc(head('d_ref'))}</td></tr>` : ''}
           <tr>
-            <td class="lbl">Customer Code</td><td>${esc(head("k_code")) || "&nbsp;"}</td>
-            <td class="right">Date</td><td>${esc(head("d_date")) || "&nbsp;"}</td>
+            <td class="lbl">Customer Code</td><td>${esc(head('k_code')) || '&nbsp;'}</td>
+            <td class="right">Date</td><td>${esc(head('d_date')) || '&nbsp;'}</td>
           </tr>
           <tr>
-            <td class="lbl">Customer Name</td><td>${esc(head("k_name")) || "&nbsp;"}</td>
-            <td class="right">Validity</td><td>${esc(head("d_validity")) || "&nbsp;"}</td>
+            <td class="lbl">Customer Name</td><td>${esc(head('k_name')) || '&nbsp;'}</td>
+            <td class="right">Validity</td><td>${esc(head('d_validity')) || '&nbsp;'}</td>
           </tr>
           <tr>
-            <td class="lbl">Address</td><td>${nl(head("k_addr")) || "&nbsp;"}</td>
-            <td class="right">From</td><td>${esc(head("d_from")) || "&nbsp;"}</td>
+            <td class="lbl">Address</td><td>${nl(head('k_addr')) || '&nbsp;'}</td>
+            <td class="right">From</td><td>${esc(head('d_from')) || '&nbsp;'}</td>
           </tr>
           <tr>
-            <td class="lbl">Attn</td><td>${esc(head("k_attn")) || "&nbsp;"}</td>
+            <td class="lbl">Attn</td><td>${esc(head('k_attn')) || '&nbsp;'}</td>
             <td colspan="2">&nbsp;</td>
           </tr>
         </tbody>
       </table>`;
-  }
+      }
 
-  /* ท้ายเอกสาร — Payment + ยอดรวม (ซ้าย/ขวาแถวเดียวกัน), Terms, ช่องเซ็น
+      /* ท้ายเอกสาร — Payment + ยอดรวม (ซ้าย/ขวาแถวเดียวกัน), Terms, ช่องเซ็น
      ยอดรวมย้ายมาอยู่ตรงนี้แทนท้ายตารางสินค้า ให้ตรงกับฟอร์มจริง */
-  function ocFooter(t) {
-    const depPct  = parseFloat(head("pay_dep_pct")) || 0;
-    const deposit = t.grand * depPct / 100;
-    const balance = t.grand - deposit;
-    const balPct  = t.grand > 0 ? (balance / t.grand * 100) : 0;
-    // % ของส่วนลดท้ายบิล เทียบกับ Total — sales กรอกเป็น % หรือเป็นบาทก็แสดงผลเป็น % ตรงนี้
-    const discPct = t.lineTotal > 0 ? (t.billDiscount / t.lineTotal * 100) : 0;
+      function ocFooter(t) {
+        // การชำระเงิน 3 งวด: มัดจำ → สินค้าถึงโกดัง → ส่วนที่เหลือก่อนรับสินค้า
+        // งวดสุดท้ายคือเศษที่เหลือ ทั้ง 3 งวดจึงรวมกันได้เท่ากับ Grand Total พอดีเสมอ
+        const deposit = Math.min(
+          Math.max((t.grand * (parseFloat(head('pay_dep_pct')) || 0)) / 100, 0),
+          t.grand,
+        );
+        const mid = Math.min(
+          Math.max((t.grand * (parseFloat(head('pay_mid_pct')) || 0)) / 100, 0),
+          t.grand - deposit,
+        );
+        const balance = t.grand - deposit - mid;
+        const pctOf = (v) => (t.grand > 0 ? (v / t.grand) * 100 : 0);
+        const depPct = pctOf(deposit),
+          midPct = pctOf(mid),
+          balPct = pctOf(balance);
+        // % ของส่วนลดท้ายบิล เทียบกับ Total — sales กรอกเป็น % หรือเป็นบาทก็แสดงผลเป็น % ตรงนี้
+        const discPct =
+          t.lineTotal > 0 ? (t.billDiscount / t.lineTotal) * 100 : 0;
 
-    const termLines = head("terms").split("\n").map(s => s.trim()).filter(Boolean);
-    // บรรทัดที่ไม่ขึ้นต้นด้วยตัวเลข ถือเป็นหัวข้อย่อย (Remark : / Cautions… :)
-    const isHeading = s => !/^\d/.test(s);
+        const termLines = head('terms')
+          .split('\n')
+          .map((s) => s.trim())
+          .filter(Boolean);
+        // บรรทัดที่ไม่ขึ้นต้นด้วยตัวเลข ถือเป็นหัวข้อย่อย (Remark : / Cautions… :)
+        const isHeading = (s) => !/^\d/.test(s);
 
-    return `
+        // ซ้าย = Payment + งวดชำระ, ขวา = ยอดรวม — จับคู่กันแถวต่อแถว
+        // ฝั่งขวายืดได้ตามจำนวนค่าใช้จ่ายอื่นที่กรอก ฝั่งซ้ายที่เหลือปล่อยว่าง
+        const payRows = [
+          `<td class="pay" colspan="4">Payment : ${esc(head('pay_bank')) || '&nbsp;'}</td>`,
+          `<td>–&nbsp; Deposit</td><td class="amt">${money(deposit)}</td>
+       <td class="center">${fmt(depPct)}%</td><td>${esc(head('pay_dep_note'))}</td>`,
+          `<td>–&nbsp; 2nd Payment</td><td class="amt">${money(mid)}</td>
+       <td class="center">${fmt(midPct)}%</td><td>${esc(head('pay_mid_note'))}</td>`,
+          `<td>–&nbsp; Balance</td><td class="amt">${money(balance)}</td>
+       <td class="center">${fmt(balPct)}%</td><td>${esc(head('pay_bal_note'))}</td>`,
+        ];
+        const sumRow = (label, amount, cls = '') =>
+          `<td class="${cls}">&nbsp;</td><td class="right ${cls}">${label}</td><td class="amt ${cls}">${money(amount)}</td>`;
+        const sumRows = [
+          sumRow('Total', t.lineTotal),
+          `<td class="red">${fmt(discPct)}%</td><td class="red">Discount</td><td class="red">${money(t.billDiscount)}</td>`,
+          sumRow('Sub Total', t.net),
+          ...t.extra.map((f) => sumRow(esc(f.en), f.amount)),
+          sumRow(`Vat ${fmt(t.vatPct)}%`, t.vat),
+          sumRow('Grand Total', t.grand, 'grand'),
+        ];
+        const footRows = Array.from(
+          { length: Math.max(payRows.length, sumRows.length) },
+          (_, n) =>
+            `<tr>${payRows[n] || `<td colspan="4">&nbsp;</td>`}${sumRows[n] || `<td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>`}</tr>`,
+        ).join('');
+
+        return `
       <table class="ocfoot">
         <colgroup><col style="width:13%"><col style="width:14%"><col style="width:8%"><col style="width:29%">
                   <col style="width:9%"><col style="width:14%"><col style="width:13%"></colgroup>
-        <tbody>
-          <tr>
-            <td class="pay" colspan="4">Payment : ${esc(head("pay_bank")) || "&nbsp;"}</td>
-            <td>&nbsp;</td><td class="right">Total</td><td class="amt">${money(t.lineTotal)}</td>
-          </tr>
-          <tr>
-            <td>–&nbsp; Deposit</td><td class="amt">${money(deposit)}</td>
-            <td class="center">${fmt(depPct)}%</td><td>${esc(head("pay_dep_note"))}</td>
-            <td class="red">${fmt(discPct)}%</td><td class="red">Discount</td><td class="red">${money(t.billDiscount)}</td>
-          </tr>
-          <tr>
-            <td>–&nbsp; Balance</td><td class="amt">${money(balance)}</td>
-            <td class="center">${fmt(balPct)}%</td><td>${esc(head("pay_bal_note"))}</td>
-            <td>&nbsp;</td><td class="right">Sub Total</td><td class="amt">${money(t.net)}</td>
-          </tr>
-          <tr>
-            <td colspan="4">&nbsp;</td>
-            <td>&nbsp;</td><td class="right">Vat 7%</td><td class="amt">${money(t.vat)}</td>
-          </tr>
-          <tr>
-            <td colspan="4">&nbsp;</td>
-            <td class="grand">&nbsp;</td><td class="right grand">Grand Total</td><td class="amt grand">${money(t.grand)}</td>
-          </tr>
-        </tbody>
+        <tbody>${footRows}</tbody>
       </table>
 
       <table class="ocfoot">
         <tbody>
           <tr><td class="termshd">Terms &amp; Conditions</td></tr>
-          ${termLines.map(s =>
-            `<tr><td class="${isHeading(s) ? "termshd" : "terms"}">${esc(s)}</td></tr>`).join("")}
+          ${termLines
+            .map(
+              (s) =>
+                `<tr><td class="${isHeading(s) ? 'termshd' : 'terms'}">${esc(s)}</td></tr>`,
+            )
+            .join('')}
         </tbody>
       </table>
 
@@ -1489,68 +3236,75 @@
         <colgroup><col style="width:33%"><col style="width:40%"><col style="width:27%"></colgroup>
         <tbody>
           <tr>
-            <td>Sales : ${esc(head("s_sales")) || "&nbsp;"}</td>
-            <td class="center">${esc(head("s_company")) || "&nbsp;"}</td>
+            <td>Sales : ${esc(head('s_sales')) || '&nbsp;'}</td>
+            <td class="center">${esc(head('s_company')) || '&nbsp;'}</td>
             <td>Customer :</td>
           </tr>
           <tr><td class="sign">&nbsp;</td><td class="sign">&nbsp;</td><td class="sign">&nbsp;</td></tr>
           <tr>
-            <td>Date : ${esc(head("d_date")) || "&nbsp;"}</td>
-            <td class="center"><b>${esc(head("s_mgr_title")) || "&nbsp;"}</b></td>
+            <td>Date : ${esc(head('d_date')) || '&nbsp;'}</td>
+            <td class="center"><b>${esc(head('s_mgr_title')) || '&nbsp;'}</b></td>
             <td>Date :</td>
           </tr>
           <tr>
             <td>&nbsp;</td>
-            <td class="center">${esc(head("s_mgr_name")) || "&nbsp;"}</td>
+            <td class="center">${esc(head('s_mgr_name')) || '&nbsp;'}</td>
             <td>&nbsp;</td>
           </tr>
         </tbody>
       </table>`;
-  }
+      }
 
-  function renderOC() {
-    saveProject();   // ดึงค่าล่าสุดจากฟอร์มก่อน เอกสารจะตรงกับที่กรอกไว้เสมอ
-    $("ocMeta").innerHTML = [
-      head("d_no")   ? `เลขที่: ${esc(head("d_no"))}`     : "",
-      head("d_ref")  ? `อ้างอิง: ${esc(head("d_ref"))}`   : "",
-      head("k_name") ? `ลูกค้า: ${esc(head("k_name"))}`   : "",
-      head("d_from") ? `ผู้จัดทำ: ${esc(head("d_from"))}` : "",
-      head("d_date") ? `วันที่: ${esc(head("d_date"))}`   : "",
-    ].filter(Boolean).join(" &nbsp;·&nbsp; ") || "ยังไม่ได้กรอกข้อมูลหัวเอกสาร (แก้ได้ในหน้า “โปรเจกต์”)";
+      function renderOC() {
+        saveProject(); // ดึงค่าล่าสุดจากฟอร์มก่อน เอกสารจะตรงกับที่กรอกไว้เสมอ
+        $('ocMeta').innerHTML =
+          [
+            head('d_no') ? `เลขที่: ${esc(head('d_no'))}` : '',
+            head('d_ref') ? `อ้างอิง: ${esc(head('d_ref'))}` : '',
+            head('k_name') ? `ลูกค้า: ${esc(head('k_name'))}` : '',
+            head('d_from') ? `ผู้จัดทำ: ${esc(head('d_from'))}` : '',
+            head('d_date') ? `วันที่: ${esc(head('d_date'))}` : '',
+          ]
+            .filter(Boolean)
+            .join(' &nbsp;·&nbsp; ') ||
+          'ยังไม่ได้กรอกข้อมูลหัวเอกสาร (แก้ได้ในหน้า “โปรเจกต์”)';
 
-    if (!products().length) {
-      $("ocBody").innerHTML = `<div class="oc-wrap">${ocHeader()}</div>
+        if (!products().length) {
+          $('ocBody').innerHTML = `<div class="oc-wrap">${ocHeader()}</div>
         <div class="empty">ยังไม่มีสินค้าในโปรเจกต์ — เพิ่มสินค้าก่อนจึงจะออกใบยืนยันการสั่งซื้อได้</div>`;
-      return;
-    }
+          return;
+        }
 
-    const t = totals();
-    let no = 0;   // ลำดับสินค้า — แถวรูปที่แทรกไม่กินเลขลำดับ
-    const rows = project.items.map(i => {
-      // รูปที่ผู้ใช้แทรก → แถวเดียวกินเต็มความกว้าง คั่นระหว่างสินค้า
-      if (isImage(i)) return `
+        const t = totals();
+        let no = 0; // ลำดับสินค้า — แถวรูปที่แทรกไม่กินเลขลำดับ
+        const rows = project.items
+          .map((i) => {
+            // รูปที่ผู้ใช้แทรก → แถวเดียวกินเต็มความกว้าง คั่นระหว่างสินค้า
+            if (isImage(i))
+              return `
       <tr>
         <td class="center" colspan="9">
           <img src="${esc(i.image)}" alt="รูปประกอบ" width="420">
-          ${i.caption ? `<br>${esc(i.caption)}` : ""}
+          ${i.caption ? `<br>${esc(i.caption)}` : ''}
         </td>
       </tr>`;
-      no++;
-      return `
+            no++;
+            return `
       <tr>
         <td class="center">${no}</td>
         <td class="center">${esc(i.sku)}</td>
-        <td class="center">${i.image ? `<img src="${esc(i.image)}" alt="รูปสินค้า" width="100">` : "-"}</td>
-        <td class="desc">${i.descLines.map(esc).join("<br>")}</td>
+        <td class="center">${i.image ? `<img src="${esc(i.image)}" alt="รูปสินค้า" width="100">` : '-'}</td>
+        <td class="desc">${i.descLines.map(esc).join('<br>')}</td>
         <td class="center">${esc(i.unit)}</td>
         <td class="right">${money(i.qty)}</td>
         <td class="right">${money(i.unitPrice)}</td>
         <td class="right">${money(i.discountAmount)}</td>
         <td class="right">${money(i.net)}</td>
       </tr>`;
-    }).join("");
+          })
+          .join('');
 
-    $("ocBody").innerHTML = `
+        $('ocBody').innerHTML = `
       <div class="oc-wrap">
         ${ocHeader()}
         <table class="oc">
@@ -1565,81 +3319,92 @@
         </table>
         ${ocFooter(t)}
       </div>`;
-  }
+      }
 
-  /* ---------- Export CSV สำหรับ Excel ----------
+      /* ---------- Export CSV สำหรับ Excel ----------
      1 แถว = 1 รายการสินค้า, 1 คอลัมน์ = 1 ค่า, ไม่มี merged cell
      ใส่ BOM เพื่อให้ Excel อ่านภาษาไทยเป็น UTF-8 ถูกต้อง */
-  function exportCSV() {
-    if (!products().length) { alert("ยังไม่มีสินค้าในโปรเจกต์"); return; }
-    const cell = v => {
-      const s = String(v ?? "");
-      return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-    };
-    // ส่งออกเฉพาะสินค้า — รูปที่แทรกเป็นภาพประกอบ ไม่มีข้อมูลให้ Excel ใช้
-    // ส่วนลดท้ายบิลเป็นค่าระดับเอกสาร จึงซ้ำเท่ากันทุกแถวเหมือนช่องหัวเอกสารอื่น
-    const t = totals();
-    const rows = products().map((i, n) => ({
-      "ประเภทเอกสาร": head("d_type"),
-      "Quote No.": head("d_no"),
-      "Additional No.": head("d_addno"),
-      "Revision No.": head("d_rev"),
-      "อ้างอิง/โปรเจกต์": head("d_ref"),
-      "Date": head("d_date"),
-      "Validity": head("d_validity"),
-      "From": head("d_from"),
-      "Customer Code": head("k_code"),
-      "Customer Name": head("k_name"),
-      "ที่อยู่ลูกค้า": head("k_addr").replace(/\n/g, " "),
-      "Attn": head("k_attn"),
-      "ลำดับ": n + 1,
-      "ประเภท": i.type === "tile" ? "กระเบื้อง" : "เฟอร์นิเจอร์",
-      "SKU": i.sku,
-      "ชื่อสินค้า": i.name,
-      "แบรนด์": i.brand,
-      "คอลเลกชัน": i.collection,
-      "หมวดหมู่": i.category,
-      "หมวดหมู่ย่อย": i.subcategory,
-      "ตัวเลือก/ลุค": i.variant,
-      "รายละเอียด": i.descLines.join(" | "),
-      "ประเภทสินค้า": i.orderType,
-      "หน่วย": i.unit,
-      "จำนวน": i.qty.toFixed(4).replace(/\.?0+$/, ""),
-      "ราคาต่อหน่วย": i.unitPrice.toFixed(2),
-      "ยอดรวมก่อนลด": i.gross.toFixed(2),
-      "ส่วนลดรายชิ้น": i.discountAmount.toFixed(2),
-      "ยอดหลังลด": i.net.toFixed(2),
-      "หมายเหตุ": i.remark,
-      "ประเภทส่วนลดท้ายบิล": head("bill_discType") || "ไม่มี",
-      "ค่าส่วนลดท้ายบิลที่กรอก": head("bill_discValue") || "0",
-      "ส่วนลดท้ายบิล (บาท)": t.billDiscount.toFixed(2),
-      "ยอดรวมรายการ (Total)": t.lineTotal.toFixed(2),
-      "ยอดก่อนภาษี (Sub Total)": t.net.toFixed(2),
-      "Grand Total": t.grand.toFixed(2),
-    }));
-    const headers = Object.keys(rows[0]);
-    const csv = [headers.map(cell).join(",")]
-      .concat(rows.map(r => headers.map(h => cell(r[h])).join(",")))
-      .join("\r\n");
+      function exportCSV() {
+        if (!products().length) {
+          alert('ยังไม่มีสินค้าในโปรเจกต์');
+          return;
+        }
+        const cell = (v) => {
+          const s = String(v ?? '');
+          return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+        };
+        // ส่งออกเฉพาะสินค้า — รูปที่แทรกเป็นภาพประกอบ ไม่มีข้อมูลให้ Excel ใช้
+        // ส่วนลดท้ายบิลเป็นค่าระดับเอกสาร จึงซ้ำเท่ากันทุกแถวเหมือนช่องหัวเอกสารอื่น
+        const t = totals();
+        const rows = products().map((i, n) => ({
+          ประเภทเอกสาร: head('d_type'),
+          'Quote No.': head('d_no'),
+          'Option No.': head('d_addno'),
+          'Revision No.': head('d_rev'),
+          'อ้างอิง/โปรเจกต์': head('d_ref'),
+          Date: head('d_date'),
+          Validity: head('d_validity'),
+          From: head('d_from'),
+          'Customer Code': head('k_code'),
+          'Customer Name': head('k_name'),
+          ที่อยู่ลูกค้า: head('k_addr').replace(/\n/g, ' '),
+          Attn: head('k_attn'),
+          ลำดับ: n + 1,
+          ประเภท: i.type === 'tile' ? 'กระเบื้อง' : 'เฟอร์นิเจอร์',
+          SKU: i.sku,
+          ชื่อสินค้า: i.name,
+          แบรนด์: i.brand,
+          คอลเลกชัน: i.collection,
+          หมวดหมู่: i.category,
+          หมวดหมู่ย่อย: i.subcategory,
+          Item: i.variant,
+          รายละเอียด: i.descLines.join(' | '),
+          ประเภทสินค้า: i.orderType,
+          หน่วย: i.unit,
+          จำนวน: i.qty.toFixed(4).replace(/\.?0+$/, ''),
+          ราคาต่อหน่วย: i.unitPrice.toFixed(2),
+          'หน่วยราคาสินค้า (U.M.)': i.priceUnit || '',
+          'ราคาต่อ U.M.': (i.catalogUnitPrice ?? 0).toFixed(2),
+          ยอดรวมก่อนลด: i.gross.toFixed(2),
+          ส่วนลดรายชิ้น: i.discountAmount.toFixed(2),
+          ยอดหลังลด: i.net.toFixed(2),
+          หมายเหตุ: i.remark,
+          ประเภทส่วนลดท้ายบิล: head('bill_discType') || 'ไม่มี',
+          ค่าส่วนลดท้ายบิลที่กรอก: head('bill_discValue') || '0',
+          'ส่วนลดท้ายบิล (บาท)': t.billDiscount.toFixed(2),
+          'ยอดรวมรายการ (Total)': t.lineTotal.toFixed(2),
+          'ยอดก่อนภาษี (Sub Total)': t.net.toFixed(2),
+          ...Object.fromEntries(
+            EXTRA_FEES.map((f) => [
+              f.th,
+              (parseFloat(head(f.id)) || 0).toFixed(2),
+            ]),
+          ),
+          ค่าใช้จ่ายอื่นรวม: t.extraTotal.toFixed(2),
+          'Grand Total': t.grand.toFixed(2),
+        }));
+        const headers = Object.keys(rows[0]);
+        const csv = [headers.map(cell).join(',')]
+          .concat(rows.map((r) => headers.map((h) => cell(r[h])).join(',')))
+          .join('\r\n');
 
-    const blob = new Blob(["﻿" + csv], { type:"text/csv;charset=utf-8;" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = `order-confirmation-${head("d_no") || "project"}.csv`;
-    a.click();
-    URL.revokeObjectURL(a.href);
-  }
+        const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `order-confirmation-${head('d_no') || 'project'}.csv`;
+        a.click();
+        URL.revokeObjectURL(a.href);
+      }
 
-  /* ================= เริ่มต้น ================= */
-  buildSampleSelect("t_sample", tileSamples);
-  buildSampleSelect("f_sample", furnSamples);
-  rebuildCustomerUnit();
-  rebuildSellingMethod();
-  loadTileSample("floor6060");
-  loadFurnSample("coffeeTable");
-  setType("tile");
-  loadProject();
-</script>
-
-</body>
+      /* ================= เริ่มต้น ================= */
+      buildSampleSelect('t_sample', tileSamples);
+      buildSampleSelect('f_sample', furnSamples);
+      rebuildCustomerUnit();
+      rebuildSellingMethod();
+      loadTileSample('floor6060');
+      loadFurnSample('coffeeTable');
+      setType('tile');
+      loadProject();
+    </script>
+  </body>
 </html>

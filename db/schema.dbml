@@ -1,0 +1,872 @@
+// ============================================================================
+//  AMO — ระบบใบยืนยันการสั่งซื้อ (Order Confirmation System)
+//  DBML สำหรับ dbdiagram.io — แปลงจาก db/schema.sql
+//
+//  วิธีใช้: เปิด https://dbdiagram.io/d → วางไฟล์นี้ทั้งไฟล์ลงช่องซ้าย
+//
+//  สิ่งที่ DBML แสดงไม่ได้ (อยู่ครบใน schema.sql):
+//    · CHECK constraints      เช่น amount_net = amount_gross - amount_discount
+//    · partial index (WHERE)  เขียนไว้ใน note ของแต่ละ index แทน
+//    · trigger / function     audit.log_changes, sales.recalc_document ฯลฯ
+//    · Row Level Security     policy บน sales.documents
+//    · DOMAIN                 money_thb = numeric(14,2), qty_num = numeric(14,4),
+//                             pct_num = numeric(6,3) 0-100
+//
+//  เส้นความสัมพันธ์ที่ "จงใจไม่วาด" เพื่อให้ไดอะแกรมอ่านออก:
+//    created_by / updated_by / deleted_by / discontinued_by / locked_by / changed_by
+//    ทุกตัวชี้ไป auth.users.id เหมือนกันหมด ถ้าวาดครบจะกลายเป็นใยแมงมุม
+//    ส่วน owner_id / actor_id / requested_by / decided_by วาดไว้ เพราะเป็นสาระของตาราง
+// ============================================================================
+
+Project amo_oc {
+  database_type: 'PostgreSQL'
+  Note: 'ระบบใบ OC ของ AMO — 4 schema: auth (สิทธิ์), catalog (สินค้า), sales (เอกสาร), audit (ประวัติ)'
+}
+
+// ============================================================================
+//  ENUMS
+// ============================================================================
+
+Enum catalog.product_type {
+  tile
+  furniture
+}
+
+Enum catalog.item_status {
+  active
+  discontinued
+}
+
+// U.M. = หน่วยราคาสินค้า (ตารางเมตร / เมตร / ชิ้น / เซ็ต / กล่อง)
+Enum catalog.price_unit {
+  sqm
+  meter
+  piece
+  set
+  box
+}
+
+Enum sales.doc_type {
+  order_confirmation
+  quotation
+  proforma_invoice
+}
+
+Enum sales.doc_status {
+  draft
+  pending_approval
+  approved
+  sent
+  accepted
+  cancelled
+  superseded
+}
+
+Enum sales.row_kind {
+  product
+  image
+  note
+}
+
+Enum sales.allowance_type {
+  none
+  percent
+  piece
+  box
+}
+
+Enum sales.selling_method {
+  box
+  piece
+  set
+}
+
+Enum sales.discount_type {
+  none
+  percent
+  amount
+}
+
+Enum sales.order_type {
+  stock
+  indent
+}
+
+Enum sales.approval_result {
+  approved
+  rejected
+}
+
+// ============================================================================
+//  AUTH — ผู้ใช้ / บทบาท / สิทธิ์
+// ============================================================================
+
+Table auth.roles [headercolor: #4f54c4] {
+  id          smallint [pk, increment]
+  code        text     [not null, unique, note: 'admin | manager | sales | viewer']
+  name_th     text     [not null]
+  description text
+  is_system   boolean  [not null, default: false, note: 'บทบาทหลัก ลบไม่ได้']
+
+  Note: 'บทบาทเป็นแค่ชุดของ permission — แก้ได้จากหน้าจอ ไม่ต้อง deploy ใหม่'
+}
+
+Table auth.permissions [headercolor: #4f54c4] {
+  code           text [pk, note: 'เช่น document.create, catalog.price.update']
+  group_name     text [not null, note: 'จัดกลุ่มตอนแสดงในหน้า admin']
+  description_th text [not null]
+}
+
+Table auth.role_permissions [headercolor: #4f54c4] {
+  role_id         smallint [not null]
+  permission_code text     [not null]
+
+  indexes {
+    (role_id, permission_code) [pk]
+  }
+}
+
+Table auth.users [headercolor: #4f54c4] {
+  id                   uuid        [pk, default: `gen_random_uuid()`]
+  email                citext      [not null, unique]
+  password_hash        text        [not null, note: 'argon2id — ไม่เคยออกจาก DB']
+  display_name         text        [not null, note: 'ชื่อที่โชว์ในประวัติและช่องเซ็น']
+  phone                text
+  signature_line       text        [note: 'บรรทัดช่องเซ็นในใบ OC']
+  manager_id           uuid        [note: 'หัวหน้าทีม — ใช้ตัดสินว่า manager เห็นใบของใครได้']
+  is_active            boolean     [not null, default: true]
+  must_change_password boolean     [not null, default: true]
+  last_login_at        timestamptz
+  failed_login_count   int         [not null, default: 0]
+  locked_until         timestamptz [note: 'ล็อกชั่วคราวหลังใส่รหัสผิดหลายครั้ง']
+  created_at           timestamptz [not null, default: `now()`]
+  created_by           uuid
+  updated_at           timestamptz
+  updated_by           uuid
+  deleted_at           timestamptz
+  deleted_by           uuid
+
+  indexes {
+    is_active [name: 'users_active_idx', note: 'partial: WHERE deleted_at IS NULL']
+  }
+}
+
+// ผู้ใช้ 1 คนมีได้หลายบทบาท (เช่น sales ที่เป็น manager ของทีมด้วย)
+Table auth.user_roles [headercolor: #4f54c4] {
+  user_id    uuid        [not null]
+  role_id    smallint    [not null]
+  granted_at timestamptz [not null, default: `now()`]
+  granted_by uuid
+
+  indexes {
+    (user_id, role_id) [pk]
+  }
+}
+
+// 1 แถว = 1 อุปกรณ์ที่ล็อกอินค้างไว้ (access token เป็น JWT อายุสั้น ไม่เก็บลง DB)
+Table auth.sessions [headercolor: #4f54c4] {
+  id                 uuid        [pk, default: `gen_random_uuid()`]
+  user_id            uuid        [not null]
+  refresh_token_hash bytea       [not null, unique, note: 'เก็บแค่ sha256(token)']
+  user_agent         text
+  ip                 inet
+  issued_at          timestamptz [not null, default: `now()`]
+  last_used_at       timestamptz
+  expires_at         timestamptz [not null]
+  revoked_at         timestamptz
+  revoked_reason     text
+
+  indexes {
+    user_id [name: 'sessions_live_idx', note: 'partial: WHERE revoked_at IS NULL']
+  }
+}
+
+Table auth.password_resets [headercolor: #4f54c4] {
+  id         uuid        [pk, default: `gen_random_uuid()`]
+  user_id    uuid        [not null]
+  token_hash bytea       [not null, unique]
+  expires_at timestamptz [not null]
+  used_at    timestamptz
+  created_at timestamptz [not null, default: `now()`]
+}
+
+// บันทึกการพยายามล็อกอิน ใช้ทำ rate-limit และตรวจการบุกรุก
+Table auth.login_attempts [headercolor: #4f54c4] {
+  id      bigint      [pk, increment]
+  email   citext
+  ip      inet
+  success boolean     [not null]
+  reason  text        [note: 'bad_password | locked | inactive']
+  at      timestamptz [not null, default: `now()`]
+
+  indexes {
+    at [type: brin, name: 'login_attempts_at_idx']
+  }
+}
+
+// ============================================================================
+//  CATALOG — แคตตาล็อกสินค้า (admin ดูแล · sales อ่านอย่างเดียว)
+// ============================================================================
+
+Table catalog.brands [headercolor: #0e7c86] {
+  id              uuid                 [pk, default: `gen_random_uuid()`]
+  name            text                 [not null]
+  status          catalog.item_status  [not null, default: 'active']
+  discontinued_at timestamptz
+  discontinued_by uuid
+  created_at      timestamptz          [not null, default: `now()`]
+  created_by      uuid
+  updated_at      timestamptz
+  updated_by      uuid
+  deleted_at      timestamptz
+  deleted_by      uuid
+
+  indexes {
+    name [unique, name: 'brands_name_key', note: 'partial + lower(name): WHERE deleted_at IS NULL']
+  }
+}
+
+// หมวดหมู่หลัก — Tile, Table, Sofa, Chair
+Table catalog.categories [headercolor: #0e7c86] {
+  id           uuid                  [pk, default: `gen_random_uuid()`]
+  name         text                  [not null]
+  product_type catalog.product_type  [note: 'จำกัดว่าหมวดนี้ใช้กับสินค้าประเภทไหน']
+  sort_order   int                   [not null, default: 0]
+  created_at   timestamptz           [not null, default: `now()`]
+  created_by   uuid
+  updated_at   timestamptz
+  updated_by   uuid
+  deleted_at   timestamptz
+  deleted_by   uuid
+
+  indexes {
+    name [unique, name: 'categories_name_key', note: 'partial + lower(name): WHERE deleted_at IS NULL']
+  }
+}
+
+// หมวดหมู่ย่อย — Floor Tile, Wall Tile, Coffee Table, 3 Seater
+Table catalog.subcategories [headercolor: #0e7c86] {
+  id          uuid        [pk, default: `gen_random_uuid()`]
+  category_id uuid        [not null, note: 'หมวดหลักที่สังกัด — product_type สืบทอดมาจากตรงนี้ ไม่เก็บซ้ำ']
+  name        text        [not null]
+  sort_order  int         [not null, default: 0]
+  created_at  timestamptz [not null, default: `now()`]
+  created_by  uuid
+  updated_at  timestamptz
+  updated_by  uuid
+  deleted_at  timestamptz
+  deleted_by  uuid
+
+  indexes {
+    (id, category_id)         [unique, name: 'subcategories_id_category_key', note: 'ให้ products อ้างเป็นคู่ได้']
+    (category_id, name)       [unique, name: 'subcategories_name_key', note: 'partial + lower(name): WHERE deleted_at IS NULL']
+    (category_id, sort_order) [name: 'subcategories_category_idx']
+  }
+}
+
+Table catalog.collections [headercolor: #0e7c86] {
+  id         uuid        [pk, default: `gen_random_uuid()`]
+  brand_id   uuid        [not null]
+  name       text        [not null]
+  created_at timestamptz [not null, default: `now()`]
+  created_by uuid
+  updated_at timestamptz
+  updated_by uuid
+  deleted_at timestamptz
+  deleted_by uuid
+
+  indexes {
+    (brand_id, name) [unique, name: 'collections_brand_name_key', note: 'partial + lower(name): WHERE deleted_at IS NULL']
+  }
+}
+
+Table catalog.products [headercolor: #0e7c86] {
+  id               uuid                 [pk, default: `gen_random_uuid()`]
+  sku              text                 [not null, note: 'รหัสสินค้า — unique แบบ upper(sku)']
+  product_type     catalog.product_type [not null, note: 'ตัวตัดสินว่าใช้ตารางขยายตัวไหน']
+  brand_id         uuid
+  collection_id    uuid
+  category_id      uuid                 [note: 'หมวดหลัก']
+  subcategory_id   uuid                 [note: 'หมวดย่อย — composite FK กับ category_id กันเลือกข้ามหมวด']
+  name             text
+  description      text
+  width_cm         numeric(10,2)       [note: 'เฟอร์นิเจอร์: กว้าง']
+  length_cm        numeric(10,2)       [note: 'เฟอร์นิเจอร์: ยาว']
+  height_cm        numeric(10,2)       [note: 'เฟอร์นิเจอร์: สูง']
+  default_qty_unit text                 [note: 'ชิ้น | ตัว | ชุด']
+  status           catalog.item_status  [not null, default: 'active']
+  discontinued_at  timestamptz
+  discontinued_by  uuid
+  search_tsv       tsvector             [note: 'GENERATED ALWAYS จาก sku + name']
+  created_at       timestamptz          [not null, default: `now()`]
+  created_by       uuid
+  updated_at       timestamptz
+  updated_by       uuid
+  deleted_at       timestamptz
+  deleted_by       uuid
+
+  indexes {
+    sku                                 [unique, name: 'products_sku_key', note: 'partial + upper(sku): WHERE deleted_at IS NULL']
+    search_tsv                          [type: gin, name: 'products_search_idx']
+    name                                [type: gin, name: 'products_name_trgm_idx', note: 'gin_trgm_ops']
+    (product_type, status, brand_id)    [name: 'products_browse_idx']
+  }
+
+  Note: 'สินค้า 1 ตัวเป็นได้ประเภทเดียว — tile ต่อกับ tile_specs, furniture ต่อกับ product_options'
+}
+
+// รูปสินค้าหลักและรูปประจำตัวเลือก อยู่ตารางเดียวกัน จะได้โชว์รวมในแกลเลอรีเดียว
+Table catalog.product_images [headercolor: #0e7c86] {
+  id         uuid        [pk, default: `gen_random_uuid()`]
+  product_id uuid        [not null]
+  option_id  uuid        [note: 'NULL = รูปหลักของสินค้า, มีค่า = รูปของตัวเลือกนั้น']
+  file_path  text        [not null, note: 'object key บน S3/MinIO']
+  caption    text
+  is_primary boolean     [not null, default: false]
+  sort_order int         [not null, default: 0]
+  created_at timestamptz [not null, default: `now()`]
+  created_by uuid
+  updated_at timestamptz
+  updated_by uuid
+
+  indexes {
+    product_id [unique, name: 'product_images_one_primary', note: 'partial: WHERE is_primary — รูปหลักได้รูปเดียวต่อสินค้า']
+  }
+}
+
+// สเปกกระเบื้อง 1:1 กับ products — ตัวขับสูตรคำนวณทั้งหมด
+Table catalog.tile_specs [headercolor: #0e7c86] {
+  product_id     uuid                [pk]
+  item           text                [note: 'Item / ลาย เช่น Stone, Marble']
+  color          text
+  surface        text
+  sale_w_cm      numeric(10,2)      [note: 'ขนาดขาย (Sale Size)']
+  sale_l_cm      numeric(10,2) 
+  sale_h_cm      numeric(10,2) 
+  work_w_cm      numeric(10,2)      [note: 'ขนาดจริง (Working Size)']
+  work_l_cm      numeric(10,2) 
+  work_h_cm      numeric(10,2) 
+  price_unit     catalog.price_unit  [not null, note: 'U.M. — หน่วยที่ใช้คิดเงิน']
+  price_per_unit money_thb           [not null, note: 'CHECK > 0']
+  sqm_per_box    qty_num             [not null, note: 'CHECK > 0 — ตัวหารของสูตรทั้งหมด']
+  pieces_per_box qty_num             [not null, note: 'CHECK > 0']
+  kg_per_box     qty_num             [note: 'CHECK >= 0 — ใช้คิดน้ำหนักรวมและค่าขนส่ง']
+  created_at     timestamptz         [not null, default: `now()`]
+  created_by     uuid
+  updated_at     timestamptz
+  updated_by     uuid
+
+  Note: 'CHECK: ขายเป็นเมตร (price_unit = meter) ต้องมี sale_l_cm > 0 ไม่งั้นคำนวณเมตรไม่ได้'
+}
+
+// 1 ตัวเลือก = 1 รูปแบบสินค้าที่มีราคาเดียว (เฟอร์นิเจอร์)
+Table catalog.product_options [headercolor: #a4670f] {
+  id         uuid                 [pk, default: `gen_random_uuid()`]
+  product_id uuid                 [not null]
+  label      text                 [note: 'ชื่อตัวเลือก (ไม่บังคับ)']
+  price      money_thb            [not null, note: 'CHECK >= 0 — ราคาทั้งชุดของตัวเลือกนี้']
+  sort_order int                  [not null, default: 0]
+  status     catalog.item_status  [not null, default: 'active']
+  created_at timestamptz          [not null, default: `now()`]
+  created_by uuid
+  updated_at timestamptz
+  updated_by uuid
+  deleted_at timestamptz
+  deleted_by uuid
+
+  indexes {
+    (product_id, sort_order) [name: 'product_options_product_idx']
+  }
+}
+
+// ชิ้นส่วนภายในตัวเลือก — Top / Base / Legs + วัสดุ (ไม่มีราคาแยก)
+Table catalog.option_parts [headercolor: #a4670f] {
+  id              uuid        [pk, default: `gen_random_uuid()`]
+  option_id       uuid        [not null]
+  title           text        [not null, note: 'Top / Base / Legs']
+  sub_description text        [note: 'วัสดุ เช่น GreyWood ผิวเมลามีน']
+  sort_order      int         [not null, default: 0]
+  created_at      timestamptz [not null, default: `now()`]
+  created_by      uuid
+  updated_at      timestamptz
+  updated_by      uuid
+
+  indexes {
+    (option_id, title) [unique, name: 'option_parts_title_key', note: 'lower(title) — หัวข้อห้ามซ้ำในตัวเลือกเดียวกัน']
+  }
+}
+
+// ประวัติราคา — เขียนโดย trigger ทุกครั้งที่ราคาเปลี่ยน
+Table catalog.price_history [headercolor: #6f45c4] {
+  id         bigint      [pk, increment]
+  product_id uuid        [note: 'กระเบื้อง — ราคาอยู่ที่ tile_specs']
+  option_id  uuid        [note: 'เฟอร์นิเจอร์ — ราคาอยู่ที่ product_options']
+  old_price  money_thb
+  new_price  money_thb   [not null]
+  changed_at timestamptz [not null, default: `now()`]
+  changed_by uuid
+  note       text
+
+  indexes {
+    (product_id, changed_at) [name: 'price_history_product_idx']
+    (option_id, changed_at)  [name: 'price_history_option_idx']
+  }
+
+  Note: 'CHECK: num_nonnulls(product_id, option_id) = 1 — ต้องผูกกับอย่างใดอย่างหนึ่งเท่านั้น'
+}
+
+// ============================================================================
+//  SALES — ลูกค้า, ค่าตั้งต้นบริษัท, เอกสาร OC
+// ============================================================================
+
+Table sales.customers [headercolor: #2c7a52] {
+  id         uuid        [pk, default: `gen_random_uuid()`]
+  code       text        [not null, note: 'เช่น 1A-TE-00160 — unique แบบ upper(code)']
+  name       text        [not null]
+  address    text
+  tax_id     text
+  branch     text        [default: 'สำนักงานใหญ่']
+  owner_id   uuid        [note: 'sales เจ้าของลูกค้า']
+  created_at timestamptz [not null, default: `now()`]
+  created_by uuid
+  updated_at timestamptz
+  updated_by uuid
+  deleted_at timestamptz
+  deleted_by uuid
+
+  indexes {
+    code [unique, name: 'customers_code_key', note: 'partial + upper(code): WHERE deleted_at IS NULL']
+    name [type: gin, name: 'customers_name_trgm_idx', note: 'gin_trgm_ops — ค้นชื่อแบบ fuzzy']
+  }
+}
+
+Table sales.customer_contacts [headercolor: #2c7a52] {
+  id          uuid        [pk, default: `gen_random_uuid()`]
+  customer_id uuid        [not null]
+  name        text        [not null, note: 'ผู้ติดต่อ — ไปโผล่ที่ช่อง Attn ในใบ OC']
+  position    text
+  phone       text
+  email       citext
+  is_primary  boolean     [not null, default: false]
+  created_at  timestamptz [not null, default: `now()`]
+  created_by  uuid
+  updated_at  timestamptz
+  updated_by  uuid
+}
+
+// ข้อมูลผู้ขาย + ค่าตั้งต้นท้ายเอกสาร — admin ตั้งครั้งเดียว ใช้ทุกใบ
+Table sales.company_profiles [headercolor: #2c7a52] {
+  id                 uuid        [pk, default: `gen_random_uuid()`]
+  name               text        [not null]
+  address            text
+  tel                text
+  mobile             text
+  email              citext
+  tax_id             text
+  bank_line          text        [note: 'ชื่อบัญชี / ธนาคาร / เลขบัญชี ที่พิมพ์ท้ายใบ']
+  logo_path          text
+  terms_default      text        [note: 'Terms and Conditions ตั้งต้น']
+  vat_pct            pct_num     [not null, default: 7]
+  validity_default   text        [default: '30 Days']
+  sign_manager_title text
+  sign_manager_name  text
+  is_default         boolean     [not null, default: false]
+  created_at         timestamptz [not null, default: `now()`]
+  created_by         uuid
+  updated_at         timestamptz
+  updated_by         uuid
+
+  indexes {
+    is_default [unique, name: 'company_one_default', note: 'partial: WHERE is_default — มีโปรไฟล์ตั้งต้นได้อันเดียว']
+  }
+}
+
+// แคตตาล็อกค่าใช้จ่ายอื่น (ค่าตัดกระเบื้อง, pickup, ขนส่ง ตจว., พาเลท)
+Table sales.fee_types [headercolor: #2c7a52] {
+  code       text    [pk, note: 'tile_cutting | pickup | upcountry | pallet']
+  label_th   text    [not null]
+  label_en   text    [not null, note: 'ชื่อที่พิมพ์ในใบ OC']
+  is_taxable boolean [not null, default: true]
+  sort_order int     [not null, default: 0]
+  is_active  boolean [not null, default: true]
+}
+
+// ---------------------------------------------------------------------------
+//  เอกสาร — 1 แถว = 1 ใบ (1 option, 1 revision)
+//  doc_no คงเดิมตลอดดีล, option_no = ทางเลือกที่เสนอลูกค้า, revision_no = การแก้ไข
+// ---------------------------------------------------------------------------
+Table sales.documents [headercolor: #2c7a52] {
+  id                   uuid              [pk, default: `gen_random_uuid()`]
+  doc_type             sales.doc_type    [not null, default: 'order_confirmation']
+  doc_no               text              [not null, note: 'Quote No. เช่น A26-11736']
+  option_no            int               [not null, default: 0, note: 'ทางเลือกที่เสนอลูกค้า — มีชีวิตพร้อมกันได้หลายใบ']
+  revision_no          int               [not null, default: 1, note: 'ฉบับแก้ไข — ใช้อยู่จริงได้ใบเดียว']
+  status               sales.doc_status  [not null, default: 'draft']
+  is_current           boolean           [not null, default: true, note: 'revision ล่าสุดของ option นี้']
+  supersedes_id        uuid              [note: 'revision ก่อนหน้า']
+  cloned_from_id       uuid              [note: 'โคลนมาจากใบไหน (ตอนสร้าง option ใหม่)']
+
+  customer_id          uuid              [note: 'อ้างไว้ทำรายงาน — ข้อมูลที่พิมพ์ใช้สำเนาด้านล่าง']
+  customer_code        text              [note: 'สำเนา ณ วันออกใบ']
+  customer_name        text              [not null, note: 'สำเนา ณ วันออกใบ']
+  customer_address     text              [note: 'สำเนา — ลูกค้าย้ายที่อยู่ ใบเก่าต้องไม่เปลี่ยน']
+  attn                 text              [note: 'ผู้ติดต่อ']
+
+  company_profile_id   uuid
+  company_snapshot     jsonb             [not null, default: `'{}'`, note: 'ชื่อ/ที่อยู่/tel/tax id ของผู้ขาย ณ วันออกใบ']
+
+  project_ref          text              [note: 'บรรทัดอ้างอิง / ชื่อโปรเจกต์ ใต้หัวเรื่อง']
+  issue_date           date              [not null, default: `current_date`]
+  validity_text        text              [note: 'เช่น 30 Days']
+  owner_id             uuid              [not null, note: 'sales เจ้าของใบ — ตัวคุม RLS']
+  prepared_by_name     text              [note: 'From (ผู้จัดทำ)']
+
+  bill_discount_type   sales.discount_type [not null, default: 'none', note: 'ส่วนลดท้ายบิล คนละตัวกับส่วนลดรายบรรทัด']
+  bill_discount_value  numeric(14,4)      [not null, default: 0]
+  vat_pct              pct_num             [not null, default: 7, note: 'แก้ได้รายใบ — ใส่ 0 ถ้าดีลนี้ไม่คิด VAT']
+  currency             char(3)               [not null, default: 'THB']
+  terms                text                [note: 'สำเนา Terms and Conditions ณ วันออกใบ']
+  sign_sales_line      text
+  sign_company         text
+  sign_manager_title   text
+  sign_manager_name    text
+
+  amount_gross         money_thb [not null, default: 0, note: 'ผลรวมก่อนลดรายบรรทัด']
+  amount_item_discount money_thb [not null, default: 0]
+  amount_line_total    money_thb [not null, default: 0, note: 'ผลรวมคอลัมน์ AMOUNT ในใบ']
+  amount_bill_discount money_thb [not null, default: 0]
+  amount_subtotal      money_thb [not null, default: 0]
+  amount_fees          money_thb [not null, default: 0]
+  amount_tax_base      money_thb [not null, default: 0, note: 'subtotal + fees — ค่าบริการเสียภาษีด้วย']
+  amount_vat           money_thb [not null, default: 0]
+  amount_grand         money_thb [not null, default: 0]
+
+  locked_at            timestamptz [note: 'ตั้งตอน approve — trigger guard_locked ปฏิเสธการแก้หลังจากนี้']
+  locked_by            uuid
+  sent_at              timestamptz
+  row_version          int         [not null, default: 1, note: 'optimistic locking — ส่งกลับมาใน If-Match']
+
+  created_at           timestamptz [not null, default: `now()`]
+  created_by           uuid
+  updated_at           timestamptz
+  updated_by           uuid
+  deleted_at           timestamptz
+  deleted_by           uuid
+
+  indexes {
+    (doc_no, option_no, revision_no) [unique, name: 'documents_doc_option_rev_key']
+    (doc_no, option_no)              [unique, name: 'documents_current_key', note: 'partial: WHERE is_current AND deleted_at IS NULL — แต่ละ option มีใบที่ใช้อยู่ได้ใบเดียว']
+    (owner_id, status, issue_date)   [name: 'documents_owner_idx']
+    (customer_id, issue_date)        [name: 'documents_customer_idx']
+  }
+
+  Note: 'ยอด amount_* ทั้งชุดเขียนโดย sales.recalc_document() เท่านั้น — ไม่ให้ API เขียนตรง'
+}
+
+// ลำดับแถวในเอกสาร — สินค้า / รูปที่แทรก / โน้ต เรียงรวมกันในลิสต์เดียว
+Table sales.document_rows [headercolor: #2c7a52] {
+  id          uuid            [pk, default: `gen_random_uuid()`]
+  document_id uuid            [not null]
+  sort_order  int             [not null]
+  kind        sales.row_kind  [not null, note: 'product = ต่อกับ document_items, image/note = ต่อกับ document_media']
+  created_at  timestamptz     [not null, default: `now()`]
+  created_by  uuid
+  updated_at  timestamptz
+  updated_by  uuid
+
+  indexes {
+    (document_id, sort_order) [unique, name: 'document_rows_order_key', note: 'DEFERRABLE INITIALLY DEFERRED — สลับลำดับทั้งชุดได้ใน transaction เดียว']
+  }
+
+  Note: 'รูปที่ sales แทรกคั่นกลางต้องอยู่ลิสต์เดียวกับสินค้า ลำดับถึงจะไม่ชนกัน'
+}
+
+// รูป/โน้ตที่ sales แทรกคั่นระหว่างรายการ
+Table sales.document_media [headercolor: #2c7a52] {
+  row_id    uuid [pk]
+  file_path text
+  caption   text [note: 'คำบรรยายใต้รูป']
+  note_text text
+}
+
+// ---------------------------------------------------------------------------
+//  บรรทัดสินค้า — สำเนาแคตตาล็อก + input ที่ sales กรอก + ผลคำนวณที่แช่แข็งไว้
+// ---------------------------------------------------------------------------
+Table sales.document_items [headercolor: #2c7a52] {
+  row_id           uuid [pk]
+  document_id      uuid [not null]
+
+  product_id       uuid [note: 'อ้างต้นทางไว้ทำรายงาน — ห้าม join มาเอาราคามาพิมพ์']
+  option_id        uuid [note: 'ตัวเลือกเฟอร์นิเจอร์ที่ลูกค้าสั่ง']
+
+  product_type     catalog.product_type [not null, note: 'สำเนา']
+  sku              text                 [not null, note: 'สำเนา']
+  product_name     text                 [note: 'สำเนา']
+  brand_name       text                 [note: 'สำเนา — ชื่อที่พิมพ์ในเอกสาร']
+  collection_name  text                 [note: 'สำเนา']
+  category_name    text                 [note: 'สำเนา']
+  subcategory_name text                 [note: 'สำเนา']
+  variant_label    text                 [note: 'สำเนา — Item ของกระเบื้อง']
+  image_path       text                 [note: 'สำเนา']
+  dim_w_cm         numeric(10,2)       [note: 'สำเนา — ขนาดขาย']
+  dim_l_cm         numeric(10,2)       [note: 'สำเนา']
+  dim_h_cm         numeric(10,2)       [note: 'สำเนา']
+  work_w_cm        numeric(10,2)       [note: 'สำเนา — ขนาดจริง']
+  work_l_cm        numeric(10,2)       [note: 'สำเนา']
+  work_h_cm        numeric(10,2)       [note: 'สำเนา']
+  price_unit       catalog.price_unit   [note: 'สำเนา — U.M. ตอนขาย']
+  catalog_price    money_thb            [not null, note: 'สำเนา — ราคาต่อหน่วยจากแคตตาล็อก ณ วันนั้น']
+  sqm_per_box      qty_num              [note: 'สำเนา — ตัวหารของสูตร ต้องแช่แข็งไว้']
+  pieces_per_box   qty_num              [note: 'สำเนา']
+  kg_per_box       qty_num              [note: 'สำเนา']
+  option_parts     jsonb                [not null, default: `'[]'`, note: 'สำเนา — [{title, sub}] อ่านทั้งก้อนเสมอ ไม่เคย query รายชิ้น']
+
+  customer_unit    catalog.price_unit   [note: 'กรอก — ลูกค้าแจ้งจำนวนเป็นหน่วยใด']
+  customer_qty     qty_num              [note: 'กรอก — จำนวนที่ลูกค้าต้องการ']
+  allowance_type   sales.allowance_type [not null, default: 'none', note: 'กรอก — วิธีเผื่อสินค้า']
+  allowance_value  numeric(14,4)       [not null, default: 0, note: 'กรอก']
+  selling_method   sales.selling_method [note: 'กรอก — box ปัดขึ้นเต็มกล่อง, piece ปัดขึ้น, set ปัดลง']
+  qty_unit_label   text                 [note: 'กรอก — เฟอร์นิเจอร์: ชิ้น | ตัว | ชุด']
+  order_type       sales.order_type     [not null, default: 'stock', note: 'กรอก']
+  remark           text                 [note: 'กรอก — เช่น รอของ 30-45 วัน']
+  discount_type    sales.discount_type  [not null, default: 'none', note: 'กรอก — ส่วนลดรายบรรทัด']
+  discount_value   numeric(14,4)       [not null, default: 0, note: 'กรอก']
+
+  required_pieces  qty_num   [note: 'คำนวณ — ก่อนปัด (ใช้จริง + เผื่อ)']
+  actual_pieces    qty_num   [note: 'คำนวณ — หลังปัด']
+  actual_boxes     qty_num   [note: 'คำนวณ — จำนวนกล่องที่ต้องสั่ง']
+  actual_sqm       qty_num   [note: 'คำนวณ']
+  actual_meters    qty_num   [note: 'คำนวณ']
+  total_weight_kg  qty_num   [note: 'คำนวณ — ใช้คิดค่าขนส่ง']
+  billed_qty       qty_num   [not null, note: 'คำนวณ — จำนวนที่พิมพ์ในเอกสาร แปลงกลับเป็นหน่วยที่ลูกค้าแจ้ง']
+  billed_unit      text      [not null, note: 'คำนวณ — sqm | m | pcs | sets | boxes']
+  unit_price_doc   money_thb [not null, note: 'คำนวณ — ถอดกลับจากยอดรวม ให้ billed_qty x นี่ = amount_gross เสมอ']
+  amount_gross     money_thb [not null, note: 'คำนวณ']
+  amount_discount  money_thb [not null, default: 0, note: 'คำนวณ']
+  amount_net       money_thb [not null, note: 'คำนวณ']
+  desc_lines       "text[]"  [not null, default: `'{}'`, note: 'คำนวณ — บรรทัดใน DESCRIPTION ที่พิมพ์จริง เก็บไว้ให้ PDF ปีหน้าหน้าตาเหมือนเดิม']
+
+  indexes {
+    document_id [name: 'document_items_doc_idx']
+    product_id  [name: 'document_items_product_idx']
+  }
+
+  Note: 'CHECK: amount_discount <= amount_gross · amount_net = amount_gross - amount_discount · กระเบื้องต้องมี pieces_per_box และ sqm_per_box > 0'
+}
+
+// ค่าใช้จ่ายอื่นท้ายบิล
+Table sales.document_fees [headercolor: #2c7a52] {
+  id          uuid      [pk, default: `gen_random_uuid()`]
+  document_id uuid      [not null]
+  fee_code    text
+  label_th    text      [not null]
+  label_en    text      [not null]
+  amount      money_thb [not null, note: 'CHECK >= 0']
+  is_taxable  boolean   [not null, default: true]
+  sort_order  int       [not null, default: 0]
+}
+
+// งวดการชำระเงิน — งวดสุดท้าย percent = NULL หมายถึง ส่วนที่เหลือ
+Table sales.document_payment_terms [headercolor: #2c7a52] {
+  id          uuid      [pk, default: `gen_random_uuid()`]
+  document_id uuid      [not null]
+  seq         int       [not null]
+  percent     pct_num   [note: 'NULL = งวดสุดท้าย คิดจากส่วนที่เหลือ']
+  amount      money_thb [note: 'เกลี่ยอัตโนมัติจาก amount_grand โดย recalc_document()']
+  note        text      [not null, note: 'เช่น upon order confirmation']
+
+  indexes {
+    (document_id, seq) [unique, name: 'document_payment_terms_seq_key']
+  }
+}
+
+// ---------------------------------------------------------------------------
+//  ประวัติ: snapshot ทั้งใบ + การเปลี่ยนสถานะ + การอนุมัติ
+// ---------------------------------------------------------------------------
+Table sales.document_revisions [headercolor: #6f45c4] {
+  id          uuid        [pk, default: `gen_random_uuid()`]
+  document_id uuid        [not null]
+  revision_no int         [not null]
+  snapshot    jsonb       [not null, note: 'ทั้งใบ: head + rows + items + fees + payment terms']
+  reason      text        [not null, note: 'บังคับกรอกตอนขอแก้ไข']
+  created_at  timestamptz [not null, default: `now()`]
+  created_by  uuid
+
+  indexes {
+    (document_id, revision_no) [unique, name: 'document_revisions_no_key']
+  }
+
+  Note: 'ใช้พิมพ์ PDF ฉบับที่ลูกค้าเซ็นไปแล้วย้อนหลังได้'
+}
+
+Table sales.document_status_history [headercolor: #6f45c4] {
+  id          bigint            [pk, increment]
+  document_id uuid              [not null]
+  from_status sales.doc_status
+  to_status   sales.doc_status  [not null]
+  note        text
+  changed_at  timestamptz       [not null, default: `now()`]
+  changed_by  uuid
+
+  indexes {
+    (document_id, changed_at) [name: 'doc_status_hist_idx']
+  }
+}
+
+Table sales.document_approvals [headercolor: #6f45c4] {
+  id           uuid                   [pk, default: `gen_random_uuid()`]
+  document_id  uuid                   [not null]
+  requested_by uuid                   [not null]
+  requested_at timestamptz            [not null, default: `now()`]
+  decided_by   uuid
+  decided_at   timestamptz
+  result       sales.approval_result
+  comment      text
+}
+
+// ============================================================================
+//  AUDIT — ประวัติการแก้ไขทุกตาราง (เขียนโดย trigger เท่านั้น)
+// ============================================================================
+
+Table audit.activity_log [headercolor: #6f45c4] {
+  id             bigint      [pk, increment]
+  occurred_at    timestamptz [not null, default: `now()`]
+  actor_id       uuid
+  actor_name     text        [note: 'คัดลอกชื่อไว้ เผื่อผู้ใช้ถูกลบภายหลัง']
+  action         text        [not null, note: 'insert | update | delete | approve | revise | send | price_change | login']
+  schema_name    text        [not null]
+  table_name     text        [not null]
+  record_id      text        [not null]
+  document_id    uuid        [note: 'ผูกกับใบ OC เพื่อดึง timeline ของใบเดียวได้เร็ว — ไม่มี FK จริง']
+  changed_fields "text[]"    [note: 'ชื่อคอลัมน์ที่เปลี่ยนจริง — ไม่เปลี่ยนก็ไม่บันทึกแถว']
+  old_values     jsonb       [note: 'ทั้งแถวก่อนแก้ (ตัด password_hash และ token ออกแล้ว)']
+  new_values     jsonb       [note: 'ทั้งแถวหลังแก้']
+  note           text        [note: 'เหตุผลที่ผู้ใช้พิมพ์เอง — ส่งมาทาง app.note']
+  request_id     uuid        [note: 'ผูกทุกแถวที่เกิดจาก HTTP request เดียวกัน']
+  ip             inet
+
+  indexes {
+    occurred_at                            [type: brin, name: 'activity_occurred_idx']
+    (schema_name, table_name, record_id)   [name: 'activity_record_idx']
+    (document_id, occurred_at)             [name: 'activity_doc_idx', note: 'partial: WHERE document_id IS NOT NULL']
+    (actor_id, occurred_at)                [name: 'activity_actor_idx']
+  }
+
+  Note: 'trigger audit.log_changes() ติดอยู่ 16 ตาราง — ประวัติจึงไม่ขึ้นกับวินัยของโปรแกรมเมอร์'
+}
+
+// ชื่อคอลัมน์ภาษาไทย — ให้หน้าประวัติแสดง ราคาต่อหน่วย แทน price_per_unit
+Table audit.field_labels [headercolor: #6f45c4] {
+  table_name  text [not null]
+  column_name text [not null]
+  label_th    text [not null]
+
+  indexes {
+    (table_name, column_name) [pk]
+  }
+}
+
+// ============================================================================
+//  RELATIONSHIPS
+// ============================================================================
+
+// ---- auth ----
+Ref: auth.role_permissions.role_id         > auth.roles.id             [delete: cascade]
+Ref: auth.role_permissions.permission_code > auth.permissions.code     [delete: cascade]
+Ref: auth.user_roles.user_id               > auth.users.id             [delete: cascade]
+Ref: auth.user_roles.role_id               > auth.roles.id             [delete: restrict]
+Ref: auth.users.manager_id                 > auth.users.id
+Ref: auth.sessions.user_id                 > auth.users.id             [delete: cascade]
+Ref: auth.password_resets.user_id          > auth.users.id             [delete: cascade]
+
+// ---- catalog ----
+Ref: catalog.subcategories.category_id     > catalog.categories.id
+// จริง ๆ เป็น composite FK (subcategory_id, category_id) → subcategories(id, category_id)
+Ref: catalog.products.subcategory_id       > catalog.subcategories.id
+Ref: catalog.collections.brand_id          > catalog.brands.id
+Ref: catalog.products.brand_id             > catalog.brands.id
+Ref: catalog.products.collection_id        > catalog.collections.id
+Ref: catalog.products.category_id          > catalog.categories.id
+Ref: catalog.product_images.product_id     > catalog.products.id        [delete: cascade]
+Ref: catalog.product_images.option_id      > catalog.product_options.id [delete: cascade]
+Ref: catalog.tile_specs.product_id         - catalog.products.id        [delete: cascade]
+Ref: catalog.product_options.product_id    > catalog.products.id        [delete: cascade]
+Ref: catalog.option_parts.option_id        > catalog.product_options.id [delete: cascade]
+Ref: catalog.price_history.product_id      > catalog.products.id        [delete: cascade]
+Ref: catalog.price_history.option_id       > catalog.product_options.id [delete: cascade]
+
+// ---- sales ----
+Ref: sales.customers.owner_id                    > auth.users.id
+Ref: sales.customer_contacts.customer_id         > sales.customers.id   [delete: cascade]
+Ref: sales.documents.customer_id                 > sales.customers.id
+Ref: sales.documents.company_profile_id          > sales.company_profiles.id
+Ref: sales.documents.owner_id                    > auth.users.id
+Ref: sales.documents.supersedes_id               > sales.documents.id
+Ref: sales.documents.cloned_from_id              > sales.documents.id
+Ref: sales.document_rows.document_id             > sales.documents.id   [delete: cascade]
+Ref: sales.document_media.row_id                 - sales.document_rows.id [delete: cascade]
+Ref: sales.document_items.row_id                 - sales.document_rows.id [delete: cascade]
+Ref: sales.document_items.document_id            > sales.documents.id   [delete: cascade]
+Ref: sales.document_items.product_id             > catalog.products.id
+Ref: sales.document_items.option_id              > catalog.product_options.id
+Ref: sales.document_fees.document_id             > sales.documents.id   [delete: cascade]
+Ref: sales.document_fees.fee_code                > sales.fee_types.code
+Ref: sales.document_payment_terms.document_id    > sales.documents.id   [delete: cascade]
+Ref: sales.document_revisions.document_id        > sales.documents.id   [delete: cascade]
+Ref: sales.document_status_history.document_id   > sales.documents.id   [delete: cascade]
+Ref: sales.document_approvals.document_id        > sales.documents.id   [delete: cascade]
+Ref: sales.document_approvals.requested_by       > auth.users.id
+Ref: sales.document_approvals.decided_by         > auth.users.id
+
+// ---- audit ----
+Ref: audit.activity_log.actor_id    > auth.users.id
+Ref: audit.activity_log.document_id > sales.documents.id
+
+// ============================================================================
+//  TABLE GROUPS — กดที่ชื่อกลุ่มใน dbdiagram เพื่อโฟกัสทีละ schema
+// ============================================================================
+
+TableGroup auth_people {
+  auth.roles
+  auth.permissions
+  auth.role_permissions
+  auth.users
+  auth.user_roles
+  auth.sessions
+  auth.password_resets
+  auth.login_attempts
+}
+
+TableGroup catalog_products {
+  catalog.brands
+  catalog.categories
+  catalog.subcategories
+  catalog.collections
+  catalog.products
+  catalog.product_images
+  catalog.tile_specs
+  catalog.product_options
+  catalog.option_parts
+  catalog.price_history
+}
+
+TableGroup sales_documents {
+  sales.customers
+  sales.customer_contacts
+  sales.company_profiles
+  sales.fee_types
+  sales.documents
+  sales.document_rows
+  sales.document_items
+  sales.document_media
+  sales.document_fees
+  sales.document_payment_terms
+}
+
+TableGroup history {
+  sales.document_revisions
+  sales.document_status_history
+  sales.document_approvals
+  audit.activity_log
+  audit.field_labels
+}

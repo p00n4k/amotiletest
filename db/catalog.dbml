@@ -1,0 +1,329 @@
+// ============================================================================
+//  AMO — แคตตาล็อกสินค้า (กระเบื้อง + เฟอร์นิเจอร์) เฉพาะส่วนเดียว
+//  DBML สำหรับ dbdiagram.io — ตัดออกมาจาก db/schema.dbml
+//
+//  10 ตาราง แบ่งเป็น 4 กลุ่ม:
+//    ใช้ร่วมกันทั้งสองประเภท (6)  brands · categories · subcategories
+//                                collections · products · product_images
+//    เฉพาะกระเบื้อง (1)           tile_specs
+//    เฉพาะเฟอร์นิเจอร์ (2)         product_options · option_parts
+//    ประวัติ (1)                  price_history
+//
+//  แกนของโครงคือ products — คอลัมน์ product_type เป็นตัวตัดสินว่าสินค้าตัวนี้
+//  จะต่อกับ tile_specs (1:1) หรือ product_options (1:N) ข้อมูลที่ใช้ร่วมกัน
+//  (SKU แบรนด์ คอลเลกชัน หมวดหมู่ รูป) อยู่ที่ products ที่เดียว ไม่ต้องทำสองชุด
+//
+//  ถ้าแยกเป็นฐานข้อมูลคนละตัวกับระบบเอกสาร: คอลัมน์ created_by / updated_by /
+//  deleted_by / discontinued_by / changed_by เก็บ uuid ของผู้ใช้จากระบบ auth
+//  แต่ไม่มี FK ข้ามฐานข้อมูล — ตอนแสดงผลให้ service ไปถามชื่อจาก auth เอง
+// ============================================================================
+
+Project amo_catalog {
+  database_type: 'PostgreSQL'
+  Note: 'แคตตาล็อกสินค้า AMO — admin ดูแล, sales อ่านอย่างเดียว, หน่วย CM และ THB'
+}
+
+// ============================================================================
+//  ENUMS
+// ============================================================================
+
+Enum catalog.product_type {
+  tile      [note: 'กระเบื้อง — ต่อกับ tile_specs']
+  furniture [note: 'เฟอร์นิเจอร์ — ต่อกับ product_options']
+}
+
+Enum catalog.item_status {
+  active
+  discontinued [note: 'ไม่ขายแล้ว — หายจากช่องค้นหา แต่ใบเก่ายังอ้างได้']
+}
+
+// U.M. = หน่วยราคาสินค้า (ตารางเมตร / เมตร / ชิ้น / เซ็ต / กล่อง)
+Enum catalog.price_unit {
+  sqm
+  meter
+  piece
+  set
+  box
+}
+
+// ============================================================================
+//  ใช้ร่วมกันทั้งกระเบื้องและเฟอร์นิเจอร์
+// ============================================================================
+
+Table catalog.brands [headercolor: #0e7c86] {
+  id              uuid                 [pk, default: `gen_random_uuid()`]
+  name            text                 [not null, note: 'เช่น Cotto, Natuzzi, Botempi']
+  status          catalog.item_status  [not null, default: 'active']
+  discontinued_at timestamptz
+  discontinued_by uuid
+  created_at      timestamptz          [not null, default: `now()`]
+  created_by      uuid
+  updated_at      timestamptz
+  updated_by      uuid
+  deleted_at      timestamptz          [note: 'soft delete — NULL = ยังใช้งานอยู่']
+  deleted_by      uuid
+
+  indexes {
+    name [unique, name: 'brands_name_key', note: 'partial + lower(name): WHERE deleted_at IS NULL']
+  }
+}
+
+// หมวดหมู่หลัก — Tile, Table, Sofa, Chair
+Table catalog.categories [headercolor: #0e7c86] {
+  id           uuid                  [pk, default: `gen_random_uuid()`]
+  name         text                  [not null]
+  product_type catalog.product_type  [note: 'จำกัดว่าหมวดนี้ใช้กับสินค้าประเภทไหน — เว้นว่าง = ใช้ได้ทั้งคู่']
+  sort_order   int                   [not null, default: 0]
+  created_at   timestamptz           [not null, default: `now()`]
+  created_by   uuid
+  updated_at   timestamptz
+  updated_by   uuid
+  deleted_at   timestamptz
+  deleted_by   uuid
+
+  indexes {
+    name [unique, name: 'categories_name_key', note: 'partial + lower(name): WHERE deleted_at IS NULL']
+  }
+}
+
+// หมวดหมู่ย่อย — Floor Tile, Wall Tile, Coffee Table, 3 Seater
+Table catalog.subcategories [headercolor: #0e7c86] {
+  id          uuid        [pk, default: `gen_random_uuid()`]
+  category_id uuid        [not null, note: 'หมวดหลักที่สังกัด — product_type สืบทอดมาจากตรงนี้ ไม่เก็บซ้ำ']
+  name        text        [not null]
+  sort_order  int         [not null, default: 0]
+  created_at  timestamptz [not null, default: `now()`]
+  created_by  uuid
+  updated_at  timestamptz
+  updated_by  uuid
+  deleted_at  timestamptz
+  deleted_by  uuid
+
+  indexes {
+    (id, category_id)     [unique, name: 'subcategories_id_category_key', note: 'ให้ products อ้างเป็นคู่ได้ — ดู composite FK ที่ products']
+    (category_id, name)   [unique, name: 'subcategories_name_key', note: 'partial + lower(name): WHERE deleted_at IS NULL']
+    (category_id, sort_order) [name: 'subcategories_category_idx']
+  }
+}
+
+Table catalog.collections [headercolor: #0e7c86] {
+  id         uuid        [pk, default: `gen_random_uuid()`]
+  brand_id   uuid        [not null, note: 'คอลเลกชันอยู่ใต้แบรนด์เสมอ เช่น Cotto → Stone']
+  name       text        [not null]
+  created_at timestamptz [not null, default: `now()`]
+  created_by uuid
+  updated_at timestamptz
+  updated_by uuid
+  deleted_at timestamptz
+  deleted_by uuid
+
+  indexes {
+    (brand_id, name) [unique, name: 'collections_brand_name_key', note: 'partial + lower(name): WHERE deleted_at IS NULL']
+  }
+}
+
+// แกนกลาง — ข้อมูลที่กระเบื้องและเฟอร์นิเจอร์ใช้เหมือนกัน
+Table catalog.products [headercolor: #0e7c86] {
+  id               uuid                 [pk, default: `gen_random_uuid()`]
+  sku              text                 [not null, note: 'รหัสสินค้า เช่น TILE-6060-GRY, FUR-SOF-003']
+  product_type     catalog.product_type [not null, note: 'ตัวตัดสินว่าต่อกับ tile_specs หรือ product_options']
+  brand_id         uuid
+  collection_id    uuid
+  category_id      uuid                 [note: 'หมวดหลัก']
+  subcategory_id   uuid                 [note: 'หมวดย่อย — FK เป็นคู่กับ category_id กันเลือกข้ามหมวด']
+  name             text                 [note: 'ชื่อสินค้า — เฟอร์นิเจอร์ใช้เยอะ กระเบื้องมักเว้นว่าง']
+  description      text                 [note: 'รายละเอียดยาวสำหรับหน้ารายละเอียดสินค้า']
+  width_cm         numeric(10,2)        [note: 'เฟอร์นิเจอร์: กว้าง (กระเบื้องใช้ของ tile_specs แทน)']
+  length_cm        numeric(10,2)        [note: 'เฟอร์นิเจอร์: ยาว']
+  height_cm        numeric(10,2)        [note: 'เฟอร์นิเจอร์: สูง']
+  default_qty_unit text                 [note: 'เฟอร์นิเจอร์: ชิ้น | ตัว | ชุด']
+  status           catalog.item_status  [not null, default: 'active']
+  discontinued_at  timestamptz
+  discontinued_by  uuid
+  search_tsv       tsvector             [note: 'GENERATED ALWAYS จาก sku + name']
+  created_at       timestamptz          [not null, default: `now()`]
+  created_by       uuid
+  updated_at       timestamptz
+  updated_by       uuid
+  deleted_at       timestamptz
+  deleted_by       uuid
+
+  indexes {
+    sku                              [unique, name: 'products_sku_key', note: 'partial + upper(sku): WHERE deleted_at IS NULL']
+    search_tsv                       [type: gin, name: 'products_search_idx']
+    name                             [type: gin, name: 'products_name_trgm_idx', note: 'gin_trgm_ops — ค้นชื่อแบบพิมพ์ผิดได้']
+    (product_type, status, brand_id) [name: 'products_browse_idx', note: 'ตัวป้อนช่องค้นหาสินค้าของ sales']
+    subcategory_id                   [name: 'products_subcategory_idx']
+  }
+
+  Note: 'สินค้า 1 ตัวเป็นได้ประเภทเดียว — ห้ามมีทั้ง tile_specs และ product_options พร้อมกัน · composite FK (subcategory_id, category_id) → subcategories(id, category_id) กันหมวดย่อยข้ามหมวดหลัก เช่น Sofa + Floor Tile'
+}
+
+// รูปสินค้าหลักและรูปประจำตัวเลือก อยู่ตารางเดียวกัน จะได้โชว์รวมในแกลเลอรีเดียว
+Table catalog.product_images [headercolor: #0e7c86] {
+  id         uuid        [pk, default: `gen_random_uuid()`]
+  product_id uuid        [not null]
+  option_id  uuid        [note: 'NULL = รูปหลักของสินค้า, มีค่า = รูปเฉพาะของตัวเลือกนั้น']
+  file_path  text        [not null, note: 'object key บน S3/MinIO ไม่ใช่ data URL']
+  caption    text
+  is_primary boolean     [not null, default: false, note: 'รูปหน้าปก']
+  sort_order int         [not null, default: 0]
+  created_at timestamptz [not null, default: `now()`]
+  created_by uuid
+  updated_at timestamptz
+  updated_by uuid
+
+  indexes {
+    product_id [unique, name: 'product_images_one_primary', note: 'partial: WHERE is_primary — รูปหลักได้รูปเดียวต่อสินค้า']
+    (product_id, sort_order) [name: 'product_images_order_idx']
+  }
+}
+
+// ============================================================================
+//  เฉพาะกระเบื้อง
+// ============================================================================
+
+// 1:1 กับ products — ตัวขับสูตรคำนวณทั้งหมดในใบ OC
+Table catalog.tile_specs [headercolor: #0e7c86] {
+  product_id     uuid                [pk, note: 'ใช้ PK ร่วมกับ products — มีได้แถวเดียวต่อสินค้า']
+  item           text                [note: 'Item / ลาย เช่น Stone, Marble, Pattern']
+  color          text
+  surface        text                [note: 'ผิว — เงา, ด้าน, R10/R11 กันลื่น']
+  sale_w_cm      numeric(10,2)       [note: 'ขนาดขาย (Sale Size) — ที่พิมพ์บนกล่อง เช่น 60']
+  sale_l_cm      numeric(10,2)       [note: 'ขนาดขาย ยาว — ใช้หารตอนขายเป็นเมตร']
+  sale_h_cm      numeric(10,2)       [note: 'ความหนา']
+  work_w_cm      numeric(10,2)       [note: 'ขนาดจริง (Working Size) — เช่น 59.5 ใช้ตอนปูจริง']
+  work_l_cm      numeric(10,2)
+  work_h_cm      numeric(10,2)
+  price_unit     catalog.price_unit  [not null, note: 'U.M. — หน่วยที่ใช้คิดเงิน']
+  price_per_unit catalog.money_thb           [not null, note: 'CHECK > 0 — ราคาตาม U.M.']
+  sqm_per_box    catalog.qty_num             [not null, note: 'CHECK > 0 — ตัวหารของสูตรทั้งหมด']
+  pieces_per_box catalog.qty_num             [not null, note: 'CHECK > 0 — ใช้ปัดกล่อง']
+  kg_per_box     catalog.qty_num             [note: 'CHECK >= 0 — ใช้คิดน้ำหนักรวมและค่าขนส่ง']
+  created_at     timestamptz         [not null, default: `now()`]
+  created_by     uuid
+  updated_at     timestamptz
+  updated_by     uuid
+
+  Note: 'CHECK: ขายเป็นเมตร (price_unit = meter) ต้องมี sale_l_cm > 0 ไม่งั้นคำนวณเมตรไม่ได้ · ตร.ม. ต่อแผ่น = sqm_per_box / pieces_per_box'
+}
+
+// ============================================================================
+//  เฉพาะเฟอร์นิเจอร์
+// ============================================================================
+
+// 1 ตัวเลือก = 1 รูปแบบสินค้าที่มีราคาเดียว (เช่น รุ่นผ้า Linen กับรุ่นหนังแท้)
+Table catalog.product_options [headercolor: #a4670f] {
+  id         uuid                 [pk, default: `gen_random_uuid()`]
+  product_id uuid                 [not null]
+  label      text                 [note: 'ชื่อตัวเลือก (ไม่บังคับ) — ในใบ OC อ้างด้วยลำดับ']
+  price      catalog.money_thb            [not null, note: 'CHECK >= 0 — ราคาทั้งชุดของตัวเลือกนี้ ไม่ใช่ราคาต่อชิ้นส่วน']
+  sort_order int                  [not null, default: 0, note: 'ลำดับที่โชว์ = ตัวเลือกที่ 1, 2, 3']
+  status     catalog.item_status  [not null, default: 'active']
+  created_at timestamptz          [not null, default: `now()`]
+  created_by uuid
+  updated_at timestamptz
+  updated_by uuid
+  deleted_at timestamptz
+  deleted_by uuid
+
+  indexes {
+    (product_id, sort_order) [name: 'product_options_product_idx']
+  }
+
+  Note: 'โซฟาตัวเดียวมี 3 ตัวเลือกผ้า = 3 แถว ราคาคนละราคา ลูกค้าเลือก 1'
+}
+
+// ชิ้นส่วนภายในตัวเลือก — Top / Base / Legs + วัสดุ (ไม่มีราคาแยก)
+Table catalog.option_parts [headercolor: #a4670f] {
+  id              uuid        [pk, default: `gen_random_uuid()`]
+  option_id       uuid        [not null]
+  title           text        [not null, note: 'หัวข้อ เช่น Top, Base, Legs, Upholstery']
+  sub_description text        [note: 'วัสดุ เช่น GreyWood ผิวเมลามีน, หนังแท้ Full Grain สีดำ']
+  sort_order      int         [not null, default: 0]
+  created_at      timestamptz [not null, default: `now()`]
+  created_by      uuid
+  updated_at      timestamptz
+  updated_by      uuid
+
+  indexes {
+    (option_id, title) [unique, name: 'option_parts_title_key', note: 'lower(title) — หัวข้อห้ามซ้ำในตัวเลือกเดียวกัน']
+  }
+
+  Note: 'บรรทัดเหล่านี้ไปโผล่ในบล็อก DESCRIPTION ของใบ OC ตามลำดับ sort_order'
+}
+
+// ============================================================================
+//  ประวัติราคา
+// ============================================================================
+
+// เขียนโดย trigger ทุกครั้งที่ราคาเปลี่ยน — ไม่ได้เขียนจาก service layer
+Table catalog.price_history [headercolor: #6f45c4] {
+  id         bigint      [pk, increment]
+  product_id uuid        [note: 'กระเบื้อง — ราคาอยู่ที่ tile_specs.price_per_unit']
+  option_id  uuid        [note: 'เฟอร์นิเจอร์ — ราคาอยู่ที่ product_options.price']
+  old_price  catalog.money_thb   [note: 'NULL ได้ ถ้าเป็นการตั้งราคาครั้งแรก']
+  new_price  catalog.money_thb   [not null]
+  changed_at timestamptz [not null, default: `now()`]
+  changed_by uuid
+  note       text        [note: 'เหตุผล เช่น ปรับตามราคาโรงงานรอบ Q3']
+
+  indexes {
+    (product_id, changed_at) [name: 'price_history_product_idx']
+    (option_id, changed_at)  [name: 'price_history_option_idx']
+  }
+
+  Note: 'CHECK: num_nonnulls(product_id, option_id) = 1 — ผูกกับอย่างใดอย่างหนึ่งเท่านั้น · ราคาขึ้นไม่กระทบใบ OC ที่ออกไปแล้ว เพราะใบเก็บสำเนาราคาไว้เอง'
+}
+
+// ============================================================================
+//  RELATIONSHIPS
+//  (created_by / updated_by / deleted_by / discontinued_by / changed_by
+//   ไม่วาดเส้น — ทุกตัวชี้ไปตารางผู้ใช้ในระบบ auth เหมือนกันหมด)
+// ============================================================================
+
+Ref: catalog.subcategories.category_id  > catalog.categories.id
+Ref: catalog.collections.brand_id       > catalog.brands.id
+Ref: catalog.products.brand_id          > catalog.brands.id
+Ref: catalog.products.collection_id     > catalog.collections.id
+// จริง ๆ เป็น composite FK (subcategory_id, category_id) → subcategories(id, category_id)
+// DBML วาดได้ทีละคอลัมน์ จึงแยกเป็นสองเส้น
+Ref: catalog.products.subcategory_id    > catalog.subcategories.id
+Ref: catalog.products.category_id       > catalog.categories.id
+Ref: catalog.product_images.product_id  > catalog.products.id        [delete: cascade]
+Ref: catalog.product_images.option_id   > catalog.product_options.id [delete: cascade]
+Ref: catalog.tile_specs.product_id      - catalog.products.id        [delete: cascade]
+Ref: catalog.product_options.product_id > catalog.products.id        [delete: cascade]
+Ref: catalog.option_parts.option_id     > catalog.product_options.id [delete: cascade]
+Ref: catalog.price_history.product_id   > catalog.products.id        [delete: cascade]
+Ref: catalog.price_history.option_id    > catalog.product_options.id [delete: cascade]
+
+// ============================================================================
+//  TABLE GROUPS
+// ============================================================================
+
+TableGroup shared {
+  Note: 'ใช้ร่วมกันทั้งสองประเภท'
+  catalog.brands
+  catalog.categories
+  catalog.subcategories
+  catalog.collections
+  catalog.products
+  catalog.product_images
+}
+
+TableGroup tile_only {
+  Note: 'เฉพาะกระเบื้อง'
+  catalog.tile_specs
+}
+
+TableGroup furniture_only {
+  Note: 'เฉพาะเฟอร์นิเจอร์'
+  catalog.product_options
+  catalog.option_parts
+}
+
+TableGroup price_log {
+  Note: 'ประวัติราคา'
+  catalog.price_history
+}
